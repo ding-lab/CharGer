@@ -88,11 +88,92 @@ def splitByVariantType( inputFile ):
 
 def PVS1( variants ):
 	return None
-def PM1( entrezAPI , variants ):
-	for uid in variants:
-		var = variants[uid]
-		var.printVariant(' ')
-	
+def PM1( inputVariants , clinvarVariants , clinvarClinical ):
+	print "CharGer module PM1"
+	print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
+	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM1" )
+def PM5( inputVariants , clinvarVariants , clinvarClinical ):
+	print "CharGer module PM5"
+	print "- different peptide change of a pathogenic variant at the same reference peptide"
+	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM5" )
+def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
+	calls = {}
+	for thisVar in inputVariants:
+		inVar = inputVariants[thisVar]
+		genVar = inVar.genomicVar()
+		print "\tInput variant: " + genVar , 
+		canBePM1 = True
+		canBePM5 = True
+		pm1Call = False
+		pm5Call = False
+		call = {}
+		if genVar in calls:
+			call = calls[genVar]
+		else:
+			call = { genVar : False }
+		if not call[genVar]: #is already true
+			print "checking"
+			call[genVar] = False
+			for uid in clinvarVariants:
+				var = clinvarVariants[uid]
+				if uid in clinvarClinical:
+					clin = clinvarClinical[uid]
+					if inVar.chromosome == var.chromosome and \
+						inVar.start == var.start and \
+						inVar.stop == var.stop and \
+						inVar.reference == var.reference and \
+						inVar.referencePeptide == var.referencePeptide and \
+						inVar.positionPeptide == var.positionPeptide: #same genomic position & reference
+						if inVar.mutantPeptide == var.mutantPeptide: #same amino acid change
+							if clin["description"] == "Pathogenic":
+								print "Already called pathogenic: " ,
+								var.printVariant(' ')
+								canBePM1 = False
+								canBePM5 = False
+							else:
+								print "This is NOT called as pathogenic: " ,
+								var.printVariant(' ')
+								if mod == "PM1":
+									pm1Call = True
+						else: #different amino acid change ( CAN BE USED FOR PM5 )
+							if clin["description"] == "Pathogenic":
+								print "Alternate peptide change called pathogenic: " ,
+								var.printVariant(' ')
+								if mod == "PM5":
+									pm5Call = True
+							else:
+								print "Alternate peptide change NOT called as pathogenic: " ,
+								var.printVariant(' ')
+				else:
+					print "Not given a clinical call: " ,
+					var.printVariant(' ')
+			if mod == "PM1":
+				if canBePM1:
+					call[genVar] = pm1Call
+			if mod == "PM5":
+				if canBePM5:
+					call[genVar] = pm5Call
+		calls.update( call )
+	print calls
+
+def prepQuery( inputFile , ent ):
+	searchVariants = splitByVariantType( inputFile )
+	inputVariants = {}
+	for variantClass in searchVariants:
+		for sample in searchVariants[variantClass]:
+			for genVar in searchVariants[variantClass][sample]:
+				thisGroup = sample+genVar
+				var = searchVariants[variantClass][sample][genVar]["variant"]
+				ent.addQuery( var.gene , field="gene" , group=thisGroup )
+				ent.addQuery( var.chromosome , field="chr" , group=thisGroup )
+				ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
+				ent.addQuery( "human" , field="orgn" , group=thisGroup )
+				#ent.addQuery( var.variantClass , "vartype" )
+				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
+				inputVariants[thisGroup] = var
+				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
+	return { "entrezAPI" : ent , "inputVariants" : inputVariants }
+
 def main( argv ):
 	values = parseArgs( argv )
 	inputFile = values["input"]
@@ -100,32 +181,22 @@ def main( argv ):
 
 	ent = entrezAPI()	
 
-	variants = splitByVariantType( inputFile )
-	for variantClass in variants:
-		#print "\tVariant Class: " + variantClass
-		for sample in variants[variantClass]:
-			#print "\t\tSample: " + sample
-			#variants[variantClass][sample][
-			for genVar in variants[variantClass][sample]:
-				#print "\t\t\tGenomic Variant: " + genVar
-				#print "\t\t\t\tVariant: " , 
-				#variants[variantClass][sample][genVar]["variant"].printVariant("  ")
-				thisGroup = sample+genVar
-				var = variants[variantClass][sample][genVar]["variant"]
-				ent.addQuery( var.gene , field="gene" , group=thisGroup )
-				ent.addQuery( var.chromosome , field="chr" , group=thisGroup )
-				ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
-				ent.addQuery( "human" , field="orgn" , group=thisGroup )
-				#ent.addQuery( var.variantClass , "vartype" )
-				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
-
-				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
+	ready = prepQuery( inputFile , ent )
+	ent = ready["entrezAPI"]
+	inputVariants = ready["inputVariants"]
 
 	ent.database = entrezAPI.clinvar
 	clinvarEntries = ent.doBatch( 5 )
 	ClinVarVariants = clinvarEntries["variants"]
 	ClinVarTraits = clinvarEntries["traits"]
-	PM1( ent , ClinVarVariants )
+	ClinVarClinical = clinvarEntries["clinical"]
+	#print ClinVarClinical
+	#for uid in ClinVarClinical:
+		#print uid + ": " ,
+		#print ClinVarClinical[uid]["description"] + " / " ,
+		#print ClinVarClinical[uid]["review_status"]
+	PM1( inputVariants , ClinVarVariants , ClinVarClinical )
+	PM5( inputVariants , ClinVarVariants , ClinVarClinical )
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )
