@@ -88,6 +88,10 @@ def splitByVariantType( inputFile ):
 
 def PVS1( variants ):
 	return None
+def PM1( entrezAPI , variants ):
+	for uid in variants:
+		var = variants[uid]
+		var.printVariant(' ')
 	
 def main( argv ):
 	values = parseArgs( argv )
@@ -114,8 +118,14 @@ def main( argv ):
 				ent.addQuery( "human" , field="orgn" , group=thisGroup )
 				#ent.addQuery( var.variantClass , "vartype" )
 				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
+
+				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
+
 	ent.database = entrezAPI.clinvar
-	ent.doBatch( 5 )
+	clinvarEntries = ent.doBatch( 5 )
+	ClinVarVariants = clinvarEntries["variants"]
+	ClinVarTraits = clinvarEntries["traits"]
+	PM1( ent , ClinVarVariants )
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )
