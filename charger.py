@@ -88,10 +88,10 @@ def splitByVariantType( inputFile ):
 
 def PVS1( variants ):
 	return None
-def PM1( inputVariants , clinvarVariants , clinvarClinical ):
-	print "CharGer module PM1"
+def PS1( inputVariants , clinvarVariants , clinvarClinical ):
+	print "CharGer module PS1"
 	print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
-	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM1" )
+	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PS1" )
 def PM5( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PM5"
 	print "- different peptide change of a pathogenic variant at the same reference peptide"
@@ -154,7 +154,31 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 				if canBePM5:
 					call[genVar] = pm5Call
 		calls.update( call )
-	print calls
+	return calls
+
+def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVarClinical ):
+	geneList = readGeneList( inputFile )
+	calls = {}
+	if geneList: #gene, disease, mode of inheritance
+		for gene in geneList: #want only autosomal dominant
+			line = geneList[gene]
+		#variant expression calls from Kuan function
+		getExpression( var )
+	return calls
+
+def getExpression( var ):
+	#Kuan 
+
+def readGeneList( inputFile , col ):
+	geneList = {}
+	if inputFile:
+		inFile = open( inputFile , 'r' )
+		next(inFile)
+		gv = {}
+		for line in inFile:
+			fields = line.split( "\t" )
+			geneList[fields[col]] = line
+	return geneList
 
 def prepQuery( inputFile , ent ):
 	searchVariants = splitByVariantType( inputFile )
@@ -172,7 +196,7 @@ def prepQuery( inputFile , ent ):
 				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
 				inputVariants[thisGroup] = var
 				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
-	return { "entrezAPI" : ent , "inputVariants" : inputVariants }
+	return { "entrezAPI" : ent , "searchVariants" : searchVariants , "inputVariants" : inputVariants }
 
 def main( argv ):
 	values = parseArgs( argv )
@@ -184,6 +208,7 @@ def main( argv ):
 	ready = prepQuery( inputFile , ent )
 	ent = ready["entrezAPI"]
 	inputVariants = ready["inputVariants"]
+	searchVariants = ready["searchVariants"]
 
 	ent.database = entrezAPI.clinvar
 	clinvarEntries = ent.doBatch( 5 )
@@ -195,7 +220,8 @@ def main( argv ):
 		#print uid + ": " ,
 		#print ClinVarClinical[uid]["description"] + " / " ,
 		#print ClinVarClinical[uid]["review_status"]
-	PM1( inputVariants , ClinVarVariants , ClinVarClinical )
+	PVS1( searchVariants , inputVariants , ClinVarVariants , ClinVarClinical )
+	PS1( inputVariants , ClinVarVariants , ClinVarClinical )
 	PM5( inputVariants , ClinVarVariants , ClinVarClinical )
 
 if __name__ == "__main__":
