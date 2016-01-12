@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # CharGer - Characterization of Germline variants
-# author: Adam D Scott (ascott@genome.wustl.edu)
+# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
 
 import sys
@@ -8,6 +8,7 @@ import getopt
 from entrezAPI import entrezAPI
 from exacAPI import exacAPI
 import variant
+import charger_lib
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
@@ -165,28 +166,43 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 		calls.update( call )
 	return calls
 
-def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVarClinical ):
+def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVarClinical, diseaseSpecific, expressionEffect ):
 	geneList = readGeneList( inputFile )
 	calls = {}
 	if geneList: #gene, disease, mode of inheritance
-		for gene in geneList: #want only autosomal dominant
-			line = geneList[gene]
-		#variant expression calls from Kuan function
-		getExpression( var )
+		for thisVar in inputVariants:
+			call = False # default
+			inVar = inputVariants[thisVar] # why not just this var
+			varGene = inVar.gene	
+			if varGene in geneList:
+				if diseaseSpecific: # variant module needs to add cancer type var.disease
+
+				else: # match any variant
+
+			if call: 
+				if expressionEffect:
+					# check the specific gene in the specific sample
+
+		calls.update( call )
 	return calls
 
-def getExpression( var ): #Kuan 
+def getExpression( inputFile, var ): # expect a sample(col)-gene(row) matrix
+	if 
 	print ""
+	return expression
 
-def readGeneList( inputFile , col ):
-	geneList = {}
+def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of inheritance"
+	geneList = AutoVivification()
 	if inputFile:
 		inFile = open( inputFile , 'r' )
-		next(inFile)
-		gv = {}
+		#header = inFile.readline() # for future fetch header to get other fields
+		#gv = {}
 		for line in inFile:
 			fields = line.split( "\t" )
-			geneList[fields[col]] = line
+			gene = fields[0]
+			disease = fields[1]
+			mode_inheritance = fields[2]
+			geneList[gene][disease] = mode_inheritance
 	return geneList
 
 def prepQuery( inputFile , ent , searchVariants ):
