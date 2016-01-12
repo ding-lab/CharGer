@@ -191,6 +191,11 @@ def getExpression( inputFile, var ): # expect a sample(col)-gene(row) matrix
 	print ""
 	return expression
 
+def isFrequentAllele( freq , threshold ):
+	if freq > threshold:
+		return True
+	return False
+
 def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of inheritance"
 	geneList = AutoVivification()
 	if inputFile:
@@ -245,10 +250,13 @@ def main( argv ):
 		PM5( inputVariants , clinvarVariants , clinvarClinical )
 
 	if doExAC:
-		exac = exacAPI()
-		ExACEntries = exac.getAlleleFrequencies( inputVariants )
-
-	print ExACEntries
+		exac = exacAPI(harvard=True)
+		exacEntries = exac.getAlleleFrequencies( inputVariants )
+		thresh = 0
+		for genVar in exacEntries:
+			alleleFrequency = exacEntries[genVar]
+			if isFrequentAllele( alleleFrequency , thresh ):
+				print genVar + " is NOT rare(" + str(thresh) + "): " + str(alleleFrequency)
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )
