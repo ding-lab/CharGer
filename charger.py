@@ -6,18 +6,21 @@
 import sys
 import getopt
 from entrezAPI import entrezAPI
+from exacAPI import exacAPI
 import variant
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
 	helpText += "-i \"input (.maf)\" "
-	helpText += "(-o \"output\")\n"
+	helpText += "(-c suppress ClinVar, "
+	helpText += "-x suppress ExAC, "
+	helpText += "-o \"output\")\n"
 	inputFile = ""
 	output = ""
-	database = ""
-	query = ""
+	clinvar = True
+	exac = True
 	try:
-		opts, args = getopt.getopt( argv , "h:i:o:" , ["input=" , "output="] )
+		opts, args = getopt.getopt( argv , "cxh:i:o:" , ["input=" , "output="] )
 	except getopt.GetoptError:
 		print "ADSERROR: Command not recognized"
 		print( helpText ) 
@@ -35,7 +38,11 @@ def parseArgs( argv ):
 			inputFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
-	return { "input" : inputFile , "output" : output }
+		elif opt in ( "-c" , "--help" ):
+			clinvar = False
+		elif opt in ( "-x" , "--help" ):
+			exac = False
+	return { "input" : inputFile , "output" : output , "clinvar" : clinvar , "exac" : exac }
 	
 def checkConnection():
 	print "\tChecking Connection!"
@@ -50,6 +57,7 @@ def checkConnection():
 def splitByVariantType( inputFile ):
 	print "\tSplitting .maf by variant type!"
 	variants = {}
+	variantsBySampleAndType = {}
 	if inputFile:
 		inFile = open( inputFile , 'r' )
 		next(inFile)
@@ -65,9 +73,9 @@ def splitByVariantType( inputFile ):
 			vc = {}
 			s = {}
 			gv = {}
-			if variantClass in variants:
+			if variantClass in variantsBySampleAndType:
 				#print variantClass
-				vc = variants[variantClass] #dict of variants by variantClass=>samples dict
+				vc = variantsBySampleAndType[variantClass] #dict of variants by variantClass=>samples dict
 			if sample in vc:
 				#print sample
 				s = vc[sample] #dict of samples by sample=>genVars dict
@@ -82,8 +90,9 @@ def splitByVariantType( inputFile ):
 			vc.update( tempvc )
 			#print genVar + "=>" + s[genVar]
 			tempVariants = { variantClass : tempvc }
-			variants.update( tempVariants )
-	return variants
+			variantsBySampleAndType.update( tempVariants )
+			variants[genVar] = var
+	return { "variants" : variants , "variantsBySampleAndType" : variantsBySampleAndType }
 	#nonsense, frameshift, canonical 1 or 2 splice sites, initiation codon, single exon or multiexon deletion
 
 def PVS1( variants ):
@@ -166,8 +175,8 @@ def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVar
 		getExpression( var )
 	return calls
 
-def getExpression( var ):
-	#Kuan 
+def getExpression( var ): #Kuan 
+	print ""
 
 def readGeneList( inputFile , col ):
 	geneList = {}
@@ -180,9 +189,7 @@ def readGeneList( inputFile , col ):
 			geneList[fields[col]] = line
 	return geneList
 
-def prepQuery( inputFile , ent ):
-	searchVariants = splitByVariantType( inputFile )
-	inputVariants = {}
+def prepQuery( inputFile , ent , searchVariants ):
 	for variantClass in searchVariants:
 		for sample in searchVariants[variantClass]:
 			for genVar in searchVariants[variantClass][sample]:
@@ -194,35 +201,38 @@ def prepQuery( inputFile , ent ):
 				ent.addQuery( "human" , field="orgn" , group=thisGroup )
 				#ent.addQuery( var.variantClass , "vartype" )
 				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
-				inputVariants[thisGroup] = var
 				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
-	return { "entrezAPI" : ent , "searchVariants" : searchVariants , "inputVariants" : inputVariants }
+	return ent
 
 def main( argv ):
 	values = parseArgs( argv )
 	inputFile = values["input"]
 	outputFormat = values["output"]
+	doClinVar = values["clinvar"]
+	doExAC = values["exac"]
 
-	ent = entrezAPI()	
+	userVariants = splitByVariantType( inputFile )
+	inputVariants = userVariants["variants"]
+	variantsBySampleAndType = userVariants["variantsBySampleAndType"]
+	
+	if doClinVar:
+		ent = entrezAPI()	
+		ent = prepQuery( inputFile , ent )
+		ent.database = entrezAPI.clinvar
+		clinvarEntries = ent.doBatch( 5 )
+		clinvarVariants = clinvarEntries["variants"]
+		clinvarTraits = clinvarEntries["traits"]
+		clinvarClinical = clinvarEntries["clinical"]
 
-	ready = prepQuery( inputFile , ent )
-	ent = ready["entrezAPI"]
-	inputVariants = ready["inputVariants"]
-	searchVariants = ready["searchVariants"]
+		PVS1( variantsBySampleAndType , inputVariants , clinvarVariants , clinvarClinical )
+		PS1( inputVariants , clinvarVariants , clinvarClinical )
+		PM5( inputVariants , clinvarVariants , clinvarClinical )
 
-	ent.database = entrezAPI.clinvar
-	clinvarEntries = ent.doBatch( 5 )
-	ClinVarVariants = clinvarEntries["variants"]
-	ClinVarTraits = clinvarEntries["traits"]
-	ClinVarClinical = clinvarEntries["clinical"]
-	#print ClinVarClinical
-	#for uid in ClinVarClinical:
-		#print uid + ": " ,
-		#print ClinVarClinical[uid]["description"] + " / " ,
-		#print ClinVarClinical[uid]["review_status"]
-	PVS1( searchVariants , inputVariants , ClinVarVariants , ClinVarClinical )
-	PS1( inputVariants , ClinVarVariants , ClinVarClinical )
-	PM5( inputVariants , ClinVarVariants , ClinVarClinical )
+	if doExAC:
+		exac = exacAPI()
+		ExACEntries = exac.getAlleleFrequencies( inputVariants )
+
+	print ExACEntries
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )
