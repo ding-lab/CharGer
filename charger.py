@@ -178,6 +178,10 @@ def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVar
 def getExpression( var ): #Kuan 
 	print ""
 
+def isFrequentAllele( freq , threshold ):
+	if freq > threshold:
+		return True
+	return False
 def readGeneList( inputFile , col ):
 	geneList = {}
 	if inputFile:
@@ -229,10 +233,13 @@ def main( argv ):
 		PM5( inputVariants , clinvarVariants , clinvarClinical )
 
 	if doExAC:
-		exac = exacAPI()
-		ExACEntries = exac.getAlleleFrequencies( inputVariants )
-
-	print ExACEntries
+		exac = exacAPI(harvard=True)
+		exacEntries = exac.getAlleleFrequencies( inputVariants )
+		thresh = 0
+		for genVar in exacEntries:
+			alleleFrequency = exacEntries[genVar]
+			if isFrequentAllele( alleleFrequency , thresh ):
+				print genVar + " is NOT rare(" + str(thresh) + "): " + str(alleleFrequency)
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )
