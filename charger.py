@@ -9,7 +9,7 @@ from entrezAPI import entrezAPI
 from exacAPI import exacAPI
 from variant import variant
 from variant import MAFVariant
-import charger_lib
+import autovivification
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
@@ -70,33 +70,29 @@ def splitByVariantType( inputFile ):
 	return variants
 	#nonsense, frameshift, canonical 1 or 2 splice sites, initiation codon, single exon or multiexon deletion
 
-def PVS1( variants ):
-	return None
 def PS1( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PS1"
 	print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
-	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PS1" )
+	return peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PS1" )
 def PM5( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PM5"
 	print "- different peptide change of a pathogenic variant at the same reference peptide"
-	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM5" )
+	return peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM5" )
 def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
-	calls = {}
+	calls = autovivification.autovivification({})
 	for inVar in inputVariants:
-		genVar = inVar.genomicVar()
-		print "\tInput variant: " + genVar , 
+		uniVar = inVar.uniqueVar()
+		#print "\tInput variant: " + genVar , 
 		canBePM1 = True
 		canBePM5 = True
 		pm1Call = False
 		pm5Call = False
-		call = {}
-		if genVar in calls:
-			call = calls[genVar]
-		else:
-			call = { genVar : False }
-		if not call[genVar]: #is already true
-			print "checking"
-			call[genVar] = False
+		call = calls[uniVar]
+		#print "Call: " + genVar ,
+		#print " => " + str(call)
+		if not call: #is already true
+			#print "checking"
+			call = False
 			for uid in clinvarVariants:
 				var = clinvarVariants[uid]
 				if uid in clinvarClinical:
@@ -107,45 +103,48 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 						inVar.reference == var.reference and \
 						inVar.referencePeptide == var.referencePeptide and \
 						inVar.positionPeptide == var.positionPeptide: #same genomic position & reference
-						if inVar.mutantPeptide == var.mutantPeptide: #same amino acid change
+						if inVar.alternatePeptide == var.alternatePeptide: #same amino acid change
 							if clin["description"] == "Pathogenic":
-								print "Already called pathogenic: " ,
-								var.printVariant(' ')
+								#print "Already called pathogenic: " ,
+								#var.printVariant(' ')
 								canBePM1 = False
 								canBePM5 = False
 							else:
-								print "This is NOT called as pathogenic: " ,
-								var.printVariant(' ')
+								#print "This is NOT called as pathogenic: " ,
+								#var.printVariant(' ')
 								if mod == "PM1":
 									pm1Call = True
 						else: #different amino acid change ( CAN BE USED FOR PM5 )
 							if clin["description"] == "Pathogenic":
-								print "Alternate peptide change called pathogenic: " ,
-								var.printVariant(' ')
+								#print "Alternate peptide change called pathogenic: " ,
+								#var.printVariant(' ')
 								if mod == "PM5":
 									pm5Call = True
 							else:
-								print "Alternate peptide change NOT called as pathogenic: " ,
-								var.printVariant(' ')
+								print "" , 
+								#print "Alternate peptide change NOT called as pathogenic: " ,
+								#var.printVariant(' ')
 				else:
-					print "Not given a clinical call: " ,
-					var.printVariant(' ')
+					print "" , 
+					#print "Not given a clinical call: " ,
+					#var.printVariant(' ')
 			if mod == "PM1":
 				if canBePM1:
-					call[genVar] = pm1Call
+					call = pm1Call
 			if mod == "PM5":
 				if canBePM5:
-					call[genVar] = pm5Call
-		calls.update( call )
+					call = pm5Call
+		calls[uniVar] = call
 	return calls
 
 def PVS1( inputFile , userVariants , ClinVarVariants , ClinVarClinical, diseaseSpecific, expressionEffect ):
 	geneList = readGeneList( inputFile )
-	calls = {}
+	calls = autovivification.autovivification({})
 	if geneList: #gene, disease, mode of inheritance
-		for inVar in userVariants:
+		for var in userVariants:
 			call = False # default
-			varGene = inVar.gene	
+			uniVar = var.uniqueVar()
+			varGene = var.gene	
 			if varGene in geneList:
 				if diseaseSpecific: # variant module needs to add cancer type var.disease
 					print ""
@@ -157,7 +156,7 @@ def PVS1( inputFile , userVariants , ClinVarVariants , ClinVarClinical, diseaseS
 					print ""
 					# check the specific gene in the specific sample
 
-		calls.update( call )
+			calls[uniVar] = call
 	return calls
 
 def getExpression( inputFile, var ): # expect a sample(col)-gene(row) matrix
@@ -172,7 +171,7 @@ def isFrequentAllele( freq , threshold ):
 	return False
 
 def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of inheritance"
-	geneList = AutoVivification()
+	geneList = autovivification.autovivification({})
 	if inputFile:
 		inFile = open( inputFile , 'r' )
 		#header = inFile.readline() # for future fetch header to get other fields
@@ -194,8 +193,8 @@ def prepQuery( inputFile , ent , userVariants ):
 		ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
 		ent.addQuery( "human" , field="orgn" , group=thisGroup )
 		#ent.addQuery( var.variantClass , "vartype" )
-		#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
-		#var.referencePeptide , var.positionPeptide , var.mutantPeptide
+		#ent.addQuery( var.referencePeptide + var.positionPeptide + var.alternatePeptide , "Variant name" )
+		#var.referencePeptide , var.positionPeptide , var.alternatePeptide
 	return ent
 
 def main( argv ):
@@ -207,18 +206,27 @@ def main( argv ):
 
 	userVariants = splitByVariantType( inputFile )
 	
+	calls = autovivification.autovivification({})
 	if doClinVar:
 		ent = entrezAPI()	
-		ent = prepQuery( inputFile , ent )
+		ent = prepQuery( inputFile , ent , userVariants )
 		ent.database = entrezAPI.clinvar
 		clinvarEntries = ent.doBatch( 5 )
 		clinvarVariants = clinvarEntries["variants"]
 		clinvarTraits = clinvarEntries["traits"]
 		clinvarClinical = clinvarEntries["clinical"]
 
-		PVS1( userVariants , clinvarVariants , clinvarClinical )
-		PS1( userVariants , clinvarVariants , clinvarClinical )
-		PM5( userVariants , clinvarVariants , clinvarClinical )
+		calls["PVS1"] = PVS1( None , userVariants , clinvarVariants , clinvarClinical , None , None )
+		calls["PS1"] = PS1( userVariants , clinvarVariants , clinvarClinical )
+		calls["PM5"] = PM5( userVariants , clinvarVariants , clinvarClinical )
+	for module in calls:
+		print module
+		for uniVar in calls[module]:
+			print uniVar ,
+			if calls[module][uniVar]:
+				print "\tis " + module
+			else:
+				print "\tis NOT " + module
 
 	if doExAC:
 		exac = exacAPI(harvard=True)
