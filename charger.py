@@ -70,14 +70,71 @@ def splitByVariantType( inputFile ):
 	return variants
 	#nonsense, frameshift, canonical 1 or 2 splice sites, initiation codon, single exon or multiexon deletion
 
+### Evidence levels ### 
+def PVS1( userVariants, geneListFile , expressionFile, expThres = 0.05 ):
+	truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
+	geneList = readGeneList( inputFile ) 
+	expression = getExpression( expressionFile )
+	calls = autovivification.autovivification({})
+	
+	if geneList: #gene, disease, mode of inheritance
+		for var in userVariants:
+			call = False # default
+			varGene = var.gene
+			varDisease = var.disease	
+			varSample = var.sample
+			varType = var.variantClass
+			if varType in truncations:
+				if varGene in geneList: # check if in gene list
+					if ( "dominant" in geneList[varGene][varDisease] or "dominant" in geneList[varGene]["all"]):
+						call = True # if call is true then check expression effect
+						if expression: # consider expression data only if the user has supplied an expression matrix
+							if expression[varSample][varGene] >= expThres:
+								call = False 
+				
+			calls[var] = call
+
+	else: 
+		raise Exception("No gene list file supplied.")
+
+	return calls
+
 def PS1( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PS1"
 	print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
 	return peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PS1" )
+
+def PM2( inputVariants , clinvarVariants , clinvarClinical ):
+	calls = autovivification.autovivification({})
+	
+	for var in userVariants:
+		call = False # default
+		varMAF = var.getExACasdf # Adam will update
+		if isFrequentAllele(varMAF):
+			call = True
+		calls[var] = call
+
+	return calls
+
+def PM4( inputVariants ):
+	lenShift = ["In_Frame_Del","In_Frame_Ins","Nonstop_Mutation"]
+	calls = autovivification.autovivification({})
+	varType = var.variantClass
+	
+	for var in userVariants:
+		call = False # default
+		if varType in lenShift:
+			call = True
+		calls[var] = call
+
+	return calls
+
 def PM5( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PM5"
 	print "- different peptide change of a pathogenic variant at the same reference peptide"
 	return peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM5" )
+
+### helper function of evidence levels ###
 def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 	calls = autovivification.autovivification({})
 	for inVar in inputVariants:
@@ -137,33 +194,6 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 		calls[uniVar] = call
 	return calls
 
-def PVS1( geneListFile , userVariants , ClinVarVariants , ClinVarClinical, expressionFile, expThres = 0.05 ):
-	truncations = ["frame_shift_del","frame_shift_ins","nonsense","splice_site","splice_site_del","splice_site_ins"]
-	geneList = readGeneList( inputFile ) 
-	expression = getExpression( expressionFile )
-	calls = autovivification.autovivification({})
-	
-	if geneList: #gene, disease, mode of inheritance
-		for var in userVariants:
-			call = False # default
-			varGene = var.gene
-			varDisease = var.disease	
-			varSample = var.sample
-			varType = var.variantClass
-			if varType in truncations:
-				if varGene in geneList: # check if in gene list
-					if ( "dominant" in geneList[varGene][varDisease] or "dominant" in geneList[varGene]["all"]):
-						call = True # if call is true then check expression effect
-						if expression: # consider expression data only if the user has supplied an expression matrix
-							if expression[varSample][varGene] >= expThres:
-								call = False 
-				
-			calls[var] = call
-
-	else: 
-		raise Exception("No gene list file supplied.")
-	return calls
-
 def getExpression( inputFile ): # expect a sample(col)-gene(row) matrix
 	expression = autovivification.autovivification({})
 	
@@ -175,7 +205,7 @@ def getExpression( inputFile ): # expect a sample(col)-gene(row) matrix
 		for line in inFile:
 			fields = line.split( "\t" )
 			gene = fields[0]
-			for i in 1:len(fields):
+			for i in range(1,len(fields)):
 				expression[samples[i]][gene] = fields[i]
 
 	return expression
@@ -215,6 +245,7 @@ def prepQuery( inputFile , ent , userVariants ):
 		#var.referencePeptide , var.positionPeptide , var.alternatePeptide
 	return ent
 
+### main ### 
 def main( argv ):
 	values = parseArgs( argv )
 	inputFile = values["input"]
@@ -234,9 +265,11 @@ def main( argv ):
 		clinvarTraits = clinvarEntries["traits"]
 		clinvarClinical = clinvarEntries["clinical"]
 
-		calls["PVS1"] = PVS1( None , userVariants , clinvarVariants , clinvarClinical , None , None )
+		calls["PVS1"] = PVS1( userVariants , None, None , None )
 		calls["PS1"] = PS1( userVariants , clinvarVariants , clinvarClinical )
+		calls["PM4"] = PM4( userVariants )
 		calls["PM5"] = PM5( userVariants , clinvarVariants , clinvarClinical )
+
 	for module in calls:
 		print module
 		for uniVar in calls[module]:
