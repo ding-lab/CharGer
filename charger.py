@@ -137,32 +137,47 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 		calls[uniVar] = call
 	return calls
 
-def PVS1( inputFile , userVariants , ClinVarVariants , ClinVarClinical, diseaseSpecific, expressionEffect ):
-	geneList = readGeneList( inputFile )
+def PVS1( geneListFile , userVariants , ClinVarVariants , ClinVarClinical, expressionFile, expThres = 0.05 ):
+	truncations = ["frame_shift_del","frame_shift_ins","nonsense","splice_site","splice_site_del","splice_site_ins"]
+	geneList = readGeneList( inputFile ) 
+	expression = getExpression( expressionFile )
 	calls = autovivification.autovivification({})
+	
 	if geneList: #gene, disease, mode of inheritance
 		for var in userVariants:
 			call = False # default
-			uniVar = var.uniqueVar()
-			varGene = var.gene	
-			if varGene in geneList:
-				if diseaseSpecific: # variant module needs to add cancer type var.disease
-					print ""
-				else: # match any variant
-					print ""
+			varGene = var.gene
+			varDisease = var.disease	
+			varSample = var.sample
+			varType = var.variantClass
+			if varType in truncations:
+				if varGene in geneList: # check if in gene list
+					if ( "dominant" in geneList[varGene][varDisease] or "dominant" in geneList[varGene]["all"]):
+						call = True # if call is true then check expression effect
+						if expression: # consider expression data only if the user has supplied an expression matrix
+							if expression[varSample][varGene] >= expThres:
+								call = False 
+				
+			calls[var] = call
 
-			if call: 
-				if expressionEffect:
-					print ""
-					# check the specific gene in the specific sample
-
-			calls[uniVar] = call
+	else: 
+		raise Exception("No gene list file supplied.")
 	return calls
 
-def getExpression( inputFile, var ): # expect a sample(col)-gene(row) matrix
-	expression = None
-	if expression:
-		print ""
+def getExpression( inputFile ): # expect a sample(col)-gene(row) matrix
+	expression = autovivification.autovivification({})
+	
+	if inputFile:
+		inFile = open( inputFile , 'r' )
+		header = inFile.readline() # for future fetch header to get other field
+		samples = header.split( "\t" )
+
+		for line in inFile:
+			fields = line.split( "\t" )
+			gene = fields[0]
+			for i in 1:len(fields):
+				expression[samples[i]][gene] = fields[i]
+
 	return expression
 
 def isFrequentAllele( freq , threshold ):
@@ -170,7 +185,7 @@ def isFrequentAllele( freq , threshold ):
 		return True
 	return False
 
-def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of inheritance"
+def readGeneList( inputFile, diseaseSpecific = True ): # gene list formatted "gene", "disease", "mode of inheritance"
 	geneList = autovivification.autovivification({})
 	if inputFile:
 		inFile = open( inputFile , 'r' )
@@ -179,7 +194,10 @@ def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of
 		for line in inFile:
 			fields = line.split( "\t" )
 			gene = fields[0]
-			disease = fields[1]
+			if diseaseSpecific:
+				disease = fields[1]
+			else: #set the gene to match all disease
+				disease = "all" 
 			mode_inheritance = fields[2]
 			geneList[gene][disease] = mode_inheritance
 	return geneList
