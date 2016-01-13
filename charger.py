@@ -5,11 +5,15 @@
 
 import sys
 import getopt
+import math
 from entrezAPI import entrezAPI
 from exacAPI import exacAPI
 from variant import variant
 from variant import MAFVariant
 import autovivification
+
+class CharGerVariant(object):
+# TODO
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
@@ -103,6 +107,25 @@ def PS1( inputVariants , clinvarVariants , clinvarClinical ):
 	print "CharGer module PS1"
 	print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
 	return peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PS1" )
+
+def PS4( inputVariants ):
+	calls = autovivification.autovivification({})
+	
+	for var in userVariants:
+		call = False # default
+
+		caseVarFreq = "NEED UPDATE" # may take input from current MAF
+		controlVarFreq = "NEED UPDATE" # may take input from ExAC
+		OR = (caseVarFreq/controlVarFreq) / (1-caseVarFreq)/(1-controlVarFreq)
+		 # Adam will update
+		if OR >= 5:
+			CIlower = math.log(OR) - math.sqrt( 1/caseVarFreq + 1/controlVarFreq + 1/caseVarFreq + 1/controlVarFreq)
+			if (CIlower > 1):
+				call = True
+		
+		calls[var] = call
+
+	return calls
 
 def PM2( inputVariants , clinvarVariants , clinvarClinical ):
 	calls = autovivification.autovivification({})
