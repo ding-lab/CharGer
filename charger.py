@@ -7,7 +7,8 @@ import sys
 import getopt
 from entrezAPI import entrezAPI
 from exacAPI import exacAPI
-import variant
+from variant import variant
+from variant import MAFVariant
 import charger_lib
 
 def parseArgs( argv ):
@@ -57,43 +58,16 @@ def checkConnection():
 
 def splitByVariantType( inputFile ):
 	print "\tSplitting .maf by variant type!"
-	variants = {}
-	variantsBySampleAndType = {}
+	variants = []
 	if inputFile:
 		inFile = open( inputFile , 'r' )
 		next(inFile)
-		gv = {}
 		for line in inFile:
 			fields = line.split( "\t" )
-			var = variant.variant()
+			var = MAFVariant()
 			var.mafLine2Variant( line )
-			#var.printVariant("\t")
-			sample = fields[15]
-			variantClass = var.variantClass
-			genVar = var.genomicVar()
-			vc = {}
-			s = {}
-			gv = {}
-			if variantClass in variantsBySampleAndType:
-				#print variantClass
-				vc = variantsBySampleAndType[variantClass] #dict of variants by variantClass=>samples dict
-			if sample in vc:
-				#print sample
-				s = vc[sample] #dict of samples by sample=>genVars dict
-			if genVar in s:
-				#print genVar
-				gv = s[genVar]
-			tempgv = { "line" : line , "variant" : var }
-			gv.update( tempgv )
-			temps = { genVar : gv }
-			s.update( temps )
-			tempvc = { sample : s }
-			vc.update( tempvc )
-			#print genVar + "=>" + s[genVar]
-			tempVariants = { variantClass : tempvc }
-			variantsBySampleAndType.update( tempVariants )
-			variants[genVar] = var
-	return { "variants" : variants , "variantsBySampleAndType" : variantsBySampleAndType }
+			variants.append( var )
+	return variants
 	#nonsense, frameshift, canonical 1 or 2 splice sites, initiation codon, single exon or multiexon deletion
 
 def PVS1( variants ):
@@ -108,8 +82,7 @@ def PM5( inputVariants , clinvarVariants , clinvarClinical ):
 	peptideChange( inputVariants , clinvarVariants , clinvarClinical , "PM5" )
 def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 	calls = {}
-	for thisVar in inputVariants:
-		inVar = inputVariants[thisVar]
+	for inVar in inputVariants:
 		genVar = inVar.genomicVar()
 		print "\tInput variant: " + genVar , 
 		canBePM1 = True
@@ -166,29 +139,31 @@ def peptideChange( inputVariants , clinvarVariants , clinvarClinical , mod ):
 		calls.update( call )
 	return calls
 
-def PVS1( inputFile , searchVariants , inputVariants , ClinVarVariants , ClinVarClinical, diseaseSpecific, expressionEffect ):
+def PVS1( inputFile , userVariants , ClinVarVariants , ClinVarClinical, diseaseSpecific, expressionEffect ):
 	geneList = readGeneList( inputFile )
 	calls = {}
 	if geneList: #gene, disease, mode of inheritance
-		for thisVar in inputVariants:
+		for inVar in userVariants:
 			call = False # default
-			inVar = inputVariants[thisVar] # why not just this var
 			varGene = inVar.gene	
 			if varGene in geneList:
 				if diseaseSpecific: # variant module needs to add cancer type var.disease
-
+					print ""
 				else: # match any variant
+					print ""
 
 			if call: 
 				if expressionEffect:
+					print ""
 					# check the specific gene in the specific sample
 
 		calls.update( call )
 	return calls
 
 def getExpression( inputFile, var ): # expect a sample(col)-gene(row) matrix
-	if 
-	print ""
+	expression = None
+	if expression:
+		print ""
 	return expression
 
 def isFrequentAllele( freq , threshold ):
@@ -210,19 +185,17 @@ def readGeneList( inputFile ): # gene list formatted "gene", "disease", "mode of
 			geneList[gene][disease] = mode_inheritance
 	return geneList
 
-def prepQuery( inputFile , ent , searchVariants ):
-	for variantClass in searchVariants:
-		for sample in searchVariants[variantClass]:
-			for genVar in searchVariants[variantClass][sample]:
-				thisGroup = sample+genVar
-				var = searchVariants[variantClass][sample][genVar]["variant"]
-				ent.addQuery( var.gene , field="gene" , group=thisGroup )
-				ent.addQuery( var.chromosome , field="chr" , group=thisGroup )
-				ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
-				ent.addQuery( "human" , field="orgn" , group=thisGroup )
-				#ent.addQuery( var.variantClass , "vartype" )
-				#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
-				#var.referencePeptide , var.positionPeptide , var.mutantPeptide
+def prepQuery( inputFile , ent , userVariants ):
+	var = MAFVariant()
+	for var in userVariants:
+		thisGroup = var.sample+var.genomicVar()
+		ent.addQuery( var.gene , field="gene" , group=thisGroup )
+		ent.addQuery( var.chromosome , field="chr" , group=thisGroup )
+		ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
+		ent.addQuery( "human" , field="orgn" , group=thisGroup )
+		#ent.addQuery( var.variantClass , "vartype" )
+		#ent.addQuery( var.referencePeptide + var.positionPeptide + var.mutantPeptide , "Variant name" )
+		#var.referencePeptide , var.positionPeptide , var.mutantPeptide
 	return ent
 
 def main( argv ):
@@ -233,8 +206,6 @@ def main( argv ):
 	doExAC = values["exac"]
 
 	userVariants = splitByVariantType( inputFile )
-	inputVariants = userVariants["variants"]
-	variantsBySampleAndType = userVariants["variantsBySampleAndType"]
 	
 	if doClinVar:
 		ent = entrezAPI()	
@@ -245,13 +216,13 @@ def main( argv ):
 		clinvarTraits = clinvarEntries["traits"]
 		clinvarClinical = clinvarEntries["clinical"]
 
-		PVS1( variantsBySampleAndType , inputVariants , clinvarVariants , clinvarClinical )
-		PS1( inputVariants , clinvarVariants , clinvarClinical )
-		PM5( inputVariants , clinvarVariants , clinvarClinical )
+		PVS1( userVariants , clinvarVariants , clinvarClinical )
+		PS1( userVariants , clinvarVariants , clinvarClinical )
+		PM5( userVariants , clinvarVariants , clinvarClinical )
 
 	if doExAC:
 		exac = exacAPI(harvard=True)
-		exacEntries = exac.getAlleleFrequencies( inputVariants )
+		exacEntries = exac.getAlleleFrequencies( userVariants )
 		thresh = 0
 		for genVar in exacEntries:
 			alleleFrequency = exacEntries[genVar]
