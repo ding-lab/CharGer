@@ -1,6 +1,11 @@
 # CharGer
 Characterization of Germline variants
 ## Dependencies
+### [PyVCF 0.6.7](https://pypi.python.org/pypi/PyVCF)
+"Variant Call Format (VCF) parser for Python"
+"A VCFv4.0 and 4.1 parser for Python."
+To install:
+	pip install pyvcf
 ### Latest WebAPIs
 CharGer is still under construction, so a one step install is not yet 
 available. CharGer requires modules developed for several web API's developed 
