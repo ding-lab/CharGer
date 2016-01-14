@@ -3,8 +3,7 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
 
-import sys
-import getopt
+import math
 from entrezAPI import entrezAPI
 from exacAPI import exacAPI
 from variant import variant
@@ -84,14 +83,25 @@ class charger(object):
 									var.PVS1 = False 
 		else: 
 			print "CharGer Error: Cannot evaluate PVS1: No gene list supplied."
-			#raise Exception("No gene list file supplied.")
+
 ##### Strong #####
-	def PS1( clinvarVariants , clinvarClinical ):
+	def PS1( ):
 		print "CharGer module PS1"
 		print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
-		peptideChange( clinvarVariants , clinvarClinical , "PS1" )
+		peptideChange( "PS1" )
+	def PS4( ):
+		for var in self.userVariants:
+			caseVarFreq = "NEED UPDATE" # may take input from current MAF
+			controlVarFreq = "NEED UPDATE" # may take input from ExAC
+			OR = (caseVarFreq/controlVarFreq) / (1-caseVarFreq)/(1-controlVarFreq)
+			# Adam will update
+			if OR >= 5:
+				CIlower = math.log(OR) - math.sqrt( 1/caseVarFreq + 1/controlVarFreq + 1/caseVarFreq + 1/controlVarFreq)
+				if (CIlower > 1):
+					var.PS4 = True
+
 ##### Moderate #####
-	def PM2( clinvarVariants , clinvarClinical ):
+	def PM2( ):
 		for var in self.userVariants:
 			#varMAF = var.getExACasdf # Adam will update use alleleFrequency method
 			if isFrequentAllele(var):
@@ -102,13 +112,13 @@ class charger(object):
 			varClass = var.variantClass
 			if varClass in lenShift:
 				var.PM4 = True
-	def PM5( clinvarVariants , clinvarClinical ):
+	def PM5( ):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
-		peptideChange( clinvarVariants , clinvarClinical , "PM5" )
+		peptideChange( "PM5" )
 
 ### helper functions of evidence levels ###
-	def peptideChange( clinvarVariants , clinvarClinical , mod ):
+	def peptideChange( mod ):
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
 			#print "\tInput variant: " + genVar , 
@@ -122,10 +132,10 @@ class charger(object):
 			if not call: #is already true
 				#print "checking"
 				call = False
-				for uid in clinvarVariants:
-					var = clinvarVariants[uid]
-					if uid in clinvarClinical:
-						clin = clinvarClinical[uid]
+				for uid in self.clinvarVariants:
+					var = self.clinvarVariants[uid]
+					if uid in self.clinvarClinical:
+						clin = self.clinvarClinical[uid]
 						if inVar.chromosome == var.chromosome and \
 							inVar.start == var.start and \
 							inVar.stop == var.stop and \
@@ -184,15 +194,15 @@ class charger(object):
 			#ent.addQuery( var.referencePeptide + var.positionPeptide + var.alternatePeptide , "Variant name" )
 			#var.referencePeptide , var.positionPeptide , var.alternatePeptide
 		return ent
-
-		cg = charger()
-		cg.getInput( inputFile , geneListFile )
-		cg.getWebData( )
-		cg.PVS1( )
-		cg.PS1( )
-		cg.PM4( )
-		cg.PM5( )
-
+''' Example usage:
+		CharGer = charger()
+		CharGer.getInput( maf=mafFile , expression=expressionFile , geneList=geneListFile )
+		CharGer.getWebData( clinvar=doClinVar , exac=doExAC )
+		CharGer.PVS1( )
+		CharGer.PS1( )
+		CharGer.PM4( )
+		CharGer.PM5( )
+'''
 		userVariants = splitByVariantType( inputFile )
 		
 		calls = autovivification.autovivification({})
