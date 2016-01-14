@@ -13,18 +13,33 @@ from autovivification import autovivification
 class charger(object):
 	def __init__( self , **kwargs ):
 		self.userVariants = kwargs.get( 'variants' , [] )
-		self.userExpression = kwargs.get( 'expressions' , [] )
+		self.userExpression = kwargs.get( 'expressions' , autovivification({}) )
 		self.userGeneList = kwargs.get( 'geneList' , autovivification({}) )
 		self.clinvarVariants = kwargs.get( 'clinvarVariants' , autovivification({}) )
+		self.userDeNovo = kwargs.get( 'deNovo' , {} )
+		self.userCoSegregate = kwargs.get( 'coSegregate' , {} )
 
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
 		mafFile = kwargs.get( 'maf' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
+		deNovoFile = kwargs.get( 'deNovo' , "" )
+		assumedDeNovoFile = kwargs.get( 'assumedDeNovo' , "" )
+		coSegregateFile = kwargs.get( 'coSegregate' , "" )
 		self.readMAF( mafFile )
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile )
+		if deNovoFile:
+			deNovoVar = {}
+			self.readOtherMAF( deNovoFile, varDict = deNovoVar )
+		if coSegregateFile:
+			coSegVar = {}
+			self.readOtherMAF( coSegregateFile, varDict = coSegVar )
+		if assumedDeNovoFile:
+			assumedDeNovoVar = {}
+			self.readOtherMAF( assumedDeNovoFile, varDict = assumedDeNovoVar )
+
 	def readMAF( inputFile ):
 		print "\tSplitting .maf by variant type!"
 		if inputFile:
@@ -35,6 +50,7 @@ class charger(object):
 				var = MAFVariant()
 				var.mafLine2Variant( line )
 				self.userVariants.append( var )
+
 	def readExpression( inputFile ): # expect a sample(col)-gene(row) matrix
 		if inputFile:
 			inFile = open( inputFile , 'r' )
@@ -45,6 +61,7 @@ class charger(object):
 				gene = fields[0]
 				for i in range(1,len(fields)):
 					self.userExpression[samples[i]][gene] = fields[i]
+
 	def readGeneList( inputFile, diseaseSpecific = True ): # gene list formatted "gene", "disease", "mode of inheritance"
 		if inputFile:
 			inFile = open( inputFile , 'r' )
@@ -57,6 +74,16 @@ class charger(object):
 					disease = "all" 
 				mode_inheritance = fields[2]
 				self.userGeneList[gene][disease] = mode_inheritance
+
+	def readOtherMAF( inputFile, varDict ):
+		if inputFile:
+			inFile = open( inputFile , 'r' )
+			next(inFile)
+			for line in inFile:
+				fields = line.split( "\t" )
+				var = MAFVariant()
+				var.mafLine2Variant( line )
+				varDict[var.uniqueVar()] = 1
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
@@ -89,16 +116,25 @@ class charger(object):
 		print "CharGer module PS1"
 		print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
 		peptideChange( "PS1" )
-	def PS4( ):
+	def PS2():
+		print "CharGer module PS2"
+		print "- de novo with maternity and paternity confirmation and no family history"
+		for var in self.userVariants:
+			if var.uniqueVar() in deNovoVar:
+				var.PS2 = True
+	def PS4( ): # not relevant in rare variants, such big effect size common variants are so rare may as well just take a input variant list
+		print "CharGer module PS4"
+		print "- variant prevalence in cases significantly greater than controls"
 		for var in self.userVariants:
 			caseVarFreq = "NEED UPDATE" # may take input from current MAF
 			controlVarFreq = "NEED UPDATE" # may take input from ExAC
-			OR = (caseVarFreq/controlVarFreq) / (1-caseVarFreq)/(1-controlVarFreq)
-			# Adam will update
-			if OR >= 5:
-				CIlower = math.log(OR) - math.sqrt( 1/caseVarFreq + 1/controlVarFreq + 1/caseVarFreq + 1/controlVarFreq)
-				if (CIlower > 1):
-					var.PS4 = True
+			if ( caseVarFreq != 0 and controlVarFreq != 0):
+				OR = (caseVarFreq/controlVarFreq) / ( (1-caseVarFreq)/(1-controlVarFreq) )
+				# Adam will update
+				if OR >= 5:
+					CIlower = math.log(OR) - math.sqrt( 1/caseVarFreq + 1/controlVarFreq + 1/caseVarFreq + 1/controlVarFreq)
+					if (CIlower > 1):
+						var.PS4 = True
 
 ##### Moderate #####
 	def PM2( ):
@@ -116,6 +152,21 @@ class charger(object):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
 		peptideChange( "PM5" )
+
+	def PM6():
+		print "CharGer module PM6"
+		print "- assumed de novo without maternity and paternity confirmation"
+		for var in self.userVariants:
+			if var.uniqueVar() in assumedDeNovoVar:
+				var.PM6 = True
+
+##### Supporting #####
+	def PP1():
+		print "CharGer module PP1"
+		print "- cosegregation with disease in family members in a known disease gene"
+		for var in self.userVariants:
+			if var.uniqueVar() in coSegVar:
+				var.PP1 = True
 
 ### helper functions of evidence levels ###
 	def peptideChange( mod ):
@@ -201,6 +252,7 @@ class charger(object):
 		CharGer.PM4( )
 		CharGer.PM5( )
 '''
+	def main( argv ):
 		userVariants = splitByVariantType( inputFile )
 		
 		calls = autovivification.autovivification({})
