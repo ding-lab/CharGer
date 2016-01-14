@@ -1,0 +1,23 @@
+#!/usr/bin/python
+# chargerVariant - CharGer annotated variants
+# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
+# version: v0.0 - 2016*01*13
+
+from variant import MAFVariant
+
+class chargerVariant(MAFVariant):
+	def __init__( self , **kwargs ):
+		super(chargerVariant,self).__init__(**kwargs)
+		self.PSV1 = kwargs.get( 'PVS1' , False )
+		self.PS1 = kwargs.get( 'PS1' , False )
+		self.PS2 = kwargs.get( 'PS2' , False )
+		self.PS3 = kwargs.get( 'PS3' , False )
+		self.PM1 = kwargs.get( 'PM1' , False )
+		self.PM1 = kwargs.get( 'PM2' , False )
+		self.PM1 = kwargs.get( 'PM3' , False )
+		self.PM1 = kwargs.get( 'PM4' , False )
+		self.PP1 = kwargs.get( 'PP1' , False )
+		self.PP2 = kwargs.get( 'PP2' , False )
+		self.PP3 = kwargs.get( 'PP3' , False )
+		self.PP4 = kwargs.get( 'PP4' , False )
+		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
