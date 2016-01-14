@@ -21,3 +21,6 @@ class chargerVariant(MAFVariant):
 		self.PP3 = kwargs.get( 'PP3' , False )
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
+		self.disease = kwargs.get( 'disease' , None )
+		self.clinical = kwargs.get( 'clinical' , None )
+		self.trait = kwargs.get( 'trait' , None )

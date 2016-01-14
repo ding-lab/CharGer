@@ -182,18 +182,16 @@ class charger(object):
 			return True
 		return False
 
-	def prepQuery( ent ):
-		var = MAFVariant()
-		for var in self.userVariants:
-			thisGroup = var.uniqueVar()
-			ent.addQuery( var.gene , field="gene" , group=thisGroup )
-			ent.addQuery( var.chromosome , field="chr" , group=thisGroup )
-			ent.addQuery( var.start + ":" + var.stop , field="chrpos37" , group=thisGroup )
-			ent.addQuery( "human" , field="orgn" , group=thisGroup )
-			#ent.addQuery( var.variantClass , "vartype" )
-			#ent.addQuery( var.referencePeptide + var.positionPeptide + var.alternatePeptide , "Variant name" )
-			#var.referencePeptide , var.positionPeptide , var.alternatePeptide
-		return ent
+	def getClinVar( self , **kwargs ):
+		doClinVar = kwargs.get( 'clinvar' , True )
+		if doClinVar:
+			ent = entrezAPI()
+			ent.prepQuery( self.userVariants )
+			ent.database = entrezAPI.clinvar
+			clinvarEntries = ent.doBatch( 5 )
+			self.clinvarVariants = clinvarEntries["variants"]
+			self.clinvarTraits = clinvarEntries["traits"]
+			self.clinvarClinical = clinvarEntries["clinical"]
 ''' Example usage:
 		CharGer = charger()
 		CharGer.getInput( maf=mafFile , expression=expressionFile , geneList=geneListFile )
