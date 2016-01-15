@@ -76,6 +76,7 @@ class charger(object):
 		if doExAC:
 			self.getExAC( **kwargs )
 	def getClinVar( self , **kwargs ):
+		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
 		if doClinVar:
 			ent = entrezAPI()
@@ -83,6 +84,7 @@ class charger(object):
 			ent.database = entrezAPI.clinvar
 			self.clinvarVariants = ent.doBatch( 5 )
 	def getExAC( self , **kwargs ):
+		print "charger - getExac"
 		doExAC = kwargs.get( 'exac' , True )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
