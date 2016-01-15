@@ -6,6 +6,11 @@
 from variant import clinvarVariant
 
 class chargerVariant(clinvarVariant):
+	pathogenic = "Pathogenic"
+	likelyPathogenic = "Likely Pathogenic"
+	likelyBenign = "Likely Benign"
+	benign = "Benign"
+	uncertain = "Uncertain Significance"
 	def __init__( self , **kwargs ):
 		super(chargerVariant,self).__init__(**kwargs)
 		self.PVS1 = kwargs.get( 'PVS1' , False )
@@ -25,6 +30,8 @@ class chargerVariant(clinvarVariant):
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.PP5 = kwargs.get( 'PP5' , False )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
+		self.pathogenicity = kwargs.get( 'pathogenicity' , chargerVariant.uncertain )
+		self.clinical = kwargs.get( 'clinical' , { "description" : chargerVariant.uncertain , "review_status" : "" } )
 	def check( self , mod ):
 		checks = self.checks()
 		return checks[mod]
@@ -109,13 +116,16 @@ class chargerVariant(clinvarVariant):
 			numModerate >= 2 or \
 			(numModerate+numSupport) >= 2 or \
 			numSupport >= 2:
+				self.pathogenicity = chargerVariant.pathogenic
 				return True
 		elif numStrong >= 2:
+			self.pathogenicity = chargerVariant.pathogenic
 			return True
 		elif numStrong >= 1:
 			if numModerate >= 3 or \
 			(numModerate == 2 and numSupport >= 2) or \
 			(numModerate == 1 and numSupport >= 4):
+				self.pathogenicity = chargerVariant.pathogenic
 				return True
 	def isLikelyPathogenic( self ):
 		NotImplemented
@@ -125,3 +135,11 @@ class chargerVariant(clinvarVariant):
 		NotImplemented
 	def isUncertainSignificance( self ):
 		NotImplemented
+	def setAsPathogenic( self ):
+		self.pathogenicity = chargerVariant.pathogenic
+	def setAsLikelyPathogenic( self ):
+		self.pathogenicity = chargerVariant.likelyPathogenic
+	def setAsLikelyBenign( self ):
+		self.pathogenicity = chargerVariant.likelyBenign
+	def setAsBenign( self ):
+		self.pathogenicity = chargerVariant.benign

@@ -6,6 +6,7 @@
 import math
 from entrezAPI import entrezAPI
 from exacAPI import exacAPI
+from variant import clinvarVariant
 from chargerVariant import chargerVariant
 from autovivification import autovivification
 
@@ -107,6 +108,7 @@ class charger(object):
 			ent.prepQuery( self.userVariants )
 			ent.database = entrezAPI.clinvar
 			self.clinvarVariants = ent.doBatch( 5 )
+			self.matchClinVar()
 	def getExAC( self , **kwargs ):
 		print "charger - getExac"
 		doExAC = kwargs.get( 'exac' , True )
@@ -118,6 +120,14 @@ class charger(object):
 			for var in self.userVariants:
 				if var.isFrequentAllele( threshold ):
 					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
+
+#### Helper methods for data retrieval ####
+	def matchClinVar( self ):
+		for var in self.userVariants:
+			for uid in self.clinvarVariants:
+				cvar = self.clinvarVariants[uid]
+				if var.sameGenomicVariant( cvar ):
+					var.clinical = cvar.clinical
 
 ### Evidence levels ### 
 ##### Very Strong #####
@@ -160,8 +170,9 @@ class charger(object):
 		print "CharGer module PS4"
 		print "- variant prevalence in cases significantly greater than controls"
 		for var in self.userVariants:
-			caseVarFreq = 10#"NEED UPDATE" # may take input from current MAF
-			controlVarFreq = 10#"NEED UPDATE" # may take input from ExAC
+			return
+			caseVarFreq = "NEED UPDATE" # may take input from current MAF
+			controlVarFreq = "NEED UPDATE" # may take input from ExAC
 			if ( caseVarFreq != 0 and controlVarFreq != 0):
 				OR = (caseVarFreq/controlVarFreq) / ( (1-caseVarFreq)/(1-controlVarFreq) )
 				# Adam will update
@@ -195,7 +206,11 @@ class charger(object):
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
 		self.peptideChange( "PM5" )
 	def PM6( self ):
-		NotImplemented
+		print "CharGer module PM6"
+		print "- assumed de novo without maternity and paternity confirmation"
+		for var in self.userVariants:
+			if var.uniqueVar() in self.userAssumedDeNovoVariants:
+				var.PM6 = True
 
 ##### Supporing #####
 	def PP1( self ):
@@ -213,13 +228,6 @@ class charger(object):
 	def PP5( self ):
 		NotImplemented
 
-	def PM6( self ):
-		print "CharGer module PM6"
-		print "- assumed de novo without maternity and paternity confirmation"
-		for var in self.userVariants:
-			if var.uniqueVar() in self.userAssumedDeNovoVariants:
-				var.PM6 = True
-
 ### helper functions of evidence levels ###
 	def peptideChange( self , mod ):
 		for var in self.userVariants:
@@ -235,19 +243,13 @@ class charger(object):
 			if not call: #is already true
 				#print "checking"
 				call = False
-				for genVar in self.clinvarVariants:
-					cvar = self.clinvarVariants[genVar]
+				for uid in self.clinvarVariants:
+					cvar = self.clinvarVariants[uid]
 					clin = cvar.clinical
-					if cvar.chromosome == var.chromosome and \
-						cvar.start == var.start and \
-						cvar.stop == var.stop and \
-						cvar.reference == var.reference and \
-						cvar.referencePeptide == var.referencePeptide and \
-						cvar.positionPeptide == var.positionPeptide: #same genomic position & reference
+					if var.samePeptideReference( cvar ):
 						if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
-							if clin["description"] == "Pathogenic":
+							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Already called pathogenic: " ,
-								#var.printVariant(' ')
 								canBePS1 = False
 								canBePM5 = False
 							else:
@@ -256,7 +258,7 @@ class charger(object):
 								if mod == "PM1":
 									pm1Call = True
 						else: #different amino acid change ( CAN BE USED FOR PM5 )
-							if clin["description"] == "Pathogenic":
+							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Alternate peptide change called pathogenic: " ,
 								#var.printVariant(' ')
 								if mod == "PM5":
@@ -297,3 +299,6 @@ class charger(object):
 			var.isLikelyBenign( )
 			var.isBenign( )
 			var.isUncertainSignificance( )
+	def printClassifications( self ):
+		for var in self.userVariants:
+			print '\t'.join( [ var.uniqueVar() , var.pathogenicity , var.clinical["description"] ] )
