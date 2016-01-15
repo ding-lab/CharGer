@@ -3,12 +3,12 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
 
-from variant import MAFVariant
+from variant import clinvarVariant
 
-class chargerVariant(MAFVariant):
+class chargerVariant(clinvarVariant):
 	def __init__( self , **kwargs ):
 		super(chargerVariant,self).__init__(**kwargs)
-		self.PSV1 = kwargs.get( 'PVS1' , False )
+		self.PVS1 = kwargs.get( 'PVS1' , False )
 		self.PS1 = kwargs.get( 'PS1' , False )
 		self.PS2 = kwargs.get( 'PS2' , False )
 		self.PS3 = kwargs.get( 'PS3' , False )
@@ -25,6 +25,103 @@ class chargerVariant(MAFVariant):
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.PP5 = kwargs.get( 'PP5' , False )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
-		self.disease = kwargs.get( 'disease' , None )
-		self.clinical = kwargs.get( 'clinical' , None )
-		self.trait = kwargs.get( 'trait' , None )
+	def check( self , mod ):
+		checks = self.checks()
+		return checks[mod]
+	def checks( self ):
+		checks = {}
+		mods = self.modules()
+		checks[mods[0]] = self.PVS1
+		checks[mods[1]] = self.PS1
+		checks[mods[2]] = self.PS2
+		checks[mods[3]] = self.PS3
+		checks[mods[4]] = self.PS4
+		checks[mods[5]] = self.PM1
+		checks[mods[6]] = self.PM2
+		checks[mods[7]] = self.PM3
+		checks[mods[8]] = self.PM4
+		checks[mods[9]] = self.PM5
+		checks[mods[10]] = self.PM6
+		checks[mods[11]] = self.PP1
+		checks[mods[12]] = self.PP2
+		checks[mods[13]] = self.PP3
+		checks[mods[14]] = self.PP4
+		checks[mods[15]] = self.PP5
+		return checks
+	def modules( self ):
+		return ['PVS1' , \
+		'PS1' , 'PS2' , 'PS3' , 'PS4' , \
+		'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' , \
+		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' ]
+	def hasAlleleFrequency( self ):
+		if var.alleleFrequency == None:
+			return False
+		return True
+	def isFrequentAllele( self , threshold ):
+		if self.alleleFrequency > threshold:
+			return True
+		return False
+	def countStrong( self ):
+		count = 0
+		if self.PS1:
+			count += 1
+		if self.PS2:
+			count += 1
+		if self.PS3:
+			count += 1
+		if self.PS4:
+			count += 1
+		return count
+	def countModerate( self ):
+		count = 0
+		if self.PM1:
+			count += 1
+		if self.PM2:
+			count += 1
+		if self.PM3:
+			count += 1
+		if self.PM4:
+			count += 1
+		if self.PM5:
+			count += 1
+		if self.PM6:
+			count += 1
+		return count
+	def countSupport( self ):
+		count = 0
+		if self.PP1:
+			count += 1
+		if self.PP2:
+			count += 1
+		if self.PP3:
+			count += 1
+		if self.PP4:
+			count += 1
+		if self.PP5:
+			count += 1
+		return count
+	def isPathogenic( self ):
+		numStrong = self.countStrong()
+		numModerate = self.countModerate()
+		numSupport = self.countSupport()
+		if self.PVS1:
+			if numStrong >= 1 or \
+			numModerate >= 2 or \
+			(numModerate+numSupport) >= 2 or \
+			numSupport >= 2:
+				return True
+		elif numStrong >= 2:
+			return True
+		elif numStrong >= 1:
+			if numModerate >= 3 or \
+			(numModerate == 2 and numSupport >= 2) or \
+			(numModerate == 1 and numSupport >= 4):
+				return True
+	def isLikelyPathogenic( self ):
+		NotImplemented
+	def isLikelyBenign( self ):
+		NotImplemented
+	def isBenign( self ):
+		NotImplemented
+	def isUncertainSignificance( self ):
+		NotImplemented
