@@ -116,25 +116,48 @@ class chargerVariant(clinvarVariant):
 			numModerate >= 2 or \
 			(numModerate+numSupport) >= 2 or \
 			numSupport >= 2:
-				self.pathogenicity = chargerVariant.pathogenic
+				self.setAsPathogenic()
 				return True
 		elif numStrong >= 2:
-			self.pathogenicity = chargerVariant.pathogenic
+			self.setAsPathogenic()
 			return True
 		elif numStrong >= 1:
 			if numModerate >= 3 or \
 			(numModerate == 2 and numSupport >= 2) or \
 			(numModerate == 1 and numSupport >= 4):
-				self.pathogenicity = chargerVariant.pathogenic
+				self.setAsPathogenic()
 				return True
 	def isLikelyPathogenic( self ):
-		NotImplemented
+		numStrong = self.countStrong()
+		numModerate = self.countModerate()
+		numSupport = self.countSupport()
+		if numStrong and numModerate == 1:
+			self.setAsLikelyPathogenic()
+			return True
+		if numStrong == 1 and ( numModerate == 1 or numModerate == 2 ):
+			self.setAsLikelyPathogenic()
+			return True
+		if numStrong == 1 and numSupport >= 2:
+			self.setAsLikelyPathogenic()
+			return True
+		if numModerate >= 3:
+			self.setAsLikelyPathogenic()
+			return True
+		if numModerate == 2 and numSupport >= 2:
+			self.setAsLikelyPathogenic()
+			return True
+		if numModerate == 1 and numSupport >= 4:
+			self.setAsLikelyPathogenic()
+			return True
 	def isLikelyBenign( self ):
 		NotImplemented
 	def isBenign( self ):
 		NotImplemented
 	def isUncertainSignificance( self ):
-		NotImplemented
+		if ( self.isPathogenic() or self.isLikelyPathogenic() )and \
+		( self.isBenign() or self.isLikelyBenign() ):
+			self.setAsUncertainSignificance()
+			return True
 	def setAsPathogenic( self ):
 		self.pathogenicity = chargerVariant.pathogenic
 	def setAsLikelyPathogenic( self ):
