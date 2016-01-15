@@ -93,6 +93,9 @@ class charger(object):
 ### Evidence levels ### 
 ##### Very Strong #####
 	def PVS1( expressionThreshold = 0.05 ):
+		print "CharGer module PVS1"
+		print "- truncations in genes where LOF is a known mechanism of the disease"
+		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
 		truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
 		if geneList: #gene, disease, mode of inheritance
 			for var in self.userVariants:
@@ -116,12 +119,14 @@ class charger(object):
 		print "CharGer module PS1"
 		print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
 		peptideChange( "PS1" )
+
 	def PS2():
 		print "CharGer module PS2"
 		print "- de novo with maternity and paternity confirmation and no family history"
 		for var in self.userVariants:
 			if var.uniqueVar() in deNovoVar:
 				var.PS2 = True
+
 	def PS4( ): # not relevant in rare variants, such big effect size common variants are so rare may as well just take a input variant list
 		print "CharGer module PS4"
 		print "- variant prevalence in cases significantly greater than controls"
@@ -138,16 +143,22 @@ class charger(object):
 
 ##### Moderate #####
 	def PM2( ):
+		print "CharGer module PM2"
+		print "- absent or extremely low frequency in controls"
 		for var in self.userVariants:
 			#varMAF = var.getExACasdf # Adam will update use alleleFrequency method
 			if isFrequentAllele(var):
 				var.PM2 = True
+
 	def PM4( ):
+		print "CharGer module PM4"
+		print "- protein length changes due to inframe indels or nonstop variant"
 		lenShift = ["In_Frame_Del","In_Frame_Ins","Nonstop_Mutation"]
 		for var in self.userVariants:
 			varClass = var.variantClass
 			if varClass in lenShift:
 				var.PM4 = True
+
 	def PM5( ):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
@@ -228,6 +239,7 @@ class charger(object):
 				var.PS1 = call
 			if mod == "PM5":
 				var.PM5 = call
+				
 	def isFrequentAllele( freq , threshold ):
 		if freq > threshold:
 			return True
