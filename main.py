@@ -92,7 +92,7 @@ def main( argv ):
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile )
 
-	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC )
+	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC , batchSize=200 )
 
 	CharGer.PVS1( )
 	CharGer.PS1( )

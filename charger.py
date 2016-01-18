@@ -4,9 +4,9 @@
 # version: v0.0 - 2015*12
 
 import math
-from entrezAPI import entrezAPI
-from exacAPI import exacAPI
-from variant import clinvarVariant
+from WebAPI.Entrez.entrezAPI import entrezAPI
+from WebAPI.ExAC.exacAPI import exacAPI
+from WebAPI.Variant.clinvarVariant import clinvarVariant
 from chargerVariant import chargerVariant
 from autovivification import autovivification
 
@@ -103,11 +103,12 @@ class charger(object):
 	def getClinVar( self , **kwargs ):
 		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
+		batchSize = kwargs.get( 'batchSize' , 10 )
 		if doClinVar:
 			ent = entrezAPI()
 			ent.prepQuery( self.userVariants )
 			ent.database = entrezAPI.clinvar
-			self.clinvarVariants = ent.doBatch( 5 )
+			self.clinvarVariants = ent.doBatch( 10 )#batchSize=batchSize )
 			self.matchClinVar()
 	def getExAC( self , **kwargs ):
 		print "charger - getExac"

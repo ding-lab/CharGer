@@ -3,7 +3,7 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
 
-from variant import clinvarVariant
+from WebAPI.Variant.clinvarVariant import clinvarVariant
 
 class chargerVariant(clinvarVariant):
 	pathogenic = "Pathogenic"
