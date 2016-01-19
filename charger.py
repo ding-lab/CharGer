@@ -61,7 +61,7 @@ class charger(object):
 				gene = fields[0]
 				for i in range(1,len(fields)):
 					self.userExpression[samples[i]][gene] = fields[i]
-	def readGeneList( self , inputFile , diseaseSpecific = True ): # gene list formatted "gene", "disease", "mode of inheritance"
+	def readGeneList( self , inputFile , diseaseSpecific = False ): # gene list formatted "gene", "disease", "mode of inheritance"
 		if inputFile:
 			inFile = open( inputFile , 'r' )
 			for line in inFile:
@@ -144,7 +144,7 @@ class charger(object):
 				varSample = var.sample
 				varClass = var.variantClass
 				if varClass in truncations:
-					if varGene in geneList: # check if in gene list
+					if varGene in self.userGeneList: # check if in gene list
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
 							"dominant" in self.userGeneList[varGene]["all"]):
 							var.PVS1 = True # if call is true then check expression effect
