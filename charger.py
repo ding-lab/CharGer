@@ -301,5 +301,6 @@ class charger(object):
 			var.isBenign( )
 			var.isUncertainSignificance( )
 	def printClassifications( self ):
-		for var in self.userVariants:
-			print '\t'.join( [ var.uniqueVar() , var.pathogenicity , var.clinical["description"] ] )
+		print '\t'.join( ["Variant" , "PositiveEvidence" , "CharGerClassification" , "ClinVarAnnoation"] )
+		for var in self.userVariants: ### add printing of all evidence level for each variant
+			print '\t'.join( [ var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
