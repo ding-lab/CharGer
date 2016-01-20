@@ -43,17 +43,20 @@ class charger(object):
 		self.readGeneList( geneListFile )
 	def readMAF( self , inputFile ):
 		print "\tSplitting .maf by variant type!"
-		if inputFile:
-			inFile = open( inputFile , 'r' )
+		inFile = self.safeOpen( inputFile , 'r' )
+		try:
 			next(inFile)
 			for line in inFile:
 				fields = line.split( "\t" )
 				var = chargerVariant()
 				var.mafLine2Variant( line )
 				self.userVariants.append( var )
+		except:
+			raise Exception( "CharGer Error: bad .maf file" )
+			
 	def readExpression( self , inputFile ): # expect a sample(col)-gene(row) matrix
-		if inputFile:
-			inFile = open( inputFile , 'r' )
+		try:
+			inFile = self.safeOpen( inputFile , 'r' , warning=True )
 			header = inFile.readline() # for future fetch header to get other field
 			samples = header.split( "\t" )
 			for line in inFile:
@@ -61,9 +64,11 @@ class charger(object):
 				gene = fields[0]
 				for i in range(1,len(fields)):
 					self.userExpression[samples[i]][gene] = fields[i]
+		except:
+			print "CharGer Error: bad expression file"
 	def readGeneList( self , inputFile , diseaseSpecific = True ): # gene list formatted "gene", "disease", "mode of inheritance"
-		if inputFile:
-			inFile = open( inputFile , 'r' )
+		try:
+			inFile = self.safeOpen( inputFile , 'r' , warning=True )
 			for line in inFile:
 				fields = line.split( "\t" )
 				gene = fields[0]
@@ -73,24 +78,25 @@ class charger(object):
 					disease = "all" 
 				mode_inheritance = fields[2]
 				self.userGeneList[gene][disease] = mode_inheritance
+		except:
+			print "CharGer Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
-		if inputFile:
-			self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
+		self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
 	def readCoSegregate( self , inputFile ):
-		if inputFile:
-			self.readOtherMAF( inputFile , varDict = self.coSegregateVariants )
+		self.readOtherMAF( inputFile , varDict = self.coSegregateVariants )
 	def readAssumedDeNovo( self , inputFile ):
-		if inputFile:
-			self.readOtherMAF( inputFile , varDict = self.assumedDeNovoVariants )
+		self.readOtherMAF( inputFile , varDict = self.assumedDeNovoVariants )
 	def readOtherMAF( self , inputFile, varDict ):
-		if inputFile:
-			inFile = open( inputFile , 'r' )
+		try:
+			inFile = self.safeOpen( inputFile , 'r' , warning=True )
 			next(inFile)
 			for line in inFile:
 				fields = line.split( "\t" )
 				var = MAFVariant()
 				var.mafLine2Variant( line )
 				varDict[var.uniqueVar()] = 1
+		except:
+			print "CharGer Warning: bad .maf for " + inputFile
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
@@ -121,6 +127,12 @@ class charger(object):
 			for var in self.userVariants:
 				if var.isFrequentAllele( threshold ):
 					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
+	def getVEP( self , **kwargs ):
+		print "charger - getVEP"
+		doVEP = kwargs.get( 'vep' , True )
+		if doVEP:
+			vep = ensemblAPI( )
+			vep.annotateVariants( self.userVariants )
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self ):
@@ -166,10 +178,10 @@ class charger(object):
 			if var.uniqueVar() in self.userDeNovoVariants:
 				var.PS2 = True
 	def PS3( self ):
-		NotImplemented
+		print "CharGer module PS3: not yet implemented"
 	def PS4( self ): # not relevant in rare variants, such big effect size common variants are so rare may as well just take a input variant list
-		print "CharGer module PS4"
-		print "- variant prevalence in cases significantly greater than controls"
+		print "CharGer module PS4: not yet implemented"
+		#print "- variant prevalence in cases significantly greater than controls"
 		for var in self.userVariants:
 			return
 			caseVarFreq = "NEED UPDATE" # may take input from current MAF
@@ -184,7 +196,8 @@ class charger(object):
 
 ##### Moderate #####
 	def PM1( self ):
-		NotImplemented
+		print "CharGer module PM1: not yet implemented"
+		#print "- "
 	def PM2( self , threshold ):
 		print "CharGer module PM2"
 		print "- absent or extremely low frequency in controls"
@@ -193,7 +206,8 @@ class charger(object):
 			if var.isFrequentAllele( threshold ):
 				var.PM2 = True
 	def PM3( self ):
-		NotImplemented
+		print "CharGer module PM3: not yet implemented"
+		#print "- "
 	def PM4( self ):
 		print "CharGer module PM4"
 		print "- protein length changes due to inframe indels or nonstop variant"
@@ -221,13 +235,17 @@ class charger(object):
 			if var.uniqueVar() in self.userCoSegregateVariants:
 				var.PP1 = True
 	def PP2( self ):
-		NotImplemented
+		print "CharGer module PP2: not yet implemented"
+		#print "- "
 	def PP3( self ):
-		NotImplemented
+		print "CharGer module PP3: not yet implemented"
+		#print "- "
 	def PP4( self ):
-		NotImplemented
+		print "CharGer module PP4: not yet implemented"
+		#print "- "
 	def PP5( self ):
-		NotImplemented
+		print "CharGer module PP5: not yet implemented"
+		#print "- "
 
 ### helper functions of evidence levels ###
 	def peptideChange( self , mod ):
@@ -303,3 +321,14 @@ class charger(object):
 	def printClassifications( self ):
 		for var in self.userVariants:
 			print '\t'.join( [ var.uniqueVar() , var.pathogenicity , var.clinical["description"] ] )
+
+	@staticmethod
+	def safeOpen( inputFile , rw , **kwargs ):
+		errwar = kwargs.get( 'warning' , False )
+		try:
+			return open( inputFile , rw )
+		except:
+			if errwar:
+				return "CharGer Warning: could not open " + inputFile
+			else:
+				return "CharGer Error: could not open " + inputFile
