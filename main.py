@@ -87,7 +87,7 @@ def main( argv ):
 	CharGer = charger.charger()
 	CharGer.getInputData( maf=mafFile , \
 	geneList=geneListFile , \
-	expression=geneListFile , \
+	expression=expressionFile , \
 	deNovo=deNovoFile , \
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile )
