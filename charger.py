@@ -150,13 +150,16 @@ class charger(object):
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
 		truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
 		if self.userGeneList: #gene, disease, mode of inheritance
+			for key, value in self.userGeneList.iteritems():
+				print key, value
+
 			for var in self.userVariants:
 				varGene = var.gene
-				varDisease = var.disease	
+				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
 				if varClass in truncations:
-					if varGene in geneList: # check if in gene list
+					if varGene in self.userGeneList: # check if in gene list
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
 							"dominant" in self.userGeneList[varGene]["all"]):
 							var.PVS1 = True # if call is true then check expression effect
@@ -169,7 +172,7 @@ class charger(object):
 ##### Strong #####
 	def PS1( self ):
 		print "CharGer module PS1"
-		print "- same peptide change that is pathogenic and is a different genomic variant of the same reference peptide"
+		print "- same peptide change as a previously established pathogenic variant"
 		self.peptideChange( "PS1" )
 	def PS2( self ):
 		print "CharGer module PS2"
@@ -254,7 +257,7 @@ class charger(object):
 			#print "\tInput variant: " + genVar , 
 			canBePS1 = True
 			canBePM5 = True
-			pm1Call = False
+			ps1Call = False
 			pm5Call = False
 			call = var.PS1
 			#print "Call: " + genVar ,
@@ -269,13 +272,14 @@ class charger(object):
 						if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
 							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Already called pathogenic: " ,
-								canBePS1 = False
+								#canBePS1 = False
+								ps1Call = True # already pathogenic still suffices to be PS1
 								canBePM5 = False
 							else:
 								#print "This is NOT called as pathogenic: " ,
 								#var.printVariant(' ')
-								if mod == "PM1":
-									pm1Call = True
+								if mod == "PS1":
+									ps1Call = True
 						else: #different amino acid change ( CAN BE USED FOR PM5 )
 							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Alternate peptide change called pathogenic: " ,
@@ -290,9 +294,9 @@ class charger(object):
 						print "" , 
 						#print "Not given a clinical call: " ,
 						#var.printVariant(' ')
-				if mod == "PM1":
+				if mod == "PS1":
 					if canBePS1:
-						call = pm1Call
+						call = ps1Call
 				if mod == "PM5":
 					if canBePM5:
 						call = pm5Call
@@ -319,8 +323,9 @@ class charger(object):
 			var.isBenign( )
 			var.isUncertainSignificance( )
 	def printClassifications( self ):
+		print '\t'.join( ["Variant" , "PositiveEvidence" , "CharGerClassification" , "ClinVarAnnoation"] )
 		for var in self.userVariants:
-			print '\t'.join( [ var.uniqueVar() , var.pathogenicity , var.clinical["description"] ] )
+			print '\t'.join( [ var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):

@@ -166,3 +166,11 @@ class chargerVariant(clinvarVariant):
 		self.pathogenicity = chargerVariant.likelyBenign
 	def setAsBenign( self ):
 		self.pathogenicity = chargerVariant.benign
+	def positiveEvidence( self ):
+		positive = []
+		checks = self.checks()
+		for k in sorted(checks.keys()):
+			if checks[k]:
+				positive.append(k)
+		return ",".join(positive)
+
