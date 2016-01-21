@@ -12,6 +12,7 @@ def parseArgs( argv ):
 	helpText += "-m \"maf\" "
 	helpText += "(-l suppress ClinVar, "
 	helpText += "-x suppress ExAC, "
+	helpText += "-b ClinVar batch size, "
 	helpText += "-e expression, "
 	helpText += "-g gene list, "
 	helpText += "-n de novo, "
@@ -25,11 +26,12 @@ def parseArgs( argv ):
 	assumedDeNovoFile = ""
 	coSegregationFile = ""
 	output = ""
+	clinvarBatchSize = 100
 	clinvar = True
 	exac = True
 	try:
-		opts, args = getopt.getopt( argv , "lxh:m:o:g:e:n:a:c:" , \
-		["maf=" , "output=" , "geneList=" , "expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
+		opts, args = getopt.getopt( argv , "lxh:m:o:b:g:e:n:a:c:" , \
+		["maf=" , "output=" , "batchSize=" , "geneList=" , "expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -47,6 +49,8 @@ def parseArgs( argv ):
 			mafFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
+		elif opt in ( "-b" , "--batchSize" ):
+			clinvarBatchSize = arg
 		elif opt in ( "-g" , "--geneList" ):
 			geneListFile = arg
 		elif opt in ( "-e" , "--expression" ):
@@ -65,6 +69,7 @@ def parseArgs( argv ):
 	"output" : output , \
 	"clinvar" : clinvar , \
 	"exac" : exac , \
+	"clinvarBatchSize" : clinvarBatchSize , \
 	"expression" : expressionFile , \
 	"deNovo" : deNovoFile , \
 	"assumedDeNovo" : assumedDeNovoFile , \
@@ -83,6 +88,7 @@ def main( argv ):
 	outputFormat = values["output"]
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
+	clinvarBatchSize = values["clinvarBatchSize"]
 
 	CharGer = charger.charger()
 	CharGer.getInputData( maf=mafFile , \
@@ -92,7 +98,7 @@ def main( argv ):
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile )
 
-	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC , batchSize=200 )
+	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC , batchSize=clinvarBatchSize )
 
 	CharGer.PVS1( )
 	CharGer.PS1( )

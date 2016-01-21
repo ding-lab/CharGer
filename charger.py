@@ -114,7 +114,7 @@ class charger(object):
 			ent = entrezAPI()
 			ent.prepQuery( self.userVariants )
 			ent.database = entrezAPI.clinvar
-			self.clinvarVariants = ent.doBatch( 10 )#batchSize=batchSize )
+			self.clinvarVariants = ent.doBatch( batchSize )
 			self.matchClinVar()
 	def getExAC( self , **kwargs ):
 		print "charger - getExac"
@@ -252,11 +252,10 @@ class charger(object):
 
 ### helper functions of evidence levels ###
 	def peptideChange( self , mod ):
+		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
 			#print "\tInput variant: " + genVar , 
-			canBePS1 = True
-			canBePM5 = True
 			ps1Call = False
 			pm5Call = False
 			call = var.PS1
@@ -264,7 +263,6 @@ class charger(object):
 			#print " => " + str(call)
 			if not call: #is already true
 				#print "checking"
-				call = False
 				for uid in self.clinvarVariants:
 					cvar = self.clinvarVariants[uid]
 					clin = cvar.clinical
@@ -272,20 +270,22 @@ class charger(object):
 						if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
 							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Already called pathogenic: " ,
-								#canBePS1 = False
-								ps1Call = True # already pathogenic still suffices to be PS1
-								canBePM5 = False
+								if mod == "PS1":
+									var.PS1 = True # already pathogenic still suffices to be PS1
+									called += 1
 							else:
 								#print "This is NOT called as pathogenic: " ,
 								#var.printVariant(' ')
 								if mod == "PS1":
-									ps1Call = True
+									var.PS1 = True
+									called += 1
 						else: #different amino acid change ( CAN BE USED FOR PM5 )
 							if clin["description"] == clinvarVariant.pathogenic:
 								#print "Alternate peptide change called pathogenic: " ,
 								#var.printVariant(' ')
 								if mod == "PM5":
-									pm5Call = True
+									var.PM5 = True
+									called += 1
 							else:
 								print "" ,
 								#print "Alternate peptide change NOT called as pathogenic: " ,
@@ -294,17 +294,8 @@ class charger(object):
 						print "" , 
 						#print "Not given a clinical call: " ,
 						#var.printVariant(' ')
-				if mod == "PS1":
-					if canBePS1:
-						call = ps1Call
-				if mod == "PM5":
-					if canBePM5:
-						call = pm5Call
-			if mod == "PS1":
-				var.PS1 = call
-			if mod == "PM5":
-				var.PM5 = call
 		print ""
+		print mod + " found " + str(called) + " pathogenic variants"
 	def printResult( self ):
 		for var in self.userVariants:
 			for module in var.modules():
