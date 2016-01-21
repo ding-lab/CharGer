@@ -150,9 +150,6 @@ class charger(object):
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
 		truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
 		if self.userGeneList: #gene, disease, mode of inheritance
-			for key, value in self.userGeneList.iteritems():
-				print key, value
-
 			for var in self.userVariants:
 				varGene = var.gene
 				varDisease = var.disease # no disease field in MAF; may require user input	
