@@ -27,11 +27,12 @@ def parseArgs( argv ):
 	coSegregationFile = ""
 	output = ""
 	clinvarBatchSize = 100
+	peptideChangeColumn = 49
 	clinvar = True
 	exac = True
 	try:
-		opts, args = getopt.getopt( argv , "lxh:m:o:b:g:e:n:a:c:" , \
-		["maf=" , "output=" , "batchSize=" , "geneList=" , "expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
+		opts, args = getopt.getopt( argv , "lxh:m:o:b:p:g:e:n:a:c:" , \
+		["maf=" , "output=" , "batchSize=" , "peptideChange=" , "geneList=" , "expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -51,6 +52,8 @@ def parseArgs( argv ):
 			output = arg
 		elif opt in ( "-b" , "--batchSize" ):
 			clinvarBatchSize = arg
+		elif opt in ( "-p" , "--peptideChange" ):
+			peptideChangeColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
 			geneListFile = arg
 		elif opt in ( "-e" , "--expression" ):
@@ -70,6 +73,7 @@ def parseArgs( argv ):
 	"clinvar" : clinvar , \
 	"exac" : exac , \
 	"clinvarBatchSize" : clinvarBatchSize , \
+	"peptideChangeColumn" : peptideChangeColumn , \
 	"expression" : expressionFile , \
 	"deNovo" : deNovoFile , \
 	"assumedDeNovo" : assumedDeNovoFile , \
@@ -89,6 +93,7 @@ def main( argv ):
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
 	clinvarBatchSize = values["clinvarBatchSize"]
+	peptideChangeColumn = values["peptideChangeColumn"]
 
 	CharGer = charger.charger()
 	CharGer.getInputData( maf=mafFile , \
@@ -96,7 +101,8 @@ def main( argv ):
 	expression=expressionFile , \
 	deNovo=deNovoFile , \
 	assumedDeNovo=assumedDeNovoFile , \
-	coSegregation=coSegregationFile )
+	coSegregation=coSegregationFile , \
+	peptideChange=peptideChangeColumn )
 
 	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC , batchSize=clinvarBatchSize )
 

@@ -41,7 +41,7 @@ class charger(object):
 		self.readMAF( mafFile )
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile )
-	def readMAF( self , inputFile ):
+	def readMAF( self , inputFile , **kwargs ):
 		print "\tSplitting .maf by variant type!"
 		inFile = self.safeOpen( inputFile , 'r' )
 		try:
@@ -49,7 +49,7 @@ class charger(object):
 			for line in inFile:
 				fields = line.split( "\t" )
 				var = chargerVariant()
-				var.mafLine2Variant( line )
+				var.mafLine2Variant( line , **kwargs )
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
@@ -109,7 +109,7 @@ class charger(object):
 	def getClinVar( self , **kwargs ):
 		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
-		batchSize = kwargs.get( 'batchSize' , 10 )
+		batchSize = kwargs.get( 'batchSize' , 500 )
 		if doClinVar:
 			ent = entrezAPI()
 			ent.prepQuery( self.userVariants )
@@ -122,11 +122,18 @@ class charger(object):
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
 		if doExAC:
+			common = 0
+			rare = 0
+			totalVars = len( self.userVariants )
 			exac = exacAPI(harvard=useHarvard)
 			exac.getAlleleFrequencies( self.userVariants )
 			for var in self.userVariants:
 				if var.isFrequentAllele( threshold ):
 					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
+					common += 1
+				else:
+					rare += 1
+			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants"
 	def getVEP( self , **kwargs ):
 		print "charger - getVEP"
 		doVEP = kwargs.get( 'vep' , True )
@@ -136,9 +143,14 @@ class charger(object):
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self ):
+		print "charger::matchClinVar - "
 		for var in self.userVariants:
+			print "userVariant: " ,
+			print str(var.printVariant(','))
 			for uid in self.clinvarVariants:
 				cvar = self.clinvarVariants[uid]
+				print "\tclinvarVariant:" ,
+				print str(cvar.printVariant(','))
 				if var.sameGenomicVariant( cvar ):
 					var.clinical = cvar.clinical
 
@@ -252,7 +264,7 @@ class charger(object):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
-			#print "\tInput variant: " + genVar , 
+			print "\tInput variant: " + str(var.printVariant(',')) , 
 			ps1Call = False
 			pm5Call = False
 			call = var.PS1
@@ -263,31 +275,32 @@ class charger(object):
 				for uid in self.clinvarVariants:
 					cvar = self.clinvarVariants[uid]
 					clin = cvar.clinical
-					if var.samePeptideReference( cvar ):
+					if var.sameGenomicVariant( cvar ):
+					#if genomic change is the same, then PS1
+						#print "same genomic variant"
+						if clin["description"] == clinvarVariant.pathogenic:
+							#print "Already called pathogenic: " ,
+							if mod == "PS1":
+								var.PS1 = True # already pathogenic still suffices to be PS1
+								called += 1
+					elif var.sameGenomicReference( cvar ):
+					#if genomic change is different, but the peptide change is the same, then PS1
 						if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
 							if clin["description"] == clinvarVariant.pathogenic:
-								#print "Already called pathogenic: " ,
-								if mod == "PS1":
-									var.PS1 = True # already pathogenic still suffices to be PS1
-									called += 1
-							else:
-								#print "This is NOT called as pathogenic: " ,
+								#print "Alternate peptide change called pathogenic: " ,
 								#var.printVariant(' ')
 								if mod == "PS1":
 									var.PS1 = True
 									called += 1
-						else: #different amino acid change ( CAN BE USED FOR PM5 )
+					if var.samePeptideReference( cvar ):
+						if cvar.alternatePeptide != var.alternatePeptide: #same amino acid change
+						#if peptide change is different, but the peptide reference is the same, then PM5
+							print "same alternate peptide"
 							if clin["description"] == clinvarVariant.pathogenic:
-								#print "Alternate peptide change called pathogenic: " ,
-								#var.printVariant(' ')
+								print "Already called pathogenic: " ,
 								if mod == "PM5":
-									var.PM5 = True
+									var.PM5 = True # already pathogenic still suffices to be PS1
 									called += 1
-							else:
-								print "" ,
-								#print "Alternate peptide change NOT called as pathogenic: " ,
-								#var.printVariant(' ')
-					else:
 						print "" , 
 						#print "Not given a clinical call: " ,
 						#var.printVariant(' ')
