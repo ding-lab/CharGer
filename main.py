@@ -12,7 +12,10 @@ def parseArgs( argv ):
 	helpText += "-m \"maf\" "
 	helpText += "(-l suppress ClinVar, "
 	helpText += "-x suppress ExAC, "
-	helpText += "-b ClinVar batch size, "
+	helpText += "-b ClinVar summary batch size, "
+	helpText += "-B ClinVar search batch size, "
+	helpText += "-p peptide change column-0base in .maf, "
+	helpText += "-C codon column-0base in .maf, "
 	helpText += "-e expression, "
 	helpText += "-g gene list, "
 	helpText += "-n de novo, "
@@ -26,13 +29,17 @@ def parseArgs( argv ):
 	assumedDeNovoFile = ""
 	coSegregationFile = ""
 	output = ""
-	clinvarBatchSize = 100
+	clinvarSummaryBatchSize = 100
+	clinvarSearchBatchSize = 100
+	codonColumn = 48
 	peptideChangeColumn = 49
 	clinvar = True
 	exac = True
 	try:
-		opts, args = getopt.getopt( argv , "lxh:m:o:b:p:g:e:n:a:c:" , \
-		["maf=" , "output=" , "batchSize=" , "peptideChange=" , "geneList=" , "expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
+		opts, args = getopt.getopt( argv , "lxh:m:o:b:B:p:C:g:e:n:a:c:" , \
+		["maf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
+		"peptideChange=" , "codon=" ,"geneList=" , "expression=" , \
+		"deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -50,10 +57,14 @@ def parseArgs( argv ):
 			mafFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
-		elif opt in ( "-b" , "--batchSize" ):
-			clinvarBatchSize = arg
+		elif opt in ( "-b" , "--summaryBatchSize" ):
+			clinvarSummaryBatchSize = arg
+		elif opt in ( "-B" , "--searchBatchSize" ):
+			clinvarSearchBatchSize = arg
 		elif opt in ( "-p" , "--peptideChange" ):
 			peptideChangeColumn = arg
+		elif opt in ( "-C" , "--codon" ):
+			codonColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
 			geneListFile = arg
 		elif opt in ( "-e" , "--expression" ):
@@ -72,8 +83,10 @@ def parseArgs( argv ):
 	"output" : output , \
 	"clinvar" : clinvar , \
 	"exac" : exac , \
-	"clinvarBatchSize" : clinvarBatchSize , \
+	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
+	"clinvarSearchBatchSize" : clinvarSearchBatchSize , \
 	"peptideChangeColumn" : peptideChangeColumn , \
+	"codonColumn" : codonColumn , \
 	"expression" : expressionFile , \
 	"deNovo" : deNovoFile , \
 	"assumedDeNovo" : assumedDeNovoFile , \
@@ -92,8 +105,10 @@ def main( argv ):
 	outputFormat = values["output"]
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
-	clinvarBatchSize = values["clinvarBatchSize"]
+	clinvarSummaryBatchSize = values["clinvarSummaryBatchSize"]
+	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
 	peptideChangeColumn = values["peptideChangeColumn"]
+	codonColumn = values["codonColumn"]
 
 	CharGer = charger.charger()
 	CharGer.getInputData( maf=mafFile , \
@@ -102,9 +117,13 @@ def main( argv ):
 	deNovo=deNovoFile , \
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile , \
-	peptideChange=peptideChangeColumn )
+	peptideChange=peptideChangeColumn , \
+	codon=codonColumn )
 
-	CharGer.getExternalData( clinvar=doClinVar , exac=doExAC , batchSize=clinvarBatchSize )
+	CharGer.getExternalData( clinvar=doClinVar , \
+	exac=doExAC , \
+	summaryBatchSize=clinvarSummaryBatchSize , \
+	searchBatchSize=clinvarSearchBatchSize )
 
 	CharGer.PVS1( )
 	CharGer.PS1( )

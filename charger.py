@@ -38,18 +38,20 @@ class charger(object):
 		deNovoFile = kwargs.get( 'deNovo' , "" )
 		assumedDeNovoFile = kwargs.get( 'assumedDeNovo' , "" )
 		coSegregateFile = kwargs.get( 'coSegregate' , "" )
-		self.readMAF( mafFile )
+		self.readMAF( mafFile , **kwargs )
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile )
 	def readMAF( self , inputFile , **kwargs ):
-		print "\tSplitting .maf by variant type!"
+		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
+		codonColumn = kwargs.get( 'codon' , 48 )
+		peptideChangeColumn = kwargs.get( 'peptideChange' , 49 )
 		try:
 			next(inFile)
 			for line in inFile:
-				fields = line.split( "\t" )
 				var = chargerVariant()
-				var.mafLine2Variant( line , **kwargs )
+				var.mafLine2Variant( line , peptideChange=peptideChangeColumn , codon=codonColumn )
+				var.genomicVar()
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
@@ -109,13 +111,25 @@ class charger(object):
 	def getClinVar( self , **kwargs ):
 		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
-		batchSize = kwargs.get( 'batchSize' , 500 )
+		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
+		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
 		if doClinVar:
 			ent = entrezAPI()
-			ent.prepQuery( self.userVariants )
-			ent.database = entrezAPI.clinvar
-			self.clinvarVariants = ent.doBatch( batchSize )
-			self.matchClinVar()
+			i = 0
+			for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
+				varsEnd = varsStart + int(searchBatchSize)
+				varsSet = self.userVariants[varsStart:varsEnd]
+				for var in varsSet:
+					i += 1
+					print str(i) + "\t" + var.genomicVar()
+				print str(varsStart) + ":" + str(varsEnd)
+				ent.prepQuery( varsSet )
+				ent.subset = entrezAPI.esearch
+				ent.database = entrezAPI.clinvar
+				clinvarsSet = ent.doBatch( summaryBatchSize )
+				varsBoth = self.matchClinVar( varsSet , clinvarsSet )
+				self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
+				self.clinvarVariants.update( varsBoth["clinvarVariants"] )
 	def getExAC( self , **kwargs ):
 		print "charger - getExac"
 		doExAC = kwargs.get( 'exac' , True )
@@ -142,17 +156,18 @@ class charger(object):
 			vep.annotateVariants( self.userVariants )
 
 #### Helper methods for data retrieval ####
-	def matchClinVar( self ):
-		print "charger::matchClinVar - "
-		for var in self.userVariants:
-			print "userVariant: " ,
-			print str(var.printVariant(','))
-			for uid in self.clinvarVariants:
-				cvar = self.clinvarVariants[uid]
-				print "\tclinvarVariant:" ,
-				print str(cvar.printVariant(','))
+	def matchClinVar( self , userVariants , clinvarVariants ):
+		#print "charger::matchClinVar - "
+		for var in userVariants:
+			#print "userVariant: " ,
+			#var.printVariant(',')
+			for uid in clinvarVariants:
+				cvar = clinvarVariants[uid]
+				#print "clinvarVariant:" ,
+				#cvar.printVariant(',')
 				if var.sameGenomicVariant( cvar ):
 					var.clinical = cvar.clinical
+		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
 
 ### Evidence levels ### 
 ##### Very Strong #####
@@ -264,22 +279,18 @@ class charger(object):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
-			print "\tInput variant: " + str(var.printVariant(',')) , 
+			print "\tInput variant: " ,
+			var.printVariant(',')
 			ps1Call = False
 			pm5Call = False
 			call = var.PS1
-			#print "Call: " + genVar ,
-			#print " => " + str(call)
 			if not call: #is already true
-				#print "checking"
 				for uid in self.clinvarVariants:
 					cvar = self.clinvarVariants[uid]
 					clin = cvar.clinical
 					if var.sameGenomicVariant( cvar ):
 					#if genomic change is the same, then PS1
-						#print "same genomic variant"
 						if clin["description"] == clinvarVariant.pathogenic:
-							#print "Already called pathogenic: " ,
 							if mod == "PS1":
 								var.PS1 = True # already pathogenic still suffices to be PS1
 								called += 1
@@ -287,24 +298,18 @@ class charger(object):
 					#if genomic change is different, but the peptide change is the same, then PS1
 						if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
 							if clin["description"] == clinvarVariant.pathogenic:
-								#print "Alternate peptide change called pathogenic: " ,
-								#var.printVariant(' ')
 								if mod == "PS1":
 									var.PS1 = True
 									called += 1
 					if var.samePeptideReference( cvar ):
+						print var.genomicVar()
+						print cvar.genomicVar()
 						if cvar.alternatePeptide != var.alternatePeptide: #same amino acid change
 						#if peptide change is different, but the peptide reference is the same, then PM5
-							print "same alternate peptide"
 							if clin["description"] == clinvarVariant.pathogenic:
-								print "Already called pathogenic: " ,
 								if mod == "PM5":
 									var.PM5 = True # already pathogenic still suffices to be PS1
 									called += 1
-						print "" , 
-						#print "Not given a clinical call: " ,
-						#var.printVariant(' ')
-		print ""
 		print mod + " found " + str(called) + " pathogenic variants"
 	def printResult( self ):
 		for var in self.userVariants:
@@ -325,8 +330,10 @@ class charger(object):
 			var.isUncertainSignificance( )
 	def printClassifications( self ):
 		print '\t'.join( ["Variant" , "PositiveEvidence" , "CharGerClassification" , "ClinVarAnnoation"] )
+		i = 0
 		for var in self.userVariants:
-			print '\t'.join( [ var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
+			i += 1
+			print '\t'.join( [ str(i) , var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
