@@ -42,7 +42,7 @@ class charger(object):
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile )
 	def readMAF( self , inputFile , **kwargs ):
-		print "\tReading .maf!"
+#		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
 		peptideChangeColumn = kwargs.get( 'peptideChange' , 49 )
@@ -109,7 +109,7 @@ class charger(object):
 		if doExAC:
 			self.getExAC( **kwargs )
 	def getClinVar( self , **kwargs ):
-		print "charger - getClinVar"
+#		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
@@ -121,8 +121,8 @@ class charger(object):
 				varsSet = self.userVariants[varsStart:varsEnd]
 				for var in varsSet:
 					i += 1
-					print str(i) + "\t" + var.genomicVar()
-				print str(varsStart) + ":" + str(varsEnd)
+			#		print str(i) + "\t" + var.genomicVar()
+				#print str(varsStart) + ":" + str(varsEnd)
 				ent.prepQuery( varsSet )
 				ent.subset = entrezAPI.esearch
 				ent.database = entrezAPI.clinvar
@@ -140,16 +140,24 @@ class charger(object):
 			rare = 0
 			totalVars = len( self.userVariants )
 			exac = exacAPI(harvard=useHarvard)
-			exac.getAlleleFrequencies( self.userVariants )
+			entries = exac.getAlleleFrequencies( self.userVariants )
+			print "Genomic_Variant\tAllele_Frequency"
+			alleleFrequency = None
 			for var in self.userVariants:
+				if var.genomicVar() in entries:
+					alleleFrequency = entries[var.genomicVar()]
+				else:
+					alleleFrequency = None
+				var.alleleFrequency = alleleFrequency
 				if var.isFrequentAllele( threshold ):
-					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
+			#		print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
 					common += 1
 				else:
 					rare += 1
+				print var.genomicVar() + "\t" + str(var.alleleFrequency)
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants"
 	def getVEP( self , **kwargs ):
-		print "charger - getVEP"
+#		print "charger - getVEP"
 		doVEP = kwargs.get( 'vep' , True )
 		if doVEP:
 			vep = ensemblAPI( )
@@ -279,11 +287,15 @@ class charger(object):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
-			print "\tInput variant: " ,
+	#		print "\tInput variant: " ,
 			var.printVariant(',')
 			ps1Call = False
 			pm5Call = False
-			call = var.PS1
+			call = False
+			if mod == "PS1":
+				call = var.PS1
+			if mod == "PM5":
+				call = var.PM5
 			if not call: #is already true
 				for uid in self.clinvarVariants:
 					cvar = self.clinvarVariants[uid]
@@ -302,8 +314,8 @@ class charger(object):
 									var.PS1 = True
 									called += 1
 					if var.samePeptideReference( cvar ):
-						print var.genomicVar()
-						print cvar.genomicVar()
+				#		print var.genomicVar()
+				#		print cvar.genomicVar()
 						if cvar.alternatePeptide != var.alternatePeptide: #same amino acid change
 						#if peptide change is different, but the peptide reference is the same, then PM5
 							if clin["description"] == clinvarVariant.pathogenic:
