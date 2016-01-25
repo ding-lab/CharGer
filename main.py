@@ -18,6 +18,8 @@ def parseArgs( argv ):
 	helpText += "-C codon column-0base in .maf, "
 	helpText += "-e expression, "
 	helpText += "-g gene list, "
+	helpText += "-d diseases, "
+	helpText += "-t suppress TCGA cancer types, "
 	helpText += "-n de novo, "
 	helpText += "-a assumed de novo, "
 	helpText += "-c co-segregation, "
@@ -28,18 +30,21 @@ def parseArgs( argv ):
 	deNovoFile = ""
 	assumedDeNovoFile = ""
 	coSegregationFile = ""
+	diseasesFile = ""
 	output = ""
 	clinvarSummaryBatchSize = 100
 	clinvarSearchBatchSize = 100
 	codonColumn = 48
 	peptideChangeColumn = 49
+	specific = True
+	tcga = True
 	clinvar = True
 	exac = True
 	try:
-		opts, args = getopt.getopt( argv , "lxh:m:o:b:B:p:C:g:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "Dtlxh:m:o:b:B:p:C:g:d:e:n:a:c:" , \
 		["maf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
-		"peptideChange=" , "codon=" ,"geneList=" , "expression=" , \
-		"deNovo=" , "assumedDeNovo=" , "coSegregation="] )
+		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
+		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -75,12 +80,20 @@ def parseArgs( argv ):
 			assumedDeNovoFile = arg
 		elif opt in ( "-c" , "--coSegregation" ):
 			coSegregationFile = arg
-		elif opt in ( "-l" , "--help" ):
+		elif opt in ( "-d" , "--diseases" ):
+			diseasesFile = arg
+		elif opt in ( "-D" , "--diseaseSpecific" ):
+			specific = False
+		elif opt in ( "-t" , "--notcga" ):
+			tcga = False
+		elif opt in ( "-l" , "--noclinvar" ):
 			clinvar = False
-		elif opt in ( "-x" , "--help" ):
+		elif opt in ( "-x" , "--noexac" ):
 			exac = False
 	return { "maf" : mafFile , \
 	"output" : output , \
+	"specific" : specific , \
+	"tcga" : tcga , \
 	"clinvar" : clinvar , \
 	"exac" : exac , \
 	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
@@ -91,6 +104,7 @@ def parseArgs( argv ):
 	"deNovo" : deNovoFile , \
 	"assumedDeNovo" : assumedDeNovoFile , \
 	"coSegregation" : coSegregationFile , \
+	"diseases" : diseasesFile , \
 	"geneList" : geneListFile }
 
 ### main ### 
@@ -102,7 +116,10 @@ def main( argv ):
 	assumedDeNovoFile = values["assumedDeNovo"]
 	coSegregationFile = values["coSegregation"]
 	geneListFile = values["geneList"]
+	diseasesFile = values["diseases"]
 	outputFormat = values["output"]
+	diseaseSpecific = values["specific"]
+	doTCGA = values["tcga"]
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
 	clinvarSummaryBatchSize = values["clinvarSummaryBatchSize"]
@@ -112,11 +129,14 @@ def main( argv ):
 
 	CharGer = charger.charger()
 	CharGer.getInputData( maf=mafFile , \
+	specific=diseaseSpecific , \
+	tcga=doTCGA , \
 	geneList=geneListFile , \
 	expression=expressionFile , \
 	deNovo=deNovoFile , \
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile , \
+	diseases=diseasesFile , \
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn )
 

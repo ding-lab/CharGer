@@ -4,11 +4,12 @@
 # version: v0.0 - 2015*12
 
 import math
+import re
 from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
 from WebAPI.Variant.clinvarVariant import clinvarVariant
 from chargerVariant import chargerVariant
-from autovivification import autovivification
+from autovivification import autovivification as AV
 
 class charger(object):
 	''' Example usage:
@@ -21,14 +22,16 @@ class charger(object):
 			CharGer.PM4( )
 			CharGer.PM5( )
 	'''
+	allDiseases = "all"
 	def __init__( self , **kwargs ):
 		self.userVariants = kwargs.get( 'variants' , [] )
-		self.userExpression = kwargs.get( 'expressions' , autovivification({}) )
-		self.userGeneList = kwargs.get( 'geneList' , autovivification({}) )
+		self.userExpression = kwargs.get( 'expressions' , AV({}) )
+		self.userGeneList = kwargs.get( 'geneList' , AV({}) )
 		self.userDeNovoVariants = kwargs.get( 'deNovo' , {} )
 		self.userAssumedDeNovoVariants = kwargs.get( 'assumedDeNovo' , {} )
 		self.userCoSegregateVariants = kwargs.get( 'coSegregate' , {} )
 		self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
+		self.diseases = kwargs.get( 'diseases' , {} )
 
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
@@ -38,20 +41,33 @@ class charger(object):
 		deNovoFile = kwargs.get( 'deNovo' , "" )
 		assumedDeNovoFile = kwargs.get( 'assumedDeNovo' , "" )
 		coSegregateFile = kwargs.get( 'coSegregate' , "" )
+		tcga = kwargs.get( 'tcga' , True )
+		diseaseFile = kwargs.get( 'diseases' , "" )
+		specific = kwargs.get( 'specific' , False )
+		self.getDiseases( diseaseFile , **kwargs )
 		self.readMAF( mafFile , **kwargs )
 		self.readExpression( expressionFile )
-		self.readGeneList( geneListFile )
+		self.readGeneList( geneListFile , specific=specific )
 	def readMAF( self , inputFile , **kwargs ):
 #		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
 		peptideChangeColumn = kwargs.get( 'peptideChange' , 49 )
+		tcga = kwargs.get( 'tcga' , True )
+		specific = kwargs.get( 'specific' , True )
 		try:
 			next(inFile)
 			for line in inFile:
 				var = chargerVariant()
 				var.mafLine2Variant( line , peptideChange=peptideChangeColumn , codon=codonColumn )
-				var.genomicVar()
+				if specific:
+					if tcga:
+						match = re.match( "TCGA\-(\w\w)" , var.sample )
+						if match:
+							var.disease = self.diseases[match.groups()[0]]
+				else:
+					var.disease = charger.allDiseases
+				print var.genomicVar() + "\t" + var.disease
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
@@ -68,16 +84,17 @@ class charger(object):
 					self.userExpression[samples[i]][gene] = fields[i]
 		except:
 			print "CharGer Error: bad expression file"
-	def readGeneList( self , inputFile , diseaseSpecific = True ): # gene list formatted "gene", "disease", "mode of inheritance"
+	def readGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
+		specific = kwargs.get( 'specific', True )
 		try:
 			inFile = self.safeOpen( inputFile , 'r' , warning=True )
 			for line in inFile:
 				fields = line.split( "\t" )
 				gene = fields[0]
-				if diseaseSpecific:
+				if specific:
 					disease = fields[1]
 				else: #set the gene to match all disease
-					disease = "all" 
+					disease = charger.allDiseases
 				mode_inheritance = fields[2]
 				self.userGeneList[gene][disease] = mode_inheritance
 		except:
@@ -176,6 +193,22 @@ class charger(object):
 				if var.sameGenomicVariant( cvar ):
 					var.clinical = cvar.clinical
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
+	def getDiseases( self , diseasesFile , **kwargs ):
+		print "charger::getDiseases - " ,
+		tcga = kwargs.get( 'tcga' , True )
+		print tcga
+		try:
+			if tcga:
+				conversion = open( diseasesFile , "r" )
+				for line in conversion:
+					fields = line.split('\t')
+					self.diseases[fields[0]] = fields[2].strip()
+				return self.diseases
+			return
+		except:
+			print "CharGer Warning: No diseases file provided"
+			return
+
 
 ### Evidence levels ### 
 ##### Very Strong #####
@@ -184,16 +217,21 @@ class charger(object):
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
 		truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
+#		for gene in sorted(self.userGeneList.keys()):
+#			for disease in sorted(self.userGeneList[gene].keys()):
+#				print '\t'.join( [ gene , disease , self.userGeneList[gene][disease] ] )
 		if self.userGeneList: #gene, disease, mode of inheritance
 			for var in self.userVariants:
 				varGene = var.gene
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
+				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
 				if varClass in truncations:
 					if varGene in self.userGeneList: # check if in gene list
+						#var.PVS1 = True
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
-							"dominant" in self.userGeneList[varGene]["all"]):
+							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
 							var.PVS1 = True # if call is true then check expression effect
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
