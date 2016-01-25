@@ -289,7 +289,8 @@ class charger(object):
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
 	#		print "\tInput variant: " ,
-			var.printVariant(',')
+			#var.printVariant(',')
+			print var.proteogenomicVar()
 			ps1Call = False
 			pm5Call = False
 			call = False
@@ -298,9 +299,11 @@ class charger(object):
 			if mod == "PM5":
 				call = var.PM5
 			if not call: #is already true
-				for uid in self.clinvarVariants:
-					cvar = self.clinvarVariants[uid]
+				for genVar in self.clinvarVariants:
+					cvar = self.clinvarVariants[genVar]
 					clin = cvar.clinical
+#					print str(cvar.uid) + ": " ,
+#					print cvar.proteogenomicVar()
 					if var.sameGenomicVariant( cvar ):
 					#if genomic change is the same, then PS1
 						if clin["description"] == clinvarVariant.pathogenic:
@@ -315,14 +318,20 @@ class charger(object):
 									var.PS1 = True
 									called += 1
 					if var.samePeptideReference( cvar ):
-				#		print var.genomicVar()
-				#		print cvar.genomicVar()
-						if cvar.alternatePeptide != var.alternatePeptide: #same amino acid change
+#						print var.genomicVar() ,
+#						print ',' ,
+#						print var.codingHGVS() ,
+#						print "\t" ,
+#						print cvar.genomicVar() ,
+#						print ',' ,
+#						print cvar.codingHGVS()
+						if not var.samePeptideChange( cvar ):
 						#if peptide change is different, but the peptide reference is the same, then PM5
-							if clin["description"] == clinvarVariant.pathogenic:
-								if mod == "PM5":
-									var.PM5 = True # already pathogenic still suffices to be PS1
-									called += 1
+							if var.plausibleCodonFrame( cvar ):
+								if clin["description"] == clinvarVariant.pathogenic:
+									if mod == "PM5":
+										var.PM5 = True # already pathogenic still suffices to be PS1
+										called += 1
 		print mod + " found " + str(called) + " pathogenic variants"
 	def printResult( self ):
 		for var in self.userVariants:

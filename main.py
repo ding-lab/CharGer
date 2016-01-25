@@ -125,7 +125,7 @@ def main( argv ):
 	summaryBatchSize=clinvarSummaryBatchSize , \
 	searchBatchSize=clinvarSearchBatchSize )
 
-	threshold = 0.05
+	threshold = 0.0005
 
 	CharGer.PVS1( )
 	CharGer.PS1( )
