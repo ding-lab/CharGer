@@ -238,7 +238,8 @@ class charger(object):
 		print "- absent or extremely low frequency in controls"
 		for var in self.userVariants:
 			#varMAF = var.getExACasdf # Adam will update use alleleFrequency method
-			if var.isFrequentAllele( threshold ):
+			print var.genomicVar() + "\t" + str(var.alleleFrequency) + "\t" + str(threshold)
+			if not var.isFrequentAllele( threshold ):
 				var.PM2 = True
 	def PM3( self ):
 		print "CharGer module PM3: not yet implemented"

@@ -4,6 +4,7 @@
 # version: v0.0 - 2016*01*13
 
 from WebAPI.Variant.clinvarVariant import clinvarVariant
+from autovivification import autovivification
 
 class chargerVariant(clinvarVariant):
 	pathogenic = "Pathogenic"
@@ -36,8 +37,10 @@ class chargerVariant(clinvarVariant):
 		checks = self.checks()
 		return checks[mod]
 	def checks( self ):
-		checks = {}
+		#print "chargerVariant::checks"
+		checks = autovivification({})
 		mods = self.modules()
+		#print mods
 		checks[mods[0]] = self.PVS1
 		checks[mods[1]] = self.PS1
 		checks[mods[2]] = self.PS2
@@ -54,6 +57,7 @@ class chargerVariant(clinvarVariant):
 		checks[mods[13]] = self.PP3
 		checks[mods[14]] = self.PP4
 		checks[mods[15]] = self.PP5
+		#print checks
 		return checks
 	def modules( self ):
 		return ['PVS1' , \
@@ -170,6 +174,7 @@ class chargerVariant(clinvarVariant):
 		positive = []
 		checks = self.checks()
 		for k in sorted(checks.keys()):
+#			print k + "\t" + str(checks[k])
 			if checks[k]:
 				positive.append(k)
 		return ",".join(positive)
