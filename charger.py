@@ -5,6 +5,8 @@
 
 import math
 import re
+import glob
+from scipy import stats
 from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
 from WebAPI.Variant.clinvarVariant import clinvarVariant
@@ -72,18 +74,25 @@ class charger(object):
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
 			
-	def readExpression( self , inputFile ): # expect a sample(col)-gene(row) matrix
+	def readExpression( self , inputFile ): # expect sample(col)-gene(row) matrixes
 		try:
-			inFile = self.safeOpen( inputFile , 'r' , warning=True )
-			header = inFile.readline() # for future fetch header to get other field
-			samples = header.split( "\t" )
-			for line in inFile:
-				fields = line.split( "\t" )
-				gene = fields[0]
-				for i in range(1,len(fields)):
-					self.userExpression[samples[i]][gene] = fields[i]
+			fileNames = glob.glob(inputFile + "*")
+			for fileName in fileNames:
+				print "Processing expression from ", fileName
+				inFile = self.safeOpen( fileName , 'r' , warning=True )
+				header = inFile.readline()
+				samples = header.split( "\t" )
+				for line in inFile:
+					fields = line.split( "\t" )		
+					gene = fields[0] 
+					gene_exp = [ self.toFloat(x) for x in fields[1:]] # manage potential NA strings that may cause errors
+					gene_exp_p = (stats.rankdata(gene_exp, 'min')-1)/len(gene_exp) # convert to percentile
+					for i in range(1,len(gene_exp_p)):
+						self.userExpression[samples[i+1]][gene] = gene_exp_p[i]
+
 		except:
 			print "CharGer Error: bad expression file"
+
 	def readGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
 		specific = kwargs.get( 'specific', True )
 		try:
@@ -212,7 +221,7 @@ class charger(object):
 
 ### Evidence levels ### 
 ##### Very Strong #####
-	def PVS1( self , expressionThreshold = 0.05 ):
+	def PVS1( self , expressionThreshold = 0.2 ):
 		print "CharGer module PVS1"
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
@@ -234,6 +243,7 @@ class charger(object):
 							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
 							var.PVS1 = True # if call is true then check expression effect
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
+								#print varSample, varGene, self.userExpression[varSample][varGene]
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
 									var.PVS1 = False 
 		else: 
@@ -395,6 +405,8 @@ class charger(object):
 			i += 1
 			print '\t'.join( [ str(i) , var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
 
+	
+
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
 		errwar = kwargs.get( 'warning' , False )
@@ -405,3 +417,12 @@ class charger(object):
 				return "CharGer Warning: could not open " + inputFile
 			else:
 				return "CharGer Error: could not open " + inputFile
+
+	@staticmethod
+	def toFloat(x):
+		try:
+			float(x)
+			return float(x)
+		except:
+			return "nan"
+
