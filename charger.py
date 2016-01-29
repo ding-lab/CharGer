@@ -184,7 +184,10 @@ class charger(object):
 		if doVEP:
 			vep = ensemblAPI()
 			luv = len(self.userVariants)
-			self.vepVariants = vep.annotateVariantsPost( self.userVariants )
+			vepVariants = vep.annotateVariantsPost( self.userVariants )
+			varsBoth = self.matchVEP( self.userVariants , vepVariants )
+			self.userVariants = varsBoth["userVariants"]
+			self.vepVariants = varsBoth["vepVariants"]
 			aluv = 0
 			if self.vepVariants:
 				aluv = len(self.vepVariants)
@@ -215,6 +218,19 @@ class charger(object):
 				if var.sameGenomicVariant( cvar ):
 					var.clinical = cvar.clinical
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
+	def matchVEP( self , userVariants , vepVariants ):
+		#print "charger::matchVEP - "
+		for var in userVariants:
+			#print "userVariant: " ,
+			#var.printVariant(',')
+			for genVar in vepVariants:
+				vepVar = vepVariants[genVar]
+				if var.sameGenomicVariant( vepVar ):
+					var.consequences = vepVar.consequences
+					var.colocatedVariants = vepVar.colocatedVariants
+					if vepVar.strand: #MGI .maf annotator puts on positive strand
+						var.strand = vepVar.strand
+		return { "userVariants" : userVariants , "vepVariants" : vepVariants }
 	def getDiseases( self , diseasesFile , **kwargs ):
 		print "charger::getDiseases - " ,
 		tcga = kwargs.get( 'tcga' , True )
@@ -335,7 +351,30 @@ class charger(object):
 		#print "- "
 	def PP3( self ):
 		print "CharGer module PP3: not yet implemented"
-		#print "- "
+		print "- multiple lines of in silico evidence of deliterous effect"
+		for var in self.userVariants:
+			print var.genomicVar()
+			for consequence in var.consequences:
+				print var.codingHGVS()
+				if not var.PP3:
+					evidence = 0
+					for field in sorted( consequence.keys() ):
+						print field ,
+						print " => " ,
+						print consequence[field]
+						if field == "Blosum62":
+							evidence += 1
+						if field == "predictionSIFT":
+							evidence += 1
+						if field == "predictionPolyphen":
+							evidence += 1
+						if field == "conservation":
+							evidence += 1
+						if field == "impact":
+							evidence += 1
+					if evidence > 2:
+						var.PP3 = True
+
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
 		#print "- "
