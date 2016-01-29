@@ -4,9 +4,10 @@
 # version: v0.0 - 2016*01*13
 
 from WebAPI.Variant.clinvarVariant import clinvarVariant
+from WebAPI.Variant.vepVariant import vepVariant
 from autovivification import autovivification
 
-class chargerVariant(clinvarVariant):
+class chargerVariant(clinvarVariant,vepVariant):
 	pathogenic = "Pathogenic"
 	likelyPathogenic = "Likely Pathogenic"
 	likelyBenign = "Likely Benign"
@@ -30,9 +31,13 @@ class chargerVariant(clinvarVariant):
 		self.PP3 = kwargs.get( 'PP3' , False )
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.PP5 = kwargs.get( 'PP5' , False )
+		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.pathogenicity = kwargs.get( 'pathogenicity' , chargerVariant.uncertain )
 		self.clinical = kwargs.get( 'clinical' , { "description" : chargerVariant.uncertain , "review_status" : "" } )
+		aParentVariant = kwargs.get( 'parentVariant' , None )
+		if aParentVariant:
+			super( chargerVariant , self ).copyInfo( aParentVariant )
 	def check( self , mod ):
 		checks = self.checks()
 		return checks[mod]

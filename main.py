@@ -40,8 +40,9 @@ def parseArgs( argv ):
 	tcga = True
 	clinvar = True
 	exac = True
+	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "Dtlxh:m:o:b:B:p:C:g:d:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "DEtlxh:m:o:b:B:p:C:g:d:e:n:a:c:" , \
 		["maf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
@@ -88,6 +89,8 @@ def parseArgs( argv ):
 			tcga = False
 		elif opt in ( "-l" , "--noclinvar" ):
 			clinvar = False
+		elif opt in ( "-E" , "--noVEP" ):
+			vep = False
 		elif opt in ( "-x" , "--noexac" ):
 			exac = False
 	return { "maf" : mafFile , \
@@ -95,6 +98,7 @@ def parseArgs( argv ):
 	"specific" : specific , \
 	"tcga" : tcga , \
 	"clinvar" : clinvar , \
+	"vep" : vep , \
 	"exac" : exac , \
 	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
 	"clinvarSearchBatchSize" : clinvarSearchBatchSize , \
@@ -122,6 +126,7 @@ def main( argv ):
 	doTCGA = values["tcga"]
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
+	doVEP = values["vep"]
 	clinvarSummaryBatchSize = values["clinvarSummaryBatchSize"]
 	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
 	peptideChangeColumn = values["peptideChangeColumn"]
@@ -142,6 +147,7 @@ def main( argv ):
 
 	CharGer.getExternalData( clinvar=doClinVar , \
 	exac=doExAC , \
+	vep=doVEP , \
 	summaryBatchSize=clinvarSummaryBatchSize , \
 	searchBatchSize=clinvarSearchBatchSize )
 

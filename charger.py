@@ -5,6 +5,7 @@
 
 import math
 import re
+from WebAPI.Ensembl.ensemblAPI import ensemblAPI
 from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
 from WebAPI.Variant.clinvarVariant import clinvarVariant
@@ -31,6 +32,7 @@ class charger(object):
 		self.userAssumedDeNovoVariants = kwargs.get( 'assumedDeNovo' , {} )
 		self.userCoSegregateVariants = kwargs.get( 'coSegregate' , {} )
 		self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
+		self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
 
 ### Retrieve input data from user ###
@@ -121,10 +123,13 @@ class charger(object):
 	def getExternalData( self , **kwargs ):
 		doClinVar = kwargs.get( 'clinvar' , True )
 		doExAC = kwargs.get( 'exac' , True )
+		doVEP = kwargs.get( 'vep' , True )
 		if doClinVar:
 			self.getClinVar( **kwargs )
 		if doExAC:
 			self.getExAC( **kwargs )
+		if doVEP:
+			self.getVEP( **kwargs )
 	def getClinVar( self , **kwargs ):
 #		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
@@ -174,11 +179,28 @@ class charger(object):
 				print var.genomicVar() + "\t" + str(var.alleleFrequency)
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants"
 	def getVEP( self , **kwargs ):
-#		print "charger - getVEP"
+		print "charger - getVEP"
 		doVEP = kwargs.get( 'vep' , True )
 		if doVEP:
-			vep = ensemblAPI( )
-			vep.annotateVariants( self.userVariants )
+			vep = ensemblAPI()
+			luv = len(self.userVariants)
+			self.vepVariants = vep.annotateVariantsPost( self.userVariants )
+			aluv = 0
+			if self.vepVariants:
+				aluv = len(self.vepVariants)
+				for genVar in self.vepVariants:
+					print self.vepVariants[genVar].uniqueProteogenomicVar()
+			print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
+			#ftemp = TF.TemporaryFile()
+			#for var in self.userVariants:
+			#	hgvsg = var.hgvsg()
+			#	[ chromosome , gdot ] = hgvsg().split(':')
+			#	ftemp.write( chromosome + "\t" + gdot )
+			#vep = ensemblAPI( subset="region" , allOptions=True )
+			#vep.annotateHGVSFile( ftemp )
+	#def annotateConsequences( self , **kwargs ):
+		#for var in self.vepVariants:
+			#for consequence in var.consequences:
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
