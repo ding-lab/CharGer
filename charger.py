@@ -9,6 +9,7 @@ from WebAPI.Ensembl.ensemblAPI import ensemblAPI
 from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
 from WebAPI.Variant.clinvarVariant import clinvarVariant
+from WebAPI.Variant.variant import variant
 from chargerVariant import chargerVariant
 from autovivification import autovivification as AV
 
@@ -121,15 +122,9 @@ class charger(object):
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
-		doClinVar = kwargs.get( 'clinvar' , True )
-		doExAC = kwargs.get( 'exac' , True )
-		doVEP = kwargs.get( 'vep' , True )
-		if doClinVar:
-			self.getClinVar( **kwargs )
-		if doExAC:
-			self.getExAC( **kwargs )
-		if doVEP:
-			self.getVEP( **kwargs )
+		self.getClinVar( **kwargs )
+		self.getExAC( **kwargs )
+		self.getVEP( **kwargs )
 	def getClinVar( self , **kwargs ):
 #		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
@@ -141,10 +136,10 @@ class charger(object):
 			for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
 				varsEnd = varsStart + int(searchBatchSize)
 				varsSet = self.userVariants[varsStart:varsEnd]
-				for var in varsSet:
-					i += 1
-			#		print str(i) + "\t" + var.genomicVar()
-				#print str(varsStart) + ":" + str(varsEnd)
+#				for var in varsSet:
+#					i += 1
+#					print str(i) + "\t" + var.genomicVar()
+#				print str(varsStart) + ":" + str(varsEnd)
 				ent.prepQuery( varsSet )
 				ent.subset = entrezAPI.esearch
 				ent.database = entrezAPI.clinvar
@@ -153,7 +148,7 @@ class charger(object):
 				self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
 				self.clinvarVariants.update( varsBoth["clinvarVariants"] )
 	def getExAC( self , **kwargs ):
-		print "charger - getExac"
+#		print "charger - getExac"
 		doExAC = kwargs.get( 'exac' , True )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
@@ -162,9 +157,11 @@ class charger(object):
 			rare = 0
 			totalVars = len( self.userVariants )
 			exac = exacAPI(harvard=useHarvard)
-			entries = exac.getAlleleFrequencies( self.userVariants )
-			print "Genomic_Variant\tAllele_Frequency"
-			alleleFrequency = None
+#entries by genomivVar
+			exacIn = self.getUniqueGenomicVariantList( self.userVariants )
+			#entries = exac.getAlleleFrequencies( self.userVariants )
+			entries = exac.getAlleleFrequencies( exacIn )
+#			print "Genomic_Variant\tAllele_Frequency"
 			for var in self.userVariants:
 				if var.genomicVar() in entries:
 					alleleFrequency = entries[var.genomicVar()]
@@ -172,69 +169,71 @@ class charger(object):
 					alleleFrequency = None
 				var.alleleFrequency = alleleFrequency
 				if var.isFrequentAllele( threshold ):
-			#		print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
+#					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
 					common += 1
 				else:
 					rare += 1
-				print var.genomicVar() + "\t" + str(var.alleleFrequency)
-			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants"
+#				print var.genomicVar() + "\t" + str(var.alleleFrequency)
+			elen = len(entries.keys())
+			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
-		print "charger - getVEP"
+#		print "charger - getVEP"
 		doVEP = kwargs.get( 'vep' , True )
 		if doVEP:
 			vep = ensemblAPI()
 			luv = len(self.userVariants)
 			vepVariants = vep.annotateVariantsPost( self.userVariants )
-			varsBoth = self.matchVEP( self.userVariants , vepVariants )
-			self.userVariants = varsBoth["userVariants"]
-			self.vepVariants = varsBoth["vepVariants"]
+			self.vepVariants = self.matchVEP( vepVariants )
 			aluv = 0
+#			print "\nvepVariants"
 			if self.vepVariants:
 				aluv = len(self.vepVariants)
-				for genVar in self.vepVariants:
-					print self.vepVariants[genVar].uniqueProteogenomicVar()
+#				for genVar in self.vepVariants:
+#					print self.vepVariants[genVar].uniqueProteogenomicVar()
+			luvafter = len(self.userVariants)
+			print "\nVEP annotated userVariants " + str( luvafter )
+#			if self.userVariants:
+#				for var in self.userVariants:
+#					for consequence in var.consequences:
+#						print consequence.uniqueProteogenomicVar()
 			print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
-			#ftemp = TF.TemporaryFile()
-			#for var in self.userVariants:
-			#	hgvsg = var.hgvsg()
-			#	[ chromosome , gdot ] = hgvsg().split(':')
-			#	ftemp.write( chromosome + "\t" + gdot )
-			#vep = ensemblAPI( subset="region" , allOptions=True )
-			#vep.annotateHGVSFile( ftemp )
-	#def annotateConsequences( self , **kwargs ):
-		#for var in self.vepVariants:
-			#for consequence in var.consequences:
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
-		#print "charger::matchClinVar - "
+#		print "charger::matchClinVar - "
 		for var in userVariants:
-			#print "userVariant: " ,
-			#var.printVariant(',')
+#			print "userVariant: " ,
+#			var.printVariant(',')
 			for uid in clinvarVariants:
 				cvar = clinvarVariants[uid]
-				#print "clinvarVariant:" ,
-				#cvar.printVariant(',')
+#				print "clinvarVariant:" ,
+#				cvar.printVariant(',')
 				if var.sameGenomicVariant( cvar ):
 					var.clinical = cvar.clinical
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
-	def matchVEP( self , userVariants , vepVariants ):
-		#print "charger::matchVEP - "
-		for var in userVariants:
-			#print "userVariant: " ,
-			#var.printVariant(',')
+	def matchVEP( self , vepVariants ):
+#		print "charger::matchVEP - "
+		for var in self.userVariants:
+#			print ""
 			for genVar in vepVariants:
 				vepVar = vepVariants[genVar]
+#				print "userVariant: " + var.genomicVar() ,
+#				print " =? vepVariant: " + vepVar.genomicVar() + " with N=" + str( len( vepVar.consequences ) ) + " consequences"
 				if var.sameGenomicVariant( vepVar ):
+#					print "\tsame! consequences N=" ,
+#					print str( len( vepVar.consequences ) ) ,
+#					print " transfered to userVariant=" ,
 					var.consequences = vepVar.consequences
+#					print str( len( var.consequences ) ) ,
 					var.colocatedVariants = vepVar.colocatedVariants
 					if vepVar.strand: #MGI .maf annotator puts on positive strand
+#						print str(vepVar.strand) + " from " + str(var.strand)
 						var.strand = vepVar.strand
-		return { "userVariants" : userVariants , "vepVariants" : vepVariants }
+		return vepVariants
 	def getDiseases( self , diseasesFile , **kwargs ):
-		print "charger::getDiseases - " ,
+#		print "charger::getDiseases - " ,
 		tcga = kwargs.get( 'tcga' , True )
-		print tcga
+#		print tcga
 		try:
 			if tcga:
 				conversion = open( diseasesFile , "r" )
@@ -264,7 +263,7 @@ class charger(object):
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
-				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
+#				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
 				if varClass in truncations:
 					if varGene in self.userGeneList: # check if in gene list
 						#var.PVS1 = True
@@ -290,9 +289,10 @@ class charger(object):
 				var.PS2 = True
 	def PS3( self ):
 		print "CharGer module PS3: not yet implemented"
+#		print "- "
 	def PS4( self ): # not relevant in rare variants, such big effect size common variants are so rare may as well just take a input variant list
 		print "CharGer module PS4: not yet implemented"
-		#print "- variant prevalence in cases significantly greater than controls"
+#		print "- variant prevalence in cases significantly greater than controls"
 		for var in self.userVariants:
 			return
 			caseVarFreq = "NEED UPDATE" # may take input from current MAF
@@ -308,18 +308,18 @@ class charger(object):
 ##### Moderate #####
 	def PM1( self ):
 		print "CharGer module PM1: not yet implemented"
-		#print "- "
+#		print "- "
 	def PM2( self , threshold ):
 		print "CharGer module PM2"
 		print "- absent or extremely low frequency in controls"
 		for var in self.userVariants:
 			#varMAF = var.getExACasdf # Adam will update use alleleFrequency method
-			print var.genomicVar() + "\t" + str(var.alleleFrequency) + "\t" + str(threshold)
+#			print var.genomicVar() + "\t" + str(var.alleleFrequency) + "\t" + str(threshold)
 			if not var.isFrequentAllele( threshold ):
 				var.PM2 = True
 	def PM3( self ):
 		print "CharGer module PM3: not yet implemented"
-		#print "- "
+#		print "- "
 	def PM4( self ):
 		print "CharGer module PM4"
 		print "- protein length changes due to inframe indels or nonstop variant"
@@ -348,48 +348,50 @@ class charger(object):
 				var.PP1 = True
 	def PP2( self ):
 		print "CharGer module PP2: not yet implemented"
-		#print "- "
+#		print "- "
 	def PP3( self ):
 		print "CharGer module PP3: not yet implemented"
 		print "- multiple lines of in silico evidence of deliterous effect"
 		for var in self.userVariants:
-			print var.genomicVar()
-			for consequence in var.consequences:
-				print var.codingHGVS()
+#			print var.genomicVar()
+#			print " consequences N=" ,
+#			print str( len( var.consequences ) )
+			for vcVar in var.consequences:
+#				print var.codingHGVS()
 				if not var.PP3:
 					evidence = 0
-					for field in sorted( consequence.keys() ):
-						print field ,
-						print " => " ,
-						print consequence[field]
-						if field == "Blosum62":
-							evidence += 1
-						if field == "predictionSIFT":
-							evidence += 1
-						if field == "predictionPolyphen":
-							evidence += 1
-						if field == "conservation":
-							evidence += 1
-						if field == "impact":
-							evidence += 1
+					if vcVar.blosum:
+						evidence += 1
+					if vcVar.predictionSIFT:
+						evidence += 1
+					if vcVar.predictionPolyphen:
+						evidence += 1
+					if vcVar.compara:
+						evidence += 1
+					if vcVar.impact:
+						evidence += 1
+					if vcVar.maxentscan:
+						evidence += 1
+					if vcVar.genesplicer:
+						evidence += 1
 					if evidence > 2:
 						var.PP3 = True
 
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
-		#print "- "
+#		print "- "
 	def PP5( self ):
 		print "CharGer module PP5: not yet implemented"
-		#print "- "
+#		print "- "
 
 ### helper functions of evidence levels ###
 	def peptideChange( self , mod ):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
-	#		print "\tInput variant: " ,
-			#var.printVariant(',')
-			print var.proteogenomicVar()
+#			print "\tInput variant: " ,
+#			var.printVariant(',')
+#			print var.proteogenomicVar()
 			ps1Call = False
 			pm5Call = False
 			call = False
@@ -466,3 +468,17 @@ class charger(object):
 				return "CharGer Warning: could not open " + inputFile
 			else:
 				return "CharGer Error: could not open " + inputFile
+	@staticmethod
+	def getUniqueGenomicVariantList( aVarList ):
+#		print "charger::getUniqueGenomicVariantList"
+		uniqueVarList = []
+		uniqueVarDict = AV({})
+		for var in aVarList:
+			generalVar = variant()
+			generalVar.copyInfo( var )
+#			var.printVariant('_')
+			if generalVar.genomicVar() not in uniqueVarDict:
+#				generalVar.printVariant('__')
+				uniqueVarDict[generalVar.genomicVar()] = 1
+				uniqueVarList.append( generalVar )
+		return uniqueVarList
