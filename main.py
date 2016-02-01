@@ -6,6 +6,7 @@
 import sys
 import getopt
 import charger
+import time
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
@@ -113,6 +114,7 @@ def parseArgs( argv ):
 
 ### main ### 
 def main( argv ):
+	t0 = time.time()
 	values = parseArgs( argv )
 	mafFile = values["maf"]
 	expressionFile = values["expression"]
@@ -131,8 +133,11 @@ def main( argv ):
 	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
 	peptideChangeColumn = values["peptideChangeColumn"]
 	codonColumn = values["codonColumn"]
+	
+	t1 = time.time()
 
 	CharGer = charger.charger()
+
 	CharGer.getInputData( maf=mafFile , \
 	specific=diseaseSpecific , \
 	tcga=doTCGA , \
@@ -145,13 +150,19 @@ def main( argv ):
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn )
 
+	t2 = time.time() 
+
 	CharGer.getExternalData( clinvar=doClinVar , \
 	exac=doExAC , \
 	vep=doVEP , \
 	summaryBatchSize=clinvarSummaryBatchSize , \
-	searchBatchSize=clinvarSearchBatchSize )
+	searchBatchSize=clinvarSearchBatchSize , \
+	timeout=(1,1) )
+
+	t3 = time.time() 
 
 	threshold = 0.0005
+	minimumEvidence = 2
 
 	CharGer.PVS1( )
 	CharGer.PS1( )
@@ -166,12 +177,32 @@ def main( argv ):
 	CharGer.PM6( )
 	CharGer.PP1( )
 	CharGer.PP2( )
-	CharGer.PP3( )
+	CharGer.PP3( minimumEvidence )
 	CharGer.PP4( )
 	CharGer.PP5( )
 	#CharGer.printResult( )
+
+	t4 = time.time() 
+
 	CharGer.classify()
+
+	t5 = time.time() 
+
 	CharGer.printClassifications( )
+
+	print "\nCharGer run Times:"
+	dt1_0 = t1-t0
+	print "input parse time (s): " + str(dt1_0)
+	dt2_1 = t2-t1
+	print "get input data time (s): " + str(dt2_1)
+	dt3_2 = t3-t2
+	print "get external data time (s): " + str(dt3_2)
+	dt4_3 = t4-t3
+	print "modules run time (s): " + str(dt4_3)
+	dt5_4 = t5-t4
+	print "classification time (s): " + str(dt5_4)
+	dt5_0 = t5-t0
+	print "CharGer full run time (s): " + str(dt5_0)
 
 if __name__ == "__main__":
 	main( sys.argv[1:] )

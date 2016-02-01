@@ -3,6 +3,7 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
 
+import time
 import math
 import re
 from WebAPI.Ensembl.ensemblAPI import ensemblAPI
@@ -131,9 +132,15 @@ class charger(object):
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
+		t = time.time()
 		self.getClinVar( **kwargs )
+		self.printRunTime( "ClinVar" , self.runTime( t ) )
+		t = time.time()
 		self.getExAC( **kwargs )
+		self.printRunTime( "ExAC" , self.runTime( t ) )
+		t = time.time()
 		self.getVEP( **kwargs )
+		self.printRunTime( "VEP" , self.runTime( t ) )
 	def getClinVar( self , **kwargs ):
 #		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
@@ -234,7 +241,7 @@ class charger(object):
 #					print " transfered to userVariant=" ,
 					var.consequences = vepVar.consequences
 #					print str( len( var.consequences ) ) ,
-					var.colocatedVariants = vepVar.colocatedVariants
+					var.colocations = vepVar.colocations
 					if vepVar.strand: #MGI .maf annotator puts on positive strand
 #						print str(vepVar.strand) + " from " + str(var.strand)
 						var.strand = vepVar.strand
@@ -359,9 +366,16 @@ class charger(object):
 	def PP2( self ):
 		print "CharGer module PP2: not yet implemented"
 #		print "- "
-	def PP3( self ):
+	def PP3( self , minimumEvidence ):
 		print "CharGer module PP3: not yet implemented"
 		print "- multiple lines of in silico evidence of deliterous effect"
+		callSIFT = "damaging"
+		callPolyphen = "probably damaging"
+		callBlosum62 = -2
+		callCompara = 2
+		callImpact = "high"
+		callMaxEntScan = ""
+		callGeneSplicer = ""
 		for var in self.userVariants:
 #			print var.genomicVar()
 #			print " consequences N=" ,
@@ -371,20 +385,30 @@ class charger(object):
 				if not var.PP3:
 					evidence = 0
 					if vcVar.blosum:
-						evidence += 1
+						if vcVar.blosum < callBlosum62:
+							evidence += 1
 					if vcVar.predictionSIFT:
-						evidence += 1
+						if vcVar.predictionSIFT.lower() == callSIFT:
+							evidence += 1
 					if vcVar.predictionPolyphen:
-						evidence += 1
+						if vcVar.predictionPolyphen.lower() == callPolyphen:
+							evidence += 1
 					if vcVar.compara:
-						evidence += 1
+						if vcVar.compara > callCompara:
+							evidence += 1
 					if vcVar.impact:
-						evidence += 1
+						if vcVar.impact.lower() == callImpact:
+							evidence += 1
 					if vcVar.maxentscan:
-						evidence += 1
+						if vcVar.maxentscan.lower() == callMaxEntScan:
+							evidence += 1
 					if vcVar.genesplicer:
-						evidence += 1
-					if evidence > 2:
+						if vcVar.genesplicer.lower() == callGeneSplicer:
+							evidence += 1
+					print "Compuational evidence for " ,
+					print vcVar.genomicVar() ,
+					print " is " + str( evidence )
+					if evidence >= minimumEvidence:
 						var.PP3 = True
 
 	def PP4( self ):
@@ -462,13 +486,14 @@ class charger(object):
 			var.isBenign( )
 			var.isUncertainSignificance( )
 	def printClassifications( self ):
-		print '\t'.join( ["Variant" , "PositiveEvidence" , "CharGerClassification" , "ClinVarAnnoation"] )
+		print '\t'.join( ["Variant" , "PositiveEvidence" , \
+			"CharGerClassification" , "ClinVarAnnoation"] )
 		i = 0
 		for var in self.userVariants:
 			i += 1
-			print '\t'.join( [ str(i) , var.uniqueVar() , var.positiveEvidence() , var.pathogenicity , var.clinical["description"] ] )
-
-	
+			print '\t'.join( [ str(i) , var.uniqueVar() , \
+				var.positiveEvidence() , var.pathogenicity , \
+				var.clinical["description"] ] )
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
@@ -501,3 +526,9 @@ class charger(object):
 			return float(x)
 		except:
 			return "nan"
+	@staticmethod
+	def runTime( initialTime ):
+	   return time.time() - initialTime
+	@staticmethod
+	def printRunTime( step , interval ):
+	   print "Running " + step + " took " + str( interval ) + "seconds"
