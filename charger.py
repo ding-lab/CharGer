@@ -374,7 +374,7 @@ class charger(object):
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
-		callMaxEntScan = ""
+		callMaxEntScan = [7,1]
 		callGeneSplicer = ""
 		for var in self.userVariants:
 #			print var.genomicVar()
@@ -400,7 +400,10 @@ class charger(object):
 						if vcVar.impact.lower() == callImpact:
 							evidence += 1
 					if vcVar.maxentscan:
-						if vcVar.maxentscan.lower() == callMaxEntScan:
+						#ref >= 7, alt <= 7, diff >= 1 (ref-alt)
+						if vcVar.maxentscan[0] >= callMaxEntScan[0] \
+						and vcVar.maxentscan[1] <= callMaxEntScan[0] \
+						and vcVar.maxentscan[2] >= callMaxEntScan[1]:
 							evidence += 1
 					if vcVar.genesplicer:
 						if vcVar.genesplicer.lower() == callGeneSplicer:

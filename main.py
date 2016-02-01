@@ -148,7 +148,8 @@ def main( argv ):
 	coSegregation=coSegregationFile , \
 	diseases=diseasesFile , \
 	peptideChange=peptideChangeColumn , \
-	codon=codonColumn )
+	codon=codonColumn , \
+	)
 
 	t2 = time.time() 
 
@@ -157,7 +158,8 @@ def main( argv ):
 	vep=doVEP , \
 	summaryBatchSize=clinvarSummaryBatchSize , \
 	searchBatchSize=clinvarSearchBatchSize , \
-	timeout=(1,1) )
+	#timeout=(20,20) , \
+	)
 
 	t3 = time.time() 
 
