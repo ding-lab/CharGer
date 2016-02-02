@@ -15,6 +15,7 @@ from WebAPI.Variant.clinvarVariant import clinvarVariant
 from WebAPI.Variant.variant import variant
 from chargerVariant import chargerVariant
 from autovivification import autovivification as AV
+import vcf
 
 class charger(object):
 	''' Example usage:
@@ -42,6 +43,7 @@ class charger(object):
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
 		mafFile = kwargs.get( 'maf' , "" )
+		vcfFile = kwargs.get( 'vcf' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
 		deNovoFile = kwargs.get( 'deNovo' , "" )
@@ -51,7 +53,10 @@ class charger(object):
 		diseaseFile = kwargs.get( 'diseases' , "" )
 		specific = kwargs.get( 'specific' , False )
 		self.getDiseases( diseaseFile , **kwargs )
-		self.readMAF( mafFile , **kwargs )
+		if mafFile:
+			self.readMAF( mafFile , **kwargs )
+		if vcfFile:
+			self.readVCF( vcfFile , **kwargs )
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile , specific=specific )
 	def readMAF( self , inputFile , **kwargs ):
@@ -77,6 +82,32 @@ class charger(object):
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
+	def readVCF( self , inputFile , **kwargs ):
+#		print "\tReading .maf!"
+		inFile = vcf.Reader( open( inputFile , 'r' ) )
+		for record in inFile:
+			alternates = record.ALT
+			reference = record.REF
+			start = record.POS #1-base beginning of ref
+			stop = record.end+1 #0-base ending of ref
+			for alternate in alternates:
+				if alternate == "None":
+					alternate = None
+				var = chargerVariant( \
+					chromosome = record.CHROM , \
+					start = start , \
+					stop = stop , \
+					dbsnp = record.ID , \
+					reference = reference , \
+					alternate = str(alternate) , \
+				)
+				#quality = record.QUAL
+				#vcfFilter = record.FILTER
+				#info = record.INFO
+				#if ( vcfFilter == "PASS" or quality >= 10 ) or \
+				#	( not vcfFilter and not quality ):
+				#	self.userVariants.append( var )
+				self.userVariants.append( var )
 			
 	def readExpression( self , inputFile ): # expect sample(col)-gene(row) matrixes
 		try:

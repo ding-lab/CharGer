@@ -10,7 +10,8 @@ import time
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
-	helpText += "-m \"maf\" "
+	helpText += "-m \"maf\" |"
+	helpText += "-f \"vcf\" "
 	helpText += "(-l suppress ClinVar, "
 	helpText += "-x suppress ExAC, "
 	helpText += "-b ClinVar summary batch size, "
@@ -26,6 +27,7 @@ def parseArgs( argv ):
 	helpText += "-c co-segregation, "
 	helpText += "-o \"output\")\n"
 	mafFile = ""
+	vcfFile = ""
 	expressionFile = ""
 	geneListFile = ""
 	deNovoFile = ""
@@ -43,8 +45,8 @@ def parseArgs( argv ):
 	exac = True
 	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxh:m:o:b:B:p:C:g:d:e:n:a:c:" , \
-		["maf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
+		opts, args = getopt.getopt( argv , "DEtlxh:m:f:o:b:B:p:C:g:d:e:n:a:c:" , \
+		["maf=" , "vcf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
@@ -62,6 +64,8 @@ def parseArgs( argv ):
 			sys.exit()
 		elif opt in ( "-m" , "--maf" ):
 			mafFile = arg
+		elif opt in ( "-f" , "--vcf" ):
+			vcfFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
 		elif opt in ( "-b" , "--summaryBatchSize" ):
@@ -95,6 +99,7 @@ def parseArgs( argv ):
 		elif opt in ( "-x" , "--noexac" ):
 			exac = False
 	return { "maf" : mafFile , \
+	"vcf" : vcfFile , \
 	"output" : output , \
 	"specific" : specific , \
 	"tcga" : tcga , \
@@ -117,6 +122,7 @@ def main( argv ):
 	t0 = time.time()
 	values = parseArgs( argv )
 	mafFile = values["maf"]
+	vcfFile = values["vcf"]
 	expressionFile = values["expression"]
 	deNovoFile = values["deNovo"]
 	assumedDeNovoFile = values["assumedDeNovo"]
@@ -139,6 +145,7 @@ def main( argv ):
 	CharGer = charger.charger()
 
 	CharGer.getInputData( maf=mafFile , \
+	vcf=vcfFile , \
 	specific=diseaseSpecific , \
 	tcga=doTCGA , \
 	geneList=geneListFile , \
