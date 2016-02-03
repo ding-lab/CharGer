@@ -44,6 +44,7 @@ class charger(object):
 	def getInputData( self  , **kwargs ):
 		mafFile = kwargs.get( 'maf' , "" )
 		vcfFile = kwargs.get( 'vcf' , "" )
+		tsvFile = kwargs.get( 'tsv' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
 		deNovoFile = kwargs.get( 'deNovo' , "" )
@@ -57,6 +58,8 @@ class charger(object):
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
 			self.readVCF( vcfFile , **kwargs )
+		if tsvFile:
+			self.readTSV( tsvFile , **kwargs )
 		self.readExpression( expressionFile )
 		self.readGeneList( geneListFile , specific=specific )
 	def readMAF( self , inputFile , **kwargs ):
@@ -108,6 +111,49 @@ class charger(object):
 				#	( not vcfFilter and not quality ):
 				#	self.userVariants.append( var )
 				self.userVariants.append( var )
+
+	def readTSV( self , inputFile , **kwargs ):
+		print "\tReading .tsv!"
+		inFile = self.safeOpen( inputFile , 'r' )
+		chrColumn = kwargs.get( 'chr' , 0 )
+		startColumn = kwargs.get( 'start' , 1 )
+		stopColumn = kwargs.get( 'stop' , 2 )
+		refColumn = kwargs.get( 'ref' , 3 )
+		altColumn = kwargs.get( 'alt' , 4 )
+		sampleColumn = kwargs.get( 'sample' , 21 )
+		tcga = kwargs.get( 'tcga' , True )
+		specific = kwargs.get( 'specific' , True )
+		try:
+			next(inFile)
+			for line in inFile:
+				fields = line.split( "\t" )
+				chrom = fields[chrColumn]
+				alt = fields[altColumn]
+				ref = fields[refColumn]
+				start = fields[startColumn]
+				stop = fields[stopColumn]
+				sample = fields[sampleColumn]
+				
+				var = chargerVariant( \
+					chromosome = chrom , \
+					start = start , \
+					stop = stop , \
+					reference = ref , \
+					alternate = alt , \
+					sample = sample , \
+				)
+
+				if specific:
+					if tcga:
+						match = re.match( "TCGA\-(\w\w)" , var.sample )
+						if match:
+							var.disease = self.diseases[match.groups()[0]]
+				else:
+					var.disease = charger.allDiseases
+				print var.genomicVar() + "\t" + var.disease
+				self.userVariants.append( var )
+		except:
+			raise Exception( "CharGer Error: bad .tsv file" )
 			
 	def readExpression( self , inputFile ): # expect sample(col)-gene(row) matrixes
 		try:

@@ -12,6 +12,7 @@ def parseArgs( argv ):
 	helpText = "python main.py" + " "
 	helpText += "-m \"maf\" |"
 	helpText += "-f \"vcf\" "
+	helpText += "-T \"tsv\" "
 	helpText += "(-l suppress ClinVar, "
 	helpText += "-x suppress ExAC, "
 	helpText += "-b ClinVar summary batch size, "
@@ -28,6 +29,7 @@ def parseArgs( argv ):
 	helpText += "-o \"output\")\n"
 	mafFile = ""
 	vcfFile = ""
+	tsvFile = ""
 	expressionFile = ""
 	geneListFile = ""
 	deNovoFile = ""
@@ -39,14 +41,20 @@ def parseArgs( argv ):
 	clinvarSearchBatchSize = 100
 	codonColumn = 48
 	peptideChangeColumn = 49
+	chrColumn = 0
+	startColumn = 1
+	stopColumn = 2
+	refColumn = 3
+	altColumn = 4
+	sampleColumn = 21
 	specific = True
 	tcga = True
 	clinvar = True
 	exac = True
 	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxh:m:f:o:b:B:p:C:g:d:e:n:a:c:" , \
-		["maf=" , "vcf=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
+		opts, args = getopt.getopt( argv , "DEtlxhXARSPM:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
+		["maf=" , "vcf=" , "tsv=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
@@ -66,6 +74,8 @@ def parseArgs( argv ):
 			mafFile = arg
 		elif opt in ( "-f" , "--vcf" ):
 			vcfFile = arg
+		elif opt in ( "-T" , "--tsv" ):
+			tsvFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
 		elif opt in ( "-b" , "--summaryBatchSize" ):
@@ -74,6 +84,19 @@ def parseArgs( argv ):
 			clinvarSearchBatchSize = arg
 		elif opt in ( "-p" , "--peptideChange" ):
 			peptideChangeColumn = arg
+		# all customized .tsv options are in caps for now
+		elif opt in ( "-X" , "--chromosome" ):
+			chrColumn = arg
+		elif opt in ( "-A" , "--alt" ):
+			altColumn = arg
+		elif opt in ( "-R" , "--ref" ):
+			refColumn = arg
+		elif opt in ( "-S" , "--start" ):
+			startColumn = arg
+		elif opt in ( "-P" , "--stop" ):
+			stopColumn = arg
+		elif opt in ( "-M" , "--sample" ):
+			sampleColumn = arg
 		elif opt in ( "-C" , "--codon" ):
 			codonColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
@@ -100,6 +123,7 @@ def parseArgs( argv ):
 			exac = False
 	return { "maf" : mafFile , \
 	"vcf" : vcfFile , \
+	"tsv" : tsvFile , \
 	"output" : output , \
 	"specific" : specific , \
 	"tcga" : tcga , \
@@ -115,7 +139,14 @@ def parseArgs( argv ):
 	"assumedDeNovo" : assumedDeNovoFile , \
 	"coSegregation" : coSegregationFile , \
 	"diseases" : diseasesFile , \
-	"geneList" : geneListFile }
+	"geneList" : geneListFile , \
+	"chrColumn" : chrColumn, \
+	"startColumn" : startColumn, \
+	"stopColumn" : stopColumn, \
+	"refColumn" : refColumn, \
+	"altColumn" : altColumn, \
+	"sampleColumn" : sampleColumn, \
+	}
 
 ### main ### 
 def main( argv ):
@@ -123,6 +154,7 @@ def main( argv ):
 	values = parseArgs( argv )
 	mafFile = values["maf"]
 	vcfFile = values["vcf"]
+	tsvFile = values["tsv"]
 	expressionFile = values["expression"]
 	deNovoFile = values["deNovo"]
 	assumedDeNovoFile = values["assumedDeNovo"]
@@ -139,6 +171,12 @@ def main( argv ):
 	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
 	peptideChangeColumn = values["peptideChangeColumn"]
 	codonColumn = values["codonColumn"]
+	chrColumn = values["chrColumn"]
+	startColumn = values["startColumn"]
+	stopColumn = values["stopColumn"]
+	refColumn = values["refColumn"]
+	altColumn = values["altColumn"]
+	sampleColumn = values["sampleColumn"]
 	
 	t1 = time.time()
 
@@ -146,6 +184,7 @@ def main( argv ):
 
 	CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
+	tsv=tsvFile , \
 	specific=diseaseSpecific , \
 	tcga=doTCGA , \
 	geneList=geneListFile , \
@@ -156,6 +195,12 @@ def main( argv ):
 	diseases=diseasesFile , \
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn , \
+	chrColumn=chrColumn , \
+	startColumn=startColumn , \
+	stopColumn=stopColumn , \
+	refColumn=refColumn , \
+	altColumn=altColumn , \
+	sampleColumn=sampleColumn , \
 	)
 
 	t2 = time.time() 
