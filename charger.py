@@ -346,7 +346,9 @@ class charger(object):
 		print "CharGer module PVS1"
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
-		truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Nonstop_Mutation","Splice_Site"]
+		maf_truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Splice_Site"] #,"Nonstop_Mutation"
+		vep_truncations = ["transcript_ablation","splice_acceptor_variant","splice_donor_variant","stop_gained",\
+							"frameshift_variant","start_lost"]
 #		for gene in sorted(self.userGeneList.keys()):
 #			for disease in sorted(self.userGeneList[gene].keys()):
 #				print '\t'.join( [ gene , disease , self.userGeneList[gene][disease] ] )
@@ -357,7 +359,7 @@ class charger(object):
 				varSample = var.sample
 				varClass = var.variantClass
 #				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
-				if varClass in truncations:
+				if (varClass in maf_truncations) or (varClass in vep_truncations):
 					if varGene in self.userGeneList: # check if in gene list
 						#var.PVS1 = True
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
