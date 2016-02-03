@@ -50,6 +50,19 @@ class chargerVariant(clinvarVariant,vepVariant):
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
 			super( chargerVariant , self ).copyInfo( aParentVariant )
+	def fillMissingInfo( self , otherVar ):
+		if type( otherVar ) == vepVariant:
+#			print "fillMissingInfo for a vepVariant"
+#			print self.proteogenomicVar() ,
+#			print " vs. "
+#			print otherVar.proteogenomicVar()
+			vepVariant.fillMissingInfo( self , otherVar )
+		if type( otherVar ) == clinvarVariant:
+#			print "fillMissingInfo for a clinvarVariant"
+#			print self.proteogenomicVar() ,
+#			print " vs. "
+#			print otherVar.proteogenomicVar()
+			clinvarVariant.fillMissingInfo( self , otherVar )
 	def check( self , mod ):
 		checks = self.checks()
 		return checks[mod]
