@@ -170,7 +170,8 @@ def main( argv ):
 
 	t3 = time.time() 
 
-	threshold = 0.0005
+	rareThreshold = 0.0005
+	commonThreshold = 0.05
 	minimumEvidence = 2
 
 	CharGer.PVS1( )
@@ -179,7 +180,7 @@ def main( argv ):
 	CharGer.PS3( )
 	CharGer.PS4( )
 	CharGer.PM1( )
-	CharGer.PM2( threshold )
+	CharGer.PM2( rareThreshold )
 	CharGer.PM3( )
 	CharGer.PM4( )
 	CharGer.PM5( )
@@ -189,6 +190,19 @@ def main( argv ):
 	CharGer.PP3( minimumEvidence )
 	CharGer.PP4( )
 	CharGer.PP5( )
+
+	CharGer.BA1( commonThreshold )
+	CharGer.BS1( )
+	CharGer.BS2( )
+	CharGer.BS3( )
+	CharGer.BS4( )
+	CharGer.BP1( )
+	CharGer.BP2( )
+	CharGer.BP3( )
+	CharGer.BP4( )
+	CharGer.BP5( )
+	CharGer.BP6( )
+	CharGer.BP7( )
 	#CharGer.printResult( )
 
 	t4 = time.time() 

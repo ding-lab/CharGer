@@ -31,6 +31,18 @@ class chargerVariant(clinvarVariant,vepVariant):
 		self.PP3 = kwargs.get( 'PP3' , False )
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.PP5 = kwargs.get( 'PP5' , False )
+		self.BA1 = kwargs.get( 'BA1' , False )
+		self.BS1 = kwargs.get( 'BS1' , False )
+		self.BS2 = kwargs.get( 'BS2' , False )
+		self.BS3 = kwargs.get( 'BS3' , False )
+		self.BS4 = kwargs.get( 'BS4' , False )
+		self.BP1 = kwargs.get( 'BP1' , False )
+		self.BP2 = kwargs.get( 'BP2' , False )
+		self.BP3 = kwargs.get( 'BP3' , False )
+		self.BP4 = kwargs.get( 'BP4' , False )
+		self.BP5 = kwargs.get( 'BP5' , False )
+		self.BP6 = kwargs.get( 'BP6' , False )
+		self.BP7 = kwargs.get( 'BP7' , False )
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.pathogenicity = kwargs.get( 'pathogenicity' , chargerVariant.uncertain )
@@ -62,13 +74,29 @@ class chargerVariant(clinvarVariant,vepVariant):
 		checks[mods[13]] = self.PP3
 		checks[mods[14]] = self.PP4
 		checks[mods[15]] = self.PP5
+		checks[mods[16]] = self.BA1
+		checks[mods[17]] = self.BS1
+		checks[mods[18]] = self.BS2
+		checks[mods[19]] = self.BS3
+		checks[mods[20]] = self.BS4
+		checks[mods[21]] = self.BP1
+		checks[mods[22]] = self.BP2
+		checks[mods[23]] = self.BP3
+		checks[mods[24]] = self.BP4
+		checks[mods[25]] = self.BP5
+		checks[mods[26]] = self.BP6
+		checks[mods[27]] = self.BP7
 		#print checks
 		return checks
 	def modules( self ):
 		return ['PVS1' , \
 		'PS1' , 'PS2' , 'PS3' , 'PS4' , \
 		'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' , \
-		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' ]
+		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' , \
+		'BA1' , \
+		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
+		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' \
+		]
 	def hasAlleleFrequency( self ):
 		if var.alleleFrequency == None:
 			return False
@@ -77,7 +105,7 @@ class chargerVariant(clinvarVariant,vepVariant):
 		if self.alleleFrequency > threshold:
 			return True
 		return False
-	def countStrong( self ):
+	def countPathogenicStrong( self ):
 		count = 0
 		if self.PS1:
 			count += 1
@@ -88,7 +116,7 @@ class chargerVariant(clinvarVariant,vepVariant):
 		if self.PS4:
 			count += 1
 		return count
-	def countModerate( self ):
+	def countPathogenicModerate( self ):
 		count = 0
 		if self.PM1:
 			count += 1
@@ -103,7 +131,7 @@ class chargerVariant(clinvarVariant,vepVariant):
 		if self.PM6:
 			count += 1
 		return count
-	def countSupport( self ):
+	def countPathogenicSupport( self ):
 		count = 0
 		if self.PP1:
 			count += 1
@@ -117,51 +145,88 @@ class chargerVariant(clinvarVariant,vepVariant):
 			count += 1
 		return count
 	def isPathogenic( self ):
-		numStrong = self.countStrong()
-		numModerate = self.countModerate()
-		numSupport = self.countSupport()
+		numPathogenicStrong = self.countPathogenicStrong()
+		numPathogenicModerate = self.countPathogenicModerate()
+		numPathogenicSupport = self.countPathogenicSupport()
 		if self.PVS1:
-			if numStrong >= 1 or \
-			numModerate >= 2 or \
-			(numModerate+numSupport) >= 2 or \
-			numSupport >= 2:
+			if numPathogenicStrong >= 1 or \
+			numPathogenicModerate >= 2 or \
+			(numPathogenicModerate+numPathogenicSupport) >= 2 or \
+			numPathogenicSupport >= 2:
 				self.setAsPathogenic()
 				return True
-		elif numStrong >= 2:
+		elif numPathogenicStrong >= 2:
 			self.setAsPathogenic()
 			return True
-		elif numStrong >= 1:
-			if numModerate >= 3 or \
-			(numModerate == 2 and numSupport >= 2) or \
-			(numModerate == 1 and numSupport >= 4):
+		elif numPathogenicStrong >= 1:
+			if numPathogenicModerate >= 3 or \
+			(numPathogenicModerate == 2 and numPathogenicSupport >= 2) or \
+			(numPathogenicModerate == 1 and numPathogenicSupport >= 4):
 				self.setAsPathogenic()
 				return True
 	def isLikelyPathogenic( self ):
-		numStrong = self.countStrong()
-		numModerate = self.countModerate()
-		numSupport = self.countSupport()
-		if numStrong and numModerate == 1:
+		numPathogenicStrong = self.countPathogenicStrong()
+		numPathogenicModerate = self.countPathogenicModerate()
+		numPathogenicSupport = self.countPathogenicSupport()
+		if numPathogenicStrong and numPathogenicModerate == 1:
 			self.setAsLikelyPathogenic()
 			return True
-		if numStrong == 1 and ( numModerate == 1 or numModerate == 2 ):
+		if numPathogenicStrong == 1 and ( numPathogenicModerate == 1 or numPathogenicModerate == 2 ):
 			self.setAsLikelyPathogenic()
 			return True
-		if numStrong == 1 and numSupport >= 2:
+		if numPathogenicStrong == 1 and numPathogenicSupport >= 2:
 			self.setAsLikelyPathogenic()
 			return True
-		if numModerate >= 3:
+		if numPathogenicModerate >= 3:
 			self.setAsLikelyPathogenic()
 			return True
-		if numModerate == 2 and numSupport >= 2:
+		if numPathogenicModerate == 2 and numPathogenicSupport >= 2:
 			self.setAsLikelyPathogenic()
 			return True
-		if numModerate == 1 and numSupport >= 4:
+		if numPathogenicModerate == 1 and numPathogenicSupport >= 4:
 			self.setAsLikelyPathogenic()
 			return True
+	def countBenignStrong( self ):
+		count = 0
+		if self.BS1:
+			count += 1
+		if self.BS2:
+			count += 1
+		if self.BS3:
+			count += 1
+		if self.BS4:
+			count += 1
+		return count
+	def countBenignSupport( self ):
+		count = 0
+		if self.BP1:
+			count += 1
+		if self.BP2:
+			count += 1
+		if self.BP3:
+			count += 1
+		if self.BP4:
+			count += 1
+		if self.BP5:
+			count += 1
+		return count
 	def isLikelyBenign( self ):
-		NotImplemented
+		numBenignStrong = self.countBenignStrong()
+		numBenignSupport = self.countBenignSupport()
+		if numBenignStrong == 1 and \
+		numBenignSupport == 1:
+			return True
+		if numBenignSupport >= 2:
+			return True
+		return False
 	def isBenign( self ):
-		NotImplemented
+		numBenignStrong = self.countBenignStrong()
+		if self.BA1:
+			return True
+		if numBenignStrong >= 2:
+			return True
+		return False
+
 	def isUncertainSignificance( self ):
 		if ( self.isPathogenic() or self.isLikelyPathogenic() )and \
 		( self.isBenign() or self.isLikelyBenign() ):

@@ -360,11 +360,7 @@ class charger(object):
 	def PM2( self , threshold ):
 		print "CharGer module PM2"
 		print "- absent or extremely low frequency in controls"
-		for var in self.userVariants:
-			#varMAF = var.getExACasdf # Adam will update use alleleFrequency method
-#			print var.genomicVar() + "\t" + str(var.alleleFrequency) + "\t" + str(threshold)
-			if not var.isFrequentAllele( threshold ):
-				var.PM2 = True
+		self.checkAlleleFrequencies( "PM2" , threshold )
 	def PM3( self ):
 		print "CharGer module PM3: not yet implemented"
 #		print "- "
@@ -398,7 +394,7 @@ class charger(object):
 		print "CharGer module PP2: not yet implemented"
 #		print "- "
 	def PP3( self , minimumEvidence ):
-		print "CharGer module PP3: not yet implemented"
+		print "CharGer module PP3"
 		print "- multiple lines of in silico evidence of deliterous effect"
 		callSIFT = "damaging"
 		callPolyphen = "probably damaging"
@@ -510,6 +506,47 @@ class charger(object):
 					print "\tis " + module
 				else:
 					print "\tis NOT " + module
+	def checkAlleleFrequencies( self , mod , threshold ):
+		for var in self.userVariants:
+			if mod == "PM2":
+				if not var.isFrequentAllele( threshold ):
+					var.PM2 = True
+			if mod == "BA1":
+				if var.isFrequentAllele( threshold ):
+					var.BA1 = True
+
+### Benign Modules ###
+#### Stand-alone ####
+	def BA1( self , threshold ):
+		print "CharGer module BA1"
+		print "- allele frequency >5%"
+		self.checkAlleleFrequencies( "BA1" , threshold )
+#### Strong ####
+	def BS1( self ):
+		print "CharGer module BS1: not yet implemented"
+	def BS2( self ):
+		print "CharGer module BS2: not yet implemented"
+	def BS3( self ):
+		print "CharGer module BS3: not yet implemented"
+		#print " - in vitro or in vivo functional studies with no damaging effect on protein function or splicing"
+	def BS4( self ):
+		print "CharGer module BS4: not yet implemented"
+#### Supporting ####
+	def BP1( self ):
+		print "CharGer module BP1: not yet implemented"
+	def BP2( self ):
+		print "CharGer module BP2: not yet implemented"
+	def BP3( self ):
+		print "CharGer module BP3: not yet implemented"
+	def BP4( self ):
+		print "CharGer module BP4: not yet implemented"
+	def BP5( self ):
+		print "CharGer module BP5: not yet implemented"
+		#print" - multiple lines of computational evidence suggesting no impact on gene or product"
+	def BP6( self ):
+		print "CharGer module BP6: not yet implemented"
+	def BP7( self ):
+		print "CharGer module BP7: not yet implemented"
 
 ### Classifier ###
 	def classify( self ):
