@@ -313,6 +313,7 @@ class charger(object):
 #				print "userVariant: " + var.genomicVar() ,
 #				print " =? vepVariant: " + vepVar.genomicVar() + " with N=" + str( len( vepVar.consequences ) ) + " consequences"
 				if var.sameGenomicVariant( vepVar ):
+					var.mostSevereConsequence = vepVar.mostSevereConsequence
 #					print "\tsame! consequences N=" ,
 #					print str( len( vepVar.consequences ) ) ,
 #					print " transfered to userVariant=" ,
@@ -358,8 +359,12 @@ class charger(object):
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
+				varVEPClass = var.mostSevereConsequence
+				print var.genomicVar() + "\t" ,
+				print varClass + "\t" , 
+				print varVEPClass 
 #				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
-				if (varClass in maf_truncations) or (varClass in vep_truncations):
+				if (varClass in maf_truncations) or (varVEPClass in vep_truncations):
 					if varGene in self.userGeneList: # check if in gene list
 						#var.PVS1 = True
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
@@ -483,9 +488,9 @@ class charger(object):
 					if vcVar.genesplicer:
 						if vcVar.genesplicer.lower() == callGeneSplicer:
 							evidence += 1
-					print "Compuational evidence for " ,
-					print vcVar.genomicVar() ,
-					print " is " + str( evidence )
+#					print "Compuational evidence for " ,
+#					print vcVar.genomicVar() ,
+#					print " is " + str( evidence )
 					if evidence >= minimumEvidence:
 						var.PP3 = True
 
