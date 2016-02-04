@@ -66,39 +66,43 @@ class chargerVariant(clinvarVariant,vepVariant):
 	def check( self , mod ):
 		checks = self.checks()
 		return checks[mod]
-	def checks( self ):
+	def checks( self , **kwargs ):
+		doPositive = kwargs.get( 'positive' , True )
+		doNegative = kwargs.get( 'negative' , True )
 		#print "chargerVariant::checks"
 		checks = autovivification({})
 		mods = self.modules()
 		#print mods
-		checks[mods[0]] = self.PVS1
-		checks[mods[1]] = self.PS1
-		checks[mods[2]] = self.PS2
-		checks[mods[3]] = self.PS3
-		checks[mods[4]] = self.PS4
-		checks[mods[5]] = self.PM1
-		checks[mods[6]] = self.PM2
-		checks[mods[7]] = self.PM3
-		checks[mods[8]] = self.PM4
-		checks[mods[9]] = self.PM5
-		checks[mods[10]] = self.PM6
-		checks[mods[11]] = self.PP1
-		checks[mods[12]] = self.PP2
-		checks[mods[13]] = self.PP3
-		checks[mods[14]] = self.PP4
-		checks[mods[15]] = self.PP5
-		checks[mods[16]] = self.BA1
-		checks[mods[17]] = self.BS1
-		checks[mods[18]] = self.BS2
-		checks[mods[19]] = self.BS3
-		checks[mods[20]] = self.BS4
-		checks[mods[21]] = self.BP1
-		checks[mods[22]] = self.BP2
-		checks[mods[23]] = self.BP3
-		checks[mods[24]] = self.BP4
-		checks[mods[25]] = self.BP5
-		checks[mods[26]] = self.BP6
-		checks[mods[27]] = self.BP7
+		if doPositive:
+			checks[mods[0]] = self.PVS1
+			checks[mods[1]] = self.PS1
+			checks[mods[2]] = self.PS2
+			checks[mods[3]] = self.PS3
+			checks[mods[4]] = self.PS4
+			checks[mods[5]] = self.PM1
+			checks[mods[6]] = self.PM2
+			checks[mods[7]] = self.PM3
+			checks[mods[8]] = self.PM4
+			checks[mods[9]] = self.PM5
+			checks[mods[10]] = self.PM6
+			checks[mods[11]] = self.PP1
+			checks[mods[12]] = self.PP2
+			checks[mods[13]] = self.PP3
+			checks[mods[14]] = self.PP4
+			checks[mods[15]] = self.PP5
+		if doNegative:
+			checks[mods[16]] = self.BA1
+			checks[mods[17]] = self.BS1
+			checks[mods[18]] = self.BS2
+			checks[mods[19]] = self.BS3
+			checks[mods[20]] = self.BS4
+			checks[mods[21]] = self.BP1
+			checks[mods[22]] = self.BP2
+			checks[mods[23]] = self.BP3
+			checks[mods[24]] = self.BP4
+			checks[mods[25]] = self.BP5
+			checks[mods[26]] = self.BP6
+			checks[mods[27]] = self.BP7
 		#print checks
 		return checks
 	def modules( self ):
@@ -255,10 +259,19 @@ class chargerVariant(clinvarVariant,vepVariant):
 		self.pathogenicity = chargerVariant.benign
 	def positiveEvidence( self ):
 		positive = []
-		checks = self.checks()
+		checks = self.checks( negative=False )
 		for k in sorted(checks.keys()):
 #			print k + "\t" + str(checks[k])
 			if checks[k]:
 				positive.append(k)
 		return ",".join(positive)
+	def negativeEvidence( self ):
+		negative = []
+		checks = self.checks( positive=False )
+		for k in sorted(checks.keys()):
+#			print k + "\t" + str(checks[k])
+			if checks[k]:
+				negative.append(k)
+		return ",".join(negative)
+
 
