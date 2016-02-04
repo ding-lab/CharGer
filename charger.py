@@ -62,8 +62,14 @@ class charger(object):
 			self.readVCF( vcfFile , **kwargs )
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
-		self.readExpression( expressionFile )
-		self.readGeneList( geneListFile , specific=specific )
+		if expressionFile:
+			self.readExpression( expressionFile )
+		else: 
+			print "No expression file uploaded. CharGer will allow all passed truncations without expression data in PVS1."
+		if geneListFile:
+			self.readGeneList( geneListFile , specific=specific )
+		else:
+			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 	def readMAF( self , inputFile , **kwargs ):
 #		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
