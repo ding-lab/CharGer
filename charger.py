@@ -490,12 +490,13 @@ class charger(object):
 	def PP3( self , minimumEvidence ):
 		print "CharGer module PP3"
 		print "- multiple lines of in silico evidence of deliterous effect"
-		callSIFT = "damaging"
+		callSIFTdam = "damaging"
+		callSIFTdel = "deleterious"
 		callPolyphen = "probably damaging"
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
-		#callMaxEntScan = [7,0.2*7]
+		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
 #			print var.genomicVar()
@@ -509,7 +510,8 @@ class charger(object):
 						if vcVar.blosum < callBlosum62:
 							evidence += 1
 					if vcVar.predictionSIFT:
-						if vcVar.predictionSIFT.lower() == callSIFT:
+						if vcVar.predictionSIFT.lower() == callSIFTdam or \
+						vcVar.predictionSIFT.lower() == callSIFTdel:
 							evidence += 1
 					if vcVar.predictionPolyphen:
 						if vcVar.predictionPolyphen.lower() == callPolyphen:
@@ -521,13 +523,8 @@ class charger(object):
 						if vcVar.impact.lower() == callImpact:
 							evidence += 1
 					if vcVar.maxentscan:
-						#ref >= 7, alt <= 7, diff >= 1 (ref-alt)
-						#if vcVar.maxentscan[0] >= callMaxEntScan[0] \
-						#and vcVar.maxentscan[1] <= callMaxEntScan[0] \
-						#and vcVar.maxentscan[2] >= callMaxEntScan[1]:
-						#alt <= 20% of ref
-						callMaxEntScan = vcVar.maxentscan[0]*0.8
-						if vcVar.maxentscan[1] <= callMaxEntScan
+						callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
+						if vcVar.maxentscan[1] <= callMaxEntScan:
 							evidence += 1
 					if vcVar.genesplicer:
 						if vcVar.genesplicer.lower() == callGeneSplicer:
@@ -642,8 +639,47 @@ class charger(object):
 		print "CharGer module BP2: not yet implemented"
 	def BP3( self ):
 		print "CharGer module BP3: not yet implemented"
-	def BP4( self ):
-		print "CharGer module BP4: not yet implemented"
+	def BP4( self , minimumEvidence ):
+		print "CharGer module BP4"
+		print " - in silico evidence of no damage"
+		callSIFTdam = "damaging"
+		callSIFTdel = "deleterious"
+		callPolyphen = "probably damaging"
+		callBlosum62 = -2
+		callCompara = 2
+		callImpact = "high"
+		fracMaxEntScan = 0.8
+		callGeneSplicer = ""
+		for var in self.userVariants:
+			for vcVar in var.consequences:
+				if not var.PP3:
+					evidence = 0
+					if vcVar.blosum:
+						if vcVar.blosum > callBlosum62:
+							evidence += 1
+					if vcVar.predictionSIFT:
+						if vcVar.predictionSIFT.lower() != callSIFTdam and \
+						vcVar.predictionSIFT.lower() != callSIFTdel:
+							evidence += 1
+					if vcVar.predictionPolyphen:
+						if vcVar.predictionPolyphen.lower() != callPolyphen:
+							evidence += 1
+					if vcVar.compara:
+						if vcVar.compara <= callCompara:
+							evidence += 1
+					if vcVar.impact:
+						if vcVar.impact.lower() != callImpact:
+							evidence += 1
+					if vcVar.maxentscan:
+						callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
+						if vcVar.maxentscan[1] > callMaxEntScan:
+							evidence += 1
+					if vcVar.genesplicer:
+						if vcVar.genesplicer.lower() != callGeneSplicer:
+							evidence += 1
+					if evidence >= minimumEvidence:
+						var.BP4 = True
+
 	def BP5( self ):
 		print "CharGer module BP5: not yet implemented"
 		#print" - multiple lines of computational evidence suggesting no impact on gene or product"

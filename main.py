@@ -244,7 +244,7 @@ def main( argv ):
 	CharGer.BP1( )
 	CharGer.BP2( )
 	CharGer.BP3( )
-	CharGer.BP4( )
+	CharGer.BP4( minimumEvidence )
 	CharGer.BP5( )
 	CharGer.BP6( )
 	CharGer.BP7( )
