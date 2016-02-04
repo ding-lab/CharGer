@@ -136,12 +136,18 @@ class charger(object):
 			next(inFile)
 			for line in inFile:
 				fields = line.split( "\t" )
-				chrom = fields[chrColumn]
-				alt = fields[altColumn]
-				ref = fields[refColumn]
-				start = fields[startColumn]
-				stop = fields[stopColumn]
-				sample = fields[sampleColumn]
+				chrom = fields[int(chrColumn)]
+				print str(chrColumn) + " " + str(chrom)
+				alt = fields[int(altColumn)]
+				print str(altColumn) + " " + str(alt)
+				ref = fields[int(refColumn)]
+				print str(refColumn) + " " + str(ref)
+				start = fields[int(startColumn)]
+				print str(startColumn) + " " + str(start)
+				stop = fields[int(stopColumn)]
+				print str(stopColumn) + " " + str(stop)
+				sample = fields[int(sampleColumn)]
+				print str(sampleColumn) + " " + str(sample)
 				
 				var = chargerVariant( \
 					chromosome = chrom , \
@@ -330,10 +336,14 @@ class charger(object):
 #						print str(vepVar.strand) + " from " + str(var.strand)
 					#var.strand = vepVar.strand
 			for consequence in var.consequences:
-				if var.mostSevereConsequence in consequence.terms and \
-				consequence.exon and consequence.canonical: #only transfers coding variants
-#					print "setting peptides " + var.proteogenomicVar() ,
-#					print "from " + consequence.proteogenomicVar()
+				print "consequence (" ,
+				print consequence.terms ,
+				print "): " ,
+				print consequence.proteogenomicVar()
+				if var.mostSevereConsequence in consequence.terms: # and \
+				#consequence.exon: # and consequence.canonical: #only transfers coding variants
+					print "setting peptides " + var.proteogenomicVar() ,
+					print "from " + consequence.proteogenomicVar()
 					var.referencePeptide = consequence.referencePeptide
 					var.positionPeptide = consequence.positionPeptide
 					var.alternatePeptide = consequence.alternatePeptide
@@ -697,14 +707,21 @@ class charger(object):
 			var.isBenign( )
 			var.isUncertainSignificance( )
 	def printClassifications( self ):
-		print '\t'.join( ["Variant" , "PositiveEvidence" , \
+		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
 			"CharGerClassification" , "ClinVarAnnoation"] )
+		print headLine
 		i = 0
 		for var in self.userVariants:
 			i += 1
 			print '\t'.join( [ str(i) , var.uniqueProteogenomicVar() , \
 				var.positiveEvidence() , var.pathogenicity , \
 				var.clinical["description"] ] )
+	def writeSummary( self , outFile ):
+		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
+			"CharGerClassification" , "ClinVarAnnoation"] )
+		outFH = safeOpen( outFile , 'w' , warning=True )
+		write( outFH , headLine )
+
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):

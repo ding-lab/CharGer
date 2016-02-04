@@ -53,7 +53,7 @@ def parseArgs( argv ):
 	exac = True
 	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhXARSPM:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhX:A:R:S:P:M:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
@@ -195,12 +195,12 @@ def main( argv ):
 	diseases=diseasesFile , \
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn , \
-	chrColumn=chrColumn , \
-	startColumn=startColumn , \
-	stopColumn=stopColumn , \
-	refColumn=refColumn , \
-	altColumn=altColumn , \
-	sampleColumn=sampleColumn , \
+	chr=chrColumn , \
+	start=startColumn , \
+	stop=stopColumn , \
+	ref=refColumn , \
+	alt=altColumn , \
+	sample=sampleColumn , \
 	)
 
 	t2 = time.time() 
