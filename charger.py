@@ -70,6 +70,11 @@ class charger(object):
 			self.readGeneList( geneListFile , specific=specific )
 		else:
 			print "No gene list file uploaded. CharGer will not make PVS1 calls."
+		for var in self.userVariants:
+			if str(var.reference) == "0" or not var.reference:
+				var.reference = "-"
+			if str(var.alternate) == "0" or not var.alternate:
+				var.alternate = "-"
 	def readMAF( self , inputFile , **kwargs ):
 #		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
@@ -89,7 +94,7 @@ class charger(object):
 							var.disease = self.diseases[match.groups()[0]]
 				else:
 					var.disease = charger.allDiseases
-				print var.genomicVar() + "\t" + var.disease
+#				print var.genomicVar() + "\t" + var.disease
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
@@ -129,6 +134,8 @@ class charger(object):
 		stopColumn = kwargs.get( 'stop' , 2 )
 		refColumn = kwargs.get( 'ref' , 3 )
 		altColumn = kwargs.get( 'alt' , 4 )
+		peptideColumn = kwargs.get( 'peptideChange' , 14 )
+		codonColumn = kwargs.get( 'codon' , 15 )
 		sampleColumn = kwargs.get( 'sample' , 21 )
 		tcga = kwargs.get( 'tcga' , True )
 		specific = kwargs.get( 'specific' , True )
@@ -137,17 +144,11 @@ class charger(object):
 			for line in inFile:
 				fields = line.split( "\t" )
 				chrom = fields[int(chrColumn)]
-				print str(chrColumn) + " " + str(chrom)
 				alt = fields[int(altColumn)]
-				print str(altColumn) + " " + str(alt)
 				ref = fields[int(refColumn)]
-				print str(refColumn) + " " + str(ref)
 				start = fields[int(startColumn)]
-				print str(startColumn) + " " + str(start)
 				stop = fields[int(stopColumn)]
-				print str(stopColumn) + " " + str(stop)
 				sample = fields[int(sampleColumn)]
-				print str(sampleColumn) + " " + str(sample)
 				
 				var = chargerVariant( \
 					chromosome = chrom , \
@@ -157,6 +158,8 @@ class charger(object):
 					alternate = alt , \
 					sample = sample , \
 				)
+				var.splitHGVSc( fields[int(codonColumn)] )
+				var.splitHGVSp( fields[int(peptideColumn)] )
 
 				if specific:
 					if tcga:
@@ -165,7 +168,7 @@ class charger(object):
 							var.disease = self.diseases[match.groups()[0]]
 				else:
 					var.disease = charger.allDiseases
-				print var.genomicVar() + "\t" + var.disease
+#				print var.genomicVar() + "\t" + var.disease
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .tsv file" )
@@ -317,7 +320,6 @@ class charger(object):
 #				print "clinvarVariant:" ,
 #				cvar.printVariant(',')
 				if var.sameGenomicVariant( cvar ):
-#					print chargerVariant.mro()
 					var.fillMissingInfo( cvar )
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
 	def matchVEP( self , vepVariants ):
@@ -325,32 +327,34 @@ class charger(object):
 		for var in self.userVariants:
 #			print ""
 			genVar = var.vcf()
-#			print genVar + "\t" + var.HGVSp() ,
+#			print genVar + "\t" + var.proteogenomicVar() ,
 			vepVar = vepVariant()
 			if genVar in vepVariants:
-#				print " is in vepVariants"
+#				print " is in vepVariants " ,
 				vepVar = vepVariants[genVar]
+#				print vepVar.inputVariant + "\t" + vepVar.genomicVar()
 			if var.sameGenomicVariant( vepVar ):
+#				print "fillMissingInfo"
 				var.fillMissingInfo( vepVar )
 				#if vepVar.strand: #MGI .maf annotator puts on positive strand
 #						print str(vepVar.strand) + " from " + str(var.strand)
 					#var.strand = vepVar.strand
 			for consequence in var.consequences:
-				print "consequence (" ,
-				print consequence.terms ,
-				print "): " ,
-				print consequence.proteogenomicVar()
-				if var.mostSevereConsequence in consequence.terms: # and \
-				#consequence.exon: # and consequence.canonical: #only transfers coding variants
-					print "setting peptides " + var.proteogenomicVar() ,
-					print "from " + consequence.proteogenomicVar()
+#				print "consequence (" ,
+#				print consequence.terms ,
+#				print "): " ,
+#				print consequence.proteogenomicVar()
+				if var.mostSevereConsequence in consequence.terms and \
+				consequence.canonical: # and consequence.canonical: #only transfers coding variants
+#					print "setting peptides " + var.proteogenomicVar() ,
+#					print "from " + consequence.proteogenomicVar()
 					var.referencePeptide = consequence.referencePeptide
 					var.positionPeptide = consequence.positionPeptide
 					var.alternatePeptide = consequence.alternatePeptide
 					var.transcriptPeptide = consequence.transcriptPeptide
 					var.positionCodon = consequence.positionCodon
 					var.transcriptCodon = consequence.transcriptCodon
-#							print var.HGVSp()
+#			print var.codingHGVS()
 			#for genVar in vepVariants:
 				#vepVar = vepVariants[genVar]
 #				print "userVariant: " + var.genomicVar() ,
@@ -409,13 +413,17 @@ class charger(object):
 				varSample = var.sample
 				varClass = var.variantClass
 				varVEPClass = var.mostSevereConsequence
+				altPeptide = var.alternatePeptide
 #				print var.proteogenomicVar() ,
 #				print "\t" ,
 #				print varClass ,
 #				print "\t" , 
 #				print varVEPClass 
 #				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
-				if (varClass in maf_truncations) or (varVEPClass in vep_truncations):
+				if (varClass in maf_truncations) or \
+					(varVEPClass in vep_truncations) or \
+					altPeptide == "*" or \
+					altPeptide == "fs":
 					if varGene in self.userGeneList: # check if in gene list
 						#var.PVS1 = True
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
@@ -716,12 +724,47 @@ class charger(object):
 			print '\t'.join( [ str(i) , var.uniqueProteogenomicVar() , \
 				var.positiveEvidence() , var.pathogenicity , \
 				var.clinical["description"] ] )
-	def writeSummary( self , outFile ):
-		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
-			"CharGerClassification" , "ClinVarAnnoation"] )
-		outFH = safeOpen( outFile , 'w' , warning=True )
-		write( outFH , headLine )
-
+	def writeSummary( self , outFile , **kwargs ):
+		delim = kwargs.get( 'delim' , '\t' )
+		try:
+			outFH = self.safeOpen( outFile , 'w' , warning=True )
+			headLine = '\t'.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
+				"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
+				"Variant_Type" , "Variant_Classification" , \
+				"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
+				"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
+				"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+				"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
+			outFH.write( headLine )
+			for var in self.userVariants:
+#				print "writing: " ,
+#				print var.uniqueProteogenomicVar()
+				fields = []
+				fields.append( str(var.gene) )
+				fields.append( str(var.chromosome) )
+				fields.append( str(var.start) )
+				fields.append( str(var.stop) )
+				fields.append( str(var.reference) )
+				fields.append( str(var.alternate) )
+				fields.append( str(var.strand) )
+				fields.append( str(var.assembly) )
+				fields.append( str(var.variantType) )
+				fields.append( str(var.variantClass) )
+				fields.append( str(var.sample) )
+				fields.append( str(var.transcriptCodon) )
+				fields.append( str(var.positionCodon) )
+				fields.append( str(var.transcriptPeptide) )
+				fields.append( str(var.referencePeptide) )
+				fields.append( str(var.positionPeptide) )
+				fields.append( str(var.alternatePeptide) )
+				fields.append( str(var.mostSevereConsequence) )
+				fields.append( str(var.clinical["description"]) )
+				fields.append( str(var.positiveEvidence()) )
+				fields.append( str(var.negativeEvidence()) )
+				fields.append( str(var.pathogenicity) )
+				outFH.write( delim.join( fields ) + "\n" )
+		except:
+			print "CharGer Warning: Cannot write summary"
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
