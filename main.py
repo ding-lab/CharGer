@@ -161,7 +161,7 @@ def main( argv ):
 	coSegregationFile = values["coSegregation"]
 	geneListFile = values["geneList"]
 	diseasesFile = values["diseases"]
-	outputFormat = values["output"]
+	outputFile = values["output"]
 	diseaseSpecific = values["specific"]
 	doTCGA = values["tcga"]
 	doClinVar = values["clinvar"]
@@ -257,6 +257,8 @@ def main( argv ):
 	t5 = time.time() 
 
 	CharGer.printClassifications( )
+
+	CharGer.writeSummary( outputFile , delim='\t' )
 
 	print "\nCharGer run Times:"
 	dt1_0 = t1-t0
