@@ -52,16 +52,8 @@ class chargerVariant(clinvarVariant,vepVariant):
 			super( chargerVariant , self ).copyInfo( aParentVariant )
 	def fillMissingInfo( self , otherVar ):
 		if type( otherVar ) == vepVariant:
-#			print "fillMissingInfo for a vepVariant"
-#			print self.proteogenomicVar() ,
-#			print " vs. "
-#			print otherVar.proteogenomicVar()
 			vepVariant.fillMissingInfo( self , otherVar )
 		if type( otherVar ) == clinvarVariant:
-#			print "fillMissingInfo for a clinvarVariant"
-#			print self.proteogenomicVar() ,
-#			print " vs. "
-#			print otherVar.proteogenomicVar()
 			clinvarVariant.fillMissingInfo( self , otherVar )
 	def check( self , mod ):
 		checks = self.checks()
@@ -69,10 +61,8 @@ class chargerVariant(clinvarVariant,vepVariant):
 	def checks( self , **kwargs ):
 		doPositive = kwargs.get( 'positive' , True )
 		doNegative = kwargs.get( 'negative' , True )
-		#print "chargerVariant::checks"
 		checks = autovivification({})
 		mods = self.modules()
-		#print mods
 		if doPositive:
 			checks[mods[0]] = self.PVS1
 			checks[mods[1]] = self.PS1
@@ -103,7 +93,6 @@ class chargerVariant(clinvarVariant,vepVariant):
 			checks[mods[25]] = self.BP5
 			checks[mods[26]] = self.BP6
 			checks[mods[27]] = self.BP7
-		#print checks
 		return checks
 	def modules( self ):
 		return ['PVS1' , \
@@ -261,7 +250,6 @@ class chargerVariant(clinvarVariant,vepVariant):
 		positive = []
 		checks = self.checks( negative=False )
 		for k in sorted(checks.keys()):
-#			print k + "\t" + str(checks[k])
 			if checks[k]:
 				positive.append(k)
 		return ",".join(positive)
@@ -269,7 +257,6 @@ class chargerVariant(clinvarVariant,vepVariant):
 		negative = []
 		checks = self.checks( positive=False )
 		for k in sorted(checks.keys()):
-#			print k + "\t" + str(checks[k])
 			if checks[k]:
 				negative.append(k)
 		return ",".join(negative)

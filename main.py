@@ -66,7 +66,6 @@ def parseArgs( argv ):
 		print( helpText ) 
 		sys.exit(2)
 	for opt, arg in opts:
-		#print opt + " " + arg
 		if opt in ( "-h" , "--help" ):
 			print( helpText )
 			sys.exit()
@@ -248,7 +247,6 @@ def main( argv ):
 	CharGer.BP5( )
 	CharGer.BP6( )
 	CharGer.BP7( )
-	#CharGer.printResult( )
 
 	t4 = time.time() 
 

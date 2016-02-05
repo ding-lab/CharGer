@@ -76,7 +76,6 @@ class charger(object):
 			if str(var.alternate) == "0" or not var.alternate:
 				var.alternate = "-"
 	def readMAF( self , inputFile , **kwargs ):
-#		print "\tReading .maf!"
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
 		peptideChangeColumn = kwargs.get( 'peptideChange' , 49 )
@@ -94,17 +93,14 @@ class charger(object):
 							var.disease = self.diseases[match.groups()[0]]
 				else:
 					var.disease = charger.allDiseases
-#				print var.genomicVar() + "\t" + var.disease
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
-#		print "\tReading .maf!"
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
 		for record in inFile:
 			reference = record.REF
 			alternates = record.ALT
-			#if 
 			start = record.POS #1-base beginning of ref
 			stop = record.end+1 #0-base ending of ref
 			for alternate in alternates:
@@ -168,7 +164,6 @@ class charger(object):
 							var.disease = self.diseases[match.groups()[0]]
 				else:
 					var.disease = charger.allDiseases
-#				print var.genomicVar() + "\t" + var.disease
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .tsv file" )
@@ -237,7 +232,6 @@ class charger(object):
 		self.getVEP( **kwargs )
 		self.printRunTime( "VEP" , self.runTime( t ) )
 	def getClinVar( self , **kwargs ):
-#		print "charger - getClinVar"
 		doClinVar = kwargs.get( 'clinvar' , True )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
@@ -247,10 +241,6 @@ class charger(object):
 			for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
 				varsEnd = varsStart + int(searchBatchSize)
 				varsSet = self.userVariants[varsStart:varsEnd]
-#				for var in varsSet:
-#					i += 1
-#					print str(i) + "\t" + var.genomicVar()
-#				print str(varsStart) + ":" + str(varsEnd)
 				ent.prepQuery( varsSet )
 				ent.subset = entrezAPI.esearch
 				ent.database = entrezAPI.clinvar
@@ -259,7 +249,6 @@ class charger(object):
 				self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
 				self.clinvarVariants.update( varsBoth["clinvarVariants"] )
 	def getExAC( self , **kwargs ):
-#		print "charger - getExac"
 		doExAC = kwargs.get( 'exac' , True )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
@@ -272,7 +261,6 @@ class charger(object):
 			exacIn = self.getUniqueGenomicVariantList( self.userVariants )
 			#entries = exac.getAlleleFrequencies( self.userVariants )
 			entries = exac.getAlleleFrequencies( exacIn )
-#			print "Genomic_Variant\tAllele_Frequency"
 			for var in self.userVariants:
 				if var.genomicVar() in entries:
 					alleleFrequency = entries[var.genomicVar()]
@@ -280,15 +268,12 @@ class charger(object):
 					alleleFrequency = None
 				var.alleleFrequency = alleleFrequency
 				if var.isFrequentAllele( threshold ):
-#					print var.uniqueVariant() + " is NOT rare(" + str(threshold) + "): " + str(var.alleleFrequency)
 					common += 1
 				else:
 					rare += 1
-#				print var.genomicVar() + "\t" + str(var.alleleFrequency)
 			elen = len(entries.keys())
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
-#		print "charger - getVEP"
 		doVEP = kwargs.get( 'vep' , True )
 		if doVEP:
 			vep = ensemblAPI()
@@ -296,91 +281,40 @@ class charger(object):
 			vepVariants = vep.annotateVariantsPost( self.userVariants )
 			self.vepVariants = self.matchVEP( vepVariants )
 			aluv = 0
-#			print "\nvepVariants"
 			if self.vepVariants:
 				aluv = len(self.vepVariants)
-#				for genVar in self.vepVariants:
-#					print self.vepVariants[genVar].uniqueProteogenomicVar()
 			luvafter = len(self.userVariants)
 			print "\nVEP annotated userVariants " + str( luvafter )
-#			if self.userVariants:
-#				for var in self.userVariants:
-#					for consequence in var.consequences:
-#						print consequence.uniqueProteogenomicVar()
 			print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
-#		print "charger::matchClinVar - "
 		for var in userVariants:
-#			print "userVariant: " ,
-#			var.printVariant(',')
 			for uid in clinvarVariants:
 				cvar = clinvarVariants[uid]
-#				print "clinvarVariant:" ,
-#				cvar.printVariant(',')
 				if var.sameGenomicVariant( cvar ):
 					var.fillMissingInfo( cvar )
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
 	def matchVEP( self , vepVariants ):
-#		print "charger::matchVEP - "
 		for var in self.userVariants:
-#			print ""
 			genVar = var.vcf()
-#			print genVar + "\t" + var.proteogenomicVar() ,
 			vepVar = vepVariant()
 			if genVar in vepVariants:
-#				print " is in vepVariants " ,
 				vepVar = vepVariants[genVar]
-#				print vepVar.inputVariant + "\t" + vepVar.genomicVar()
 			if var.sameGenomicVariant( vepVar ):
-#				print "fillMissingInfo"
 				var.fillMissingInfo( vepVar )
-				#if vepVar.strand: #MGI .maf annotator puts on positive strand
-#						print str(vepVar.strand) + " from " + str(var.strand)
-					#var.strand = vepVar.strand
 			for consequence in var.consequences:
-#				print "consequence (" ,
-#				print consequence.terms ,
-#				print "): " ,
-#				print consequence.proteogenomicVar()
 				if var.mostSevereConsequence in consequence.terms and \
 				consequence.canonical: # and consequence.canonical: #only transfers coding variants
-#					print "setting peptides " + var.proteogenomicVar() ,
-#					print "from " + consequence.proteogenomicVar()
 					var.referencePeptide = consequence.referencePeptide
 					var.positionPeptide = consequence.positionPeptide
 					var.alternatePeptide = consequence.alternatePeptide
 					var.transcriptPeptide = consequence.transcriptPeptide
 					var.positionCodon = consequence.positionCodon
 					var.transcriptCodon = consequence.transcriptCodon
-#			print var.codingHGVS()
-			#for genVar in vepVariants:
-				#vepVar = vepVariants[genVar]
-#				print "userVariant: " + var.genomicVar() ,
-#				print " =? vepVariant: " + vepVar.genomicVar() + " with N=" + str( len( vepVar.consequences ) ) + " consequences"
-				#if var.sameGenomicVariant( vepVar ):
-					#var.mostSevereConsequence = vepVar.mostSevereConsequence
-#					print "\tsame! consequences N=" ,
-#					print str( len( vepVar.consequences ) ) ,
-#					print " transfered to userVariant=" ,
-					#var.consequences = vepVar.consequences
-#					print str( len( var.consequences ) ) ,
-					#var.colocations = vepVar.colocations
-					#if vepVar.strand: #MGI .maf annotator puts on positive strand
-#						print str(vepVar.strand) + " from " + str(var.strand)
-						#var.strand = vepVar.strand
-					#if var.referencePeptide and \
-					#not var.positionPeptide and \
-					#not var.alternatePeptide:
-						#for consequence in var.consequences:
-							#if var.mostSevereConsequence in consequence.terms:
-
 		return vepVariants
 	def getDiseases( self , diseasesFile , **kwargs ):
-#		print "charger::getDiseases - " ,
 		tcga = kwargs.get( 'tcga' , True )
-#		print tcga
 		try:
 			if tcga:
 				conversion = open( diseasesFile , "r" )
@@ -403,9 +337,6 @@ class charger(object):
 		maf_truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Splice_Site"] #,"Nonstop_Mutation"
 		vep_truncations = ["transcript_ablation","splice_acceptor_variant","splice_donor_variant","stop_gained",\
 							"frameshift_variant","start_lost"]
-#		for gene in sorted(self.userGeneList.keys()):
-#			for disease in sorted(self.userGeneList[gene].keys()):
-#				print '\t'.join( [ gene , disease , self.userGeneList[gene][disease] ] )
 		if self.userGeneList: #gene, disease, mode of inheritance
 			for var in self.userVariants:
 				varGene = var.gene
@@ -414,23 +345,15 @@ class charger(object):
 				varClass = var.variantClass
 				varVEPClass = var.mostSevereConsequence
 				altPeptide = var.alternatePeptide
-#				print var.proteogenomicVar() ,
-#				print "\t" ,
-#				print varClass ,
-#				print "\t" , 
-#				print varVEPClass 
-#				print '\t'.join( [ varGene , str(varDisease) , str(varClass) ] )
 				if (varClass in maf_truncations) or \
 					(varVEPClass in vep_truncations) or \
 					altPeptide == "*" or \
 					altPeptide == "fs":
 					if varGene in self.userGeneList: # check if in gene list
-						#var.PVS1 = True
 						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
 							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
 							var.PVS1 = True # if call is true then check expression effect
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
-								#print varSample, varGene, self.userExpression[varSample][varGene]
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
 									var.PVS1 = False 
 		else: 
@@ -517,11 +440,7 @@ class charger(object):
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
-#			print var.genomicVar()
-#			print " consequences N=" ,
-#			print str( len( var.consequences ) )
 			for vcVar in var.consequences:
-#				print var.codingHGVS()
 				if not var.PP3:
 					evidence = 0
 					if vcVar.blosum:
@@ -547,9 +466,6 @@ class charger(object):
 					if vcVar.genesplicer:
 						if vcVar.genesplicer.lower() == callGeneSplicer:
 							evidence += 1
-#					print "Compuational evidence for " ,
-#					print vcVar.genomicVar() ,
-#					print " is " + str( evidence )
 					if evidence >= minimumEvidence:
 						var.PP3 = True
 
@@ -566,9 +482,6 @@ class charger(object):
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
 			consequences = var.consequences
-#			print "\tInput variant: " ,
-#			var.printVariant(',')
-#			print var.proteogenomicVar()
 			ps1Call = False
 			pm5Call = False
 			call = False
@@ -580,25 +493,17 @@ class charger(object):
 				for genVar in self.clinvarVariants:
 					cvar = self.clinvarVariants[genVar]
 					clin = cvar.clinical
-#					print str(cvar.uid) + ": " ,
-#					print cvar.proteogenomicVar()
 					for consequence in consequences:
 						conVar = MAFVariant()
 						conVar.copyInfo( var )
 						conVar.copyInfo( consequence )
 						if var.sameGenomicVariant( cvar ):
-#							print conVar.proteogenomicVar() ,
-#							print " vs. " ,
-#							print cvar.proteogenomicVar()
 						#if genomic change is the same, then PS1
 							if clin["description"] == clinvarVariant.pathogenic:
 								if mod == "PS1":
 									var.PS1 = True # already pathogenic still suffices to be PS1
 									called += 1
 						elif var.sameGenomicReference( cvar ):
-#							print conVar.proteogenomicVar() ,
-#							print " vs. " ,
-#							print cvar.proteogenomicVar()
 						#if genomic change is different, but the peptide change is the same, then PS1
 							if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
 								if clin["description"] == clinvarVariant.pathogenic:
@@ -607,9 +512,6 @@ class charger(object):
 										called += 1
 						if var.samePeptideReference( cvar ):
 							if not var.samePeptideChange( cvar ):
-#								print conVar.proteogenomicVar() ,
-#								print " vs. " ,
-#								print cvar.proteogenomicVar()
 							#if peptide change is different, but the peptide reference is the same, then PM5
 								if var.plausibleCodonFrame( cvar ):
 									if clin["description"] == clinvarVariant.pathogenic:
@@ -737,8 +639,6 @@ class charger(object):
 				"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
 			outFH.write( headLine )
 			for var in self.userVariants:
-#				print "writing: " ,
-#				print var.uniqueProteogenomicVar()
 				fields = []
 				fields.append( str(var.gene) )
 				fields.append( str(var.chromosome) )
@@ -778,15 +678,12 @@ class charger(object):
 				return "CharGer Error: could not open " + inputFile
 	@staticmethod
 	def getUniqueGenomicVariantList( aVarList ):
-#		print "charger::getUniqueGenomicVariantList"
 		uniqueVarList = []
 		uniqueVarDict = AV({})
 		for var in aVarList:
 			generalVar = variant()
 			generalVar.copyInfo( var )
-#			var.printVariant('_')
 			if generalVar.genomicVar() not in uniqueVarDict:
-#				generalVar.printVariant('__')
 				uniqueVarDict[generalVar.genomicVar()] = 1
 				uniqueVarList.append( generalVar )
 		return uniqueVarList
