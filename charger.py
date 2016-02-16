@@ -637,7 +637,7 @@ class charger(object):
 				"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 				"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 				"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
-			outFH.write( headLine )
+			outFH.write( headLine + "\n" )
 			for var in self.userVariants:
 				fields = []
 				fields.append( str(var.gene) )
