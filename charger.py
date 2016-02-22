@@ -293,7 +293,9 @@ class charger(object):
 			for uid in clinvarVariants:
 				cvar = clinvarVariants[uid]
 				if var.sameGenomicVariant( cvar ):
-					var.fillMissingInfo( cvar )
+					#var.fillMissingInfo( cvar )
+					var.clinical = cvar.clinical
+					var.clinvarVariant = cvar
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
 	def matchVEP( self , vepVariants ):
 		for var in self.userVariants:
@@ -301,17 +303,19 @@ class charger(object):
 			vepVar = vepVariant()
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
-			if var.sameGenomicVariant( vepVar ):
-				var.fillMissingInfo( vepVar )
-			for consequence in var.consequences:
-				if var.mostSevereConsequence in consequence.terms and \
+			for consequence in vepVar.consequences:
+				print "TODO: WE COULD NOT FIND CONSEQUENCE FOR VEPVAR", consequence
+				if vepVar.mostSevereConsequence in consequence.terms and \
 				consequence.canonical: # and consequence.canonical: #only transfers coding variants
-					var.referencePeptide = consequence.referencePeptide
-					var.positionPeptide = consequence.positionPeptide
-					var.alternatePeptide = consequence.alternatePeptide
-					var.transcriptPeptide = consequence.transcriptPeptide
-					var.positionCodon = consequence.positionCodon
-					var.transcriptCodon = consequence.transcriptCodon
+					vepVar.referencePeptide = consequence.referencePeptide
+					vepVar.positionPeptide = consequence.positionPeptide
+					vepVar.alternatePeptide = consequence.alternatePeptide
+					vepVar.transcriptPeptide = consequence.transcriptPeptide
+					vepVar.positionCodon = consequence.positionCodon
+					vepVar.transcriptCodon = consequence.transcriptCodon
+			if var.sameGenomicVariant( vepVar ):
+				#var.fillMissingInfo( vepVar )
+				var.vepVariant = vepVar
 		return vepVariants
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
@@ -658,6 +662,7 @@ class charger(object):
 				fields.append( str(var.positionPeptide) )
 				fields.append( str(var.alternatePeptide) )
 				fields.append( str(var.mostSevereConsequence) )
+				#fields.append( str(var.clinvarVariant.trait) )
 				fields.append( str(var.clinical["description"]) )
 				fields.append( str(var.positiveEvidence()) )
 				fields.append( str(var.negativeEvidence()) )

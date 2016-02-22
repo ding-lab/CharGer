@@ -50,6 +50,11 @@ class chargerVariant(clinvarVariant,vepVariant):
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
 			super( chargerVariant , self ).copyInfo( aParentVariant )
+
+		# make vep and clinvar variants attributes of chargerVariant
+		self.vepVariant = kwargs.get( 'vepVariant' , None )
+		self.clinvarVariant = kwargs.get( 'clinvarVariant' , None )
+
 	def fillMissingInfo( self , otherVar ):
 		if type( otherVar ) == vepVariant:
 			vepVariant.fillMissingInfo( self , otherVar )
