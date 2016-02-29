@@ -38,8 +38,8 @@ class charger(object):
 		self.userDeNovoVariants = kwargs.get( 'deNovo' , {} )
 		self.userAssumedDeNovoVariants = kwargs.get( 'assumedDeNovo' , {} )
 		self.userCoSegregateVariants = kwargs.get( 'coSegregate' , {} )
-		self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
-		self.vepVariants = kwargs.get( 'vepVariants' , [] )
+		#self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
+		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
 
 ### Retrieve input data from user ###
@@ -130,6 +130,8 @@ class charger(object):
 		stopColumn = kwargs.get( 'stop' , 2 )
 		refColumn = kwargs.get( 'ref' , 3 )
 		altColumn = kwargs.get( 'alt' , 4 )
+		geneColumn = kwargs.get( 'gene' , 6 )
+		strandColumn = kwargs.get( 'strand' , 11 )
 		peptideColumn = kwargs.get( 'peptideChange' , 14 )
 		codonColumn = kwargs.get( 'codon' , 15 )
 		sampleColumn = kwargs.get( 'sample' , 21 )
@@ -144,6 +146,8 @@ class charger(object):
 				ref = fields[int(refColumn)]
 				start = fields[int(startColumn)]
 				stop = fields[int(stopColumn)]
+				#strand = fields[int(strandColumn)]
+				#gene = fields[int(geneColumn)]
 				sample = fields[int(sampleColumn)]
 				
 				var = chargerVariant( \
@@ -152,7 +156,11 @@ class charger(object):
 					stop = stop , \
 					reference = ref , \
 					alternate = alt , \
+					#strand = strand , \
+					#gene = gene , \
 					sample = sample , \
+					#codon = codonChange , \
+					#peptide = peptideChange , \
 				)
 				var.splitHGVSc( fields[int(codonColumn)] )
 				var.splitHGVSp( fields[int(peptideColumn)] )
@@ -231,6 +239,10 @@ class charger(object):
 		t = time.time()
 		self.getVEP( **kwargs )
 		self.printRunTime( "VEP" , self.runTime( t ) )
+		self.fillMissingVariantInfo()
+	def fillMissingVariantInfo( self ):
+		for var in self.userVariants:
+			var.fillMissingInfo()
 	def getClinVar( self , **kwargs ):
 		doClinVar = kwargs.get( 'clinvar' , True )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
@@ -247,7 +259,8 @@ class charger(object):
 				clinvarsSet = ent.doBatch( summaryBatchSize )
 				varsBoth = self.matchClinVar( varsSet , clinvarsSet )
 				self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
-				self.clinvarVariants.update( varsBoth["clinvarVariants"] )
+				#self.clinvarVariants.update( varsBoth["clinvarVariants"] )
+				#self.userVariants[varsStart:varsEnd] = self.matchClinVar( varsSet , clinvarsSet )
 	def getExAC( self , **kwargs ):
 		doExAC = kwargs.get( 'exac' , True )
 		useHarvard = kwargs.get( 'harvard' , True )
@@ -279,10 +292,12 @@ class charger(object):
 			vep = ensemblAPI()
 			luv = len(self.userVariants)
 			vepVariants = vep.annotateVariantsPost( self.userVariants )
-			self.vepVariants = self.matchVEP( vepVariants )
+			self.matchVEP( vepVariants )
 			aluv = 0
-			if self.vepVariants:
-				aluv = len(self.vepVariants)
+			for var in self.userVariants:
+				print var.proteogenomicVar()
+				if var.vepVariant:
+					aluv += 1
 			luvafter = len(self.userVariants)
 			print "\nVEP annotated userVariants " + str( luvafter )
 			print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
@@ -293,7 +308,6 @@ class charger(object):
 			for uid in clinvarVariants:
 				cvar = clinvarVariants[uid]
 				if var.sameGenomicVariant( cvar ):
-					#var.fillMissingInfo( cvar )
 					var.clinical = cvar.clinical
 					var.clinvarVariant = cvar
 		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
@@ -303,20 +317,16 @@ class charger(object):
 			vepVar = vepVariant()
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
-			for consequence in vepVar.consequences:
-				print "TODO: WE COULD NOT FIND CONSEQUENCE FOR VEPVAR", consequence
-				if vepVar.mostSevereConsequence in consequence.terms and \
-				consequence.canonical: # and consequence.canonical: #only transfers coding variants
-					vepVar.referencePeptide = consequence.referencePeptide
-					vepVar.positionPeptide = consequence.positionPeptide
-					vepVar.alternatePeptide = consequence.alternatePeptide
-					vepVar.transcriptPeptide = consequence.transcriptPeptide
-					vepVar.positionCodon = consequence.positionCodon
-					vepVar.transcriptCodon = consequence.transcriptCodon
+			print ""
+			print var.proteogenomicVar() + "\t" ,
 			if var.sameGenomicVariant( vepVar ):
-				#var.fillMissingInfo( vepVar )
 				var.vepVariant = vepVar
-		return vepVariants
+				var.copyMostSevereConsequence()
+			if var.vepVariant:
+				print "VEP+" ,
+				if var.vepVariant.consequences:
+					print "CONS\t" ,
+			print ""
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -347,7 +357,9 @@ class charger(object):
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
-				varVEPClass = var.mostSevereConsequence
+				varVEPClass = ""
+				if var.vepVariant:
+					varVEPClass = var.vepVariant.mostSevereConsequence
 				altPeptide = var.alternatePeptide
 				if (varClass in maf_truncations) or \
 					(varVEPClass in vep_truncations) or \
@@ -444,34 +456,36 @@ class charger(object):
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
-			for vcVar in var.consequences:
-				if not var.PP3:
-					evidence = 0
-					if vcVar.blosum:
-						if vcVar.blosum < callBlosum62:
-							evidence += 1
-					if vcVar.predictionSIFT:
-						if vcVar.predictionSIFT.lower() == callSIFTdam or \
-						vcVar.predictionSIFT.lower() == callSIFTdel:
-							evidence += 1
-					if vcVar.predictionPolyphen:
-						if vcVar.predictionPolyphen.lower() == callPolyphen:
-							evidence += 1
-					if vcVar.compara:
-						if vcVar.compara > callCompara:
-							evidence += 1
-					if vcVar.impact:
-						if vcVar.impact.lower() == callImpact:
-							evidence += 1
-					if vcVar.maxentscan:
-						callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
-						if vcVar.maxentscan[1] <= callMaxEntScan:
-							evidence += 1
-					if vcVar.genesplicer:
-						if vcVar.genesplicer.lower() == callGeneSplicer:
-							evidence += 1
-					if evidence >= minimumEvidence:
-						var.PP3 = True
+			if var.vepVariant:
+				if var.vepVariant.consequences:
+					for vcVar in var.vepVariant.consequences:
+						if not var.PP3:
+							evidence = 0
+							if vcVar.blosum:
+								if vcVar.blosum < callBlosum62:
+									evidence += 1
+							if vcVar.predictionSIFT:
+								if vcVar.predictionSIFT.lower() == callSIFTdam or \
+								vcVar.predictionSIFT.lower() == callSIFTdel:
+									evidence += 1
+							if vcVar.predictionPolyphen:
+								if vcVar.predictionPolyphen.lower() == callPolyphen:
+									evidence += 1
+							if vcVar.compara:
+								if vcVar.compara > callCompara:
+									evidence += 1
+							if vcVar.impact:
+								if vcVar.impact.lower() == callImpact:
+									evidence += 1
+							if vcVar.maxentscan:
+								callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
+								if vcVar.maxentscan[1] <= callMaxEntScan:
+									evidence += 1
+							if vcVar.genesplicer:
+								if vcVar.genesplicer.lower() == callGeneSplicer:
+									evidence += 1
+							if evidence >= minimumEvidence:
+								var.PP3 = True
 
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
@@ -485,7 +499,6 @@ class charger(object):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
-			consequences = var.consequences
 			ps1Call = False
 			pm5Call = False
 			call = False
@@ -494,34 +507,35 @@ class charger(object):
 			if mod == "PM5":
 				call = var.PM5
 			if not call: #is already true
-				for genVar in self.clinvarVariants:
-					cvar = self.clinvarVariants[genVar]
-					clin = cvar.clinical
-					for consequence in consequences:
-						conVar = MAFVariant()
-						conVar.copyInfo( var )
-						conVar.copyInfo( consequence )
-						if var.sameGenomicVariant( cvar ):
-						#if genomic change is the same, then PS1
-							if clin["description"] == clinvarVariant.pathogenic:
-								if mod == "PS1":
-									var.PS1 = True # already pathogenic still suffices to be PS1
-									called += 1
-						elif var.sameGenomicReference( cvar ):
-						#if genomic change is different, but the peptide change is the same, then PS1
-							if cvar.alternatePeptide == var.alternatePeptide: #same amino acid change
-								if clin["description"] == clinvarVariant.pathogenic:
-									if mod == "PS1":
-										var.PS1 = True
-										called += 1
-						if var.samePeptideReference( cvar ):
-							if not var.samePeptideChange( cvar ):
-							#if peptide change is different, but the peptide reference is the same, then PM5
-								if var.plausibleCodonFrame( cvar ):
+				#for genVar in self.clinvarVariants:
+					#clinvarVar = self.clinvarVariants[genVar]
+				if var.clinvarVariant:
+					clinvarVar = var.clinvarVariant
+					clin = clinvarVar.clinical
+					if var.vepVariant:
+						if var.vepVariant.consequences:
+							for consequence in var.vepVariant.consequences:
+								if consequence.sameGenomicVariant( clinvarVar ):
+								#if genomic change is the same, then PS1
 									if clin["description"] == clinvarVariant.pathogenic:
-										if mod == "PM5":
-											var.PM5 = True # already pathogenic still suffices to be PS1
+										if mod == "PS1":
+											var.PS1 = True # already pathogenic still suffices to be PS1
 											called += 1
+								elif consequence.sameGenomicReference( clinvarVar ):
+								#if genomic change is different, but the peptide change is the same, then PS1
+									if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
+										if clin["description"] == clinvarVariant.pathogenic:
+											if mod == "PS1":
+												var.PS1 = True
+												called += 1
+								if consequence.samePeptideReference( clinvarVar ):
+									if not consequence.samePeptideChange( clinvarVar ):
+									#if peptide change is different, but the peptide reference is the same, then PM5
+										if consequence.plausibleCodonFrame( clinvarVar ):
+											if clin["description"] == clinvarVariant.pathogenic:
+												if mod == "PM5":
+													var.PM5 = True # already pathogenic still suffices to be PS1
+													called += 1
 		print mod + " found " + str(called) + " pathogenic variants"
 	def printResult( self ):
 		for var in self.userVariants:
@@ -575,34 +589,36 @@ class charger(object):
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
-			for vcVar in var.consequences:
-				if not var.PP3:
-					evidence = 0
-					if vcVar.blosum:
-						if vcVar.blosum > callBlosum62:
-							evidence += 1
-					if vcVar.predictionSIFT:
-						if vcVar.predictionSIFT.lower() != callSIFTdam and \
-						vcVar.predictionSIFT.lower() != callSIFTdel:
-							evidence += 1
-					if vcVar.predictionPolyphen:
-						if vcVar.predictionPolyphen.lower() != callPolyphen:
-							evidence += 1
-					if vcVar.compara:
-						if vcVar.compara <= callCompara:
-							evidence += 1
-					if vcVar.impact:
-						if vcVar.impact.lower() != callImpact:
-							evidence += 1
-					if vcVar.maxentscan:
-						callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
-						if vcVar.maxentscan[1] > callMaxEntScan:
-							evidence += 1
-					if vcVar.genesplicer:
-						if vcVar.genesplicer.lower() != callGeneSplicer:
-							evidence += 1
-					if evidence >= minimumEvidence:
-						var.BP4 = True
+			if var.vepVariant:
+				if var.vepVariant.consequences:
+					for vcVar in var.vepVariant.consequences:
+						if not var.PP3:
+							evidence = 0
+							if vcVar.blosum:
+								if vcVar.blosum > callBlosum62:
+									evidence += 1
+							if vcVar.predictionSIFT:
+								if vcVar.predictionSIFT.lower() != callSIFTdam and \
+								vcVar.predictionSIFT.lower() != callSIFTdel:
+									evidence += 1
+							if vcVar.predictionPolyphen:
+								if vcVar.predictionPolyphen.lower() != callPolyphen:
+									evidence += 1
+							if vcVar.compara:
+								if vcVar.compara <= callCompara:
+									evidence += 1
+							if vcVar.impact:
+								if vcVar.impact.lower() != callImpact:
+									evidence += 1
+							if vcVar.maxentscan:
+								callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
+								if vcVar.maxentscan[1] > callMaxEntScan:
+									evidence += 1
+							if vcVar.genesplicer:
+								if vcVar.genesplicer.lower() != callGeneSplicer:
+									evidence += 1
+							if evidence >= minimumEvidence:
+								var.BP4 = True
 
 	def BP5( self ):
 		print "CharGer module BP5: not yet implemented"
@@ -704,4 +720,8 @@ class charger(object):
 	   return time.time() - initialTime
 	@staticmethod
 	def printRunTime( step , interval ):
-	   print "Running " + step + " took " + str( interval ) + "seconds"
+		print "Running " + step + " took " + str( interval ) + "seconds"
+	@staticmethod
+	def printVariants( variants ):
+		for var in variants:
+			print var.proteogenomicVar()

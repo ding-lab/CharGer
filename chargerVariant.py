@@ -5,9 +5,10 @@
 
 from WebAPI.Variant.clinvarVariant import clinvarVariant
 from WebAPI.Variant.vepVariant import vepVariant
+from WebAPI.Variant.MAFVariant import MAFVariant
 from autovivification import autovivification
 
-class chargerVariant(clinvarVariant,vepVariant):
+class chargerVariant(MAFVariant):
 	pathogenic = "Pathogenic"
 	likelyPathogenic = "Likely Pathogenic"
 	likelyBenign = "Likely Benign"
@@ -55,11 +56,40 @@ class chargerVariant(clinvarVariant,vepVariant):
 		self.vepVariant = kwargs.get( 'vepVariant' , None )
 		self.clinvarVariant = kwargs.get( 'clinvarVariant' , None )
 
-	def fillMissingInfo( self , otherVar ):
-		if type( otherVar ) == vepVariant:
-			vepVariant.fillMissingInfo( self , otherVar )
-		if type( otherVar ) == clinvarVariant:
-			clinvarVariant.fillMissingInfo( self , otherVar )
+	def fillMissingInfo( self ):
+		if self.vepVariant:
+			self.vepVariant.fillMissingInfo( self )
+		if self.clinvarVariant:
+			self.clinvarVariant.fillMissingInfo( self )
+	def copyMostSevereConsequence( self ):
+		for consequence in self.vepVariant.consequences:
+			if self.vepVariant.mostSevereConsequence in consequence.terms:
+				self.vepVariant.gene = consequence.gene
+				self.gene = consequence.gene
+				if consequence.referencePeptide:
+					self.vepVariant.referencePeptide = consequence.referencePeptide
+					self.referencePeptide = consequence.referencePeptide
+				if consequence.positionPeptide:
+					self.vepVariant.positionPeptide = consequence.positionPeptide
+					self.positionPeptide = consequence.positionPeptide
+				if consequence.alternatePeptide:
+					self.vepVariant.alternatePeptide = consequence.alternatePeptide
+					self.alternatePeptide = consequence.alternatePeptide
+				if consequence.transcriptPeptide:
+					self.vepVariant.transcriptPeptide = consequence.transcriptPeptide
+					self.transcriptPeptide = consequence.transcriptPeptide
+				if consequence.positionCodon:
+					self.vepVariant.positionCodon = consequence.positionCodon
+					self.positionCodon = consequence.positionCodon
+				if consequence.transcriptCodon:
+					self.vepVariant.transcriptCodon = consequence.transcriptCodon
+					self.transcriptCodon = consequence.transcriptCodon
+				print self.proteogenomicVar()
+				print self.vepVariant.proteogenomicVar()
+				print consequence.proteogenomicVar()
+				print ""
+				if consequence.canonical:
+					return
 	def check( self , mod ):
 		checks = self.checks()
 		return checks[mod]

@@ -39,13 +39,15 @@ def parseArgs( argv ):
 	output = ""
 	clinvarSummaryBatchSize = 100
 	clinvarSearchBatchSize = 100
-	codonColumn = 48
-	peptideChangeColumn = 49
 	chrColumn = 0
 	startColumn = 1
 	stopColumn = 2
 	refColumn = 3
 	altColumn = 4
+	geneColumn = 6
+	strandColumn = 11
+	codonColumn = 14
+	peptideChangeColumn = 15
 	sampleColumn = 21
 	specific = True
 	tcga = True
@@ -53,7 +55,7 @@ def parseArgs( argv ):
 	exac = True
 	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhX:A:R:S:P:M:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhX:s:A:R:S:P:M:G:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
@@ -71,6 +73,8 @@ def parseArgs( argv ):
 			sys.exit()
 		elif opt in ( "-m" , "--maf" ):
 			mafFile = arg
+			codonColumn = 48
+			peptideChangeColumn = 49
 		elif opt in ( "-f" , "--vcf" ):
 			vcfFile = arg
 		elif opt in ( "-T" , "--tsv" ):
@@ -86,6 +90,8 @@ def parseArgs( argv ):
 		# all customized .tsv options are in caps for now
 		elif opt in ( "-X" , "--chromosome" ):
 			chrColumn = arg
+		elif opt in ( "-s" , "--strand" ):
+			strandColumn = arg
 		elif opt in ( "-A" , "--alt" ):
 			altColumn = arg
 		elif opt in ( "-R" , "--ref" ):
@@ -94,6 +100,8 @@ def parseArgs( argv ):
 			startColumn = arg
 		elif opt in ( "-P" , "--stop" ):
 			stopColumn = arg
+		elif opt in ( "-G" , "--gene" ):
+			geneColumn = arg
 		elif opt in ( "-M" , "--sample" ):
 			sampleColumn = arg
 		elif opt in ( "-C" , "--codon" ):
@@ -140,10 +148,12 @@ def parseArgs( argv ):
 	"diseases" : diseasesFile , \
 	"geneList" : geneListFile , \
 	"chrColumn" : chrColumn, \
+	"strandColumn" : strandColumn, \
 	"startColumn" : startColumn, \
 	"stopColumn" : stopColumn, \
 	"refColumn" : refColumn, \
 	"altColumn" : altColumn, \
+	"geneColumn" : geneColumn, \
 	"sampleColumn" : sampleColumn, \
 	}
 
@@ -171,6 +181,7 @@ def main( argv ):
 	peptideChangeColumn = values["peptideChangeColumn"]
 	codonColumn = values["codonColumn"]
 	chrColumn = values["chrColumn"]
+	strandColumn = values["strandColumn"]
 	startColumn = values["startColumn"]
 	stopColumn = values["stopColumn"]
 	refColumn = values["refColumn"]
@@ -195,6 +206,7 @@ def main( argv ):
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn , \
 	chr=chrColumn , \
+	strand=strandColumn , \
 	start=startColumn , \
 	stop=stopColumn , \
 	ref=refColumn , \
@@ -257,6 +269,8 @@ def main( argv ):
 	CharGer.printClassifications( )
 
 	CharGer.writeSummary( outputFile , delim='\t' )
+
+	#CharGer.pdfSummary( outputFile )
 
 	print "\nCharGer run Times:"
 	dt1_0 = t1-t0
