@@ -660,32 +660,52 @@ class charger(object):
 			outFH.write( headLine + "\n" )
 			for var in self.userVariants:
 				fields = []
-				fields.append( str(var.gene) )
-				fields.append( str(var.chromosome) )
-				fields.append( str(var.start) )
-				fields.append( str(var.stop) )
-				fields.append( str(var.reference) )
-				fields.append( str(var.alternate) )
-				fields.append( str(var.strand) )
-				fields.append( str(var.assembly) )
-				fields.append( str(var.variantType) )
-				fields.append( str(var.variantClass) )
-				fields.append( str(var.sample) )
-				fields.append( str(var.transcriptCodon) )
-				fields.append( str(var.positionCodon) )
-				fields.append( str(var.transcriptPeptide) )
-				fields.append( str(var.referencePeptide) )
-				fields.append( str(var.positionPeptide) )
-				fields.append( str(var.alternatePeptide) )
-				fields.append( str(var.mostSevereConsequence) )
-				#fields.append( str(var.clinvarVariant.trait) )
-				fields.append( str(var.clinical["description"]) )
-				fields.append( str(var.positiveEvidence()) )
-				fields.append( str(var.negativeEvidence()) )
-				fields.append( str(var.pathogenicity) )
+
+				self.appendStr( fields,var.gene)
+				self.appendStr( fields,var.chromosome)
+				self.appendStr( fields,var.start)
+				self.appendStr( fields,var.stop)
+				self.appendStr( fields,var.reference)
+				self.appendStr( fields,var.alternate)
+				self.appendStr( fields,var.strand)
+				self.appendStr( fields,var.assembly)
+				self.appendStr( fields,var.variantType)
+				self.appendStr( fields,var.variantClass)
+				self.appendStr( fields,var.sample)
+				self.appendStr( fields,var.transcriptCodon)
+				self.appendStr( fields,var.positionCodon)
+				self.appendStr( fields,var.transcriptPeptide)
+				self.appendStr( fields,var.referencePeptide)
+				self.appendStr( fields,var.positionPeptide)
+				self.appendStr( fields,var.alternatePeptide)
+				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
+				#self.appendStr( fields,var.clinvarVariant.trait)
+				self.appendStr( fields,var.clinical["description"])
+				self.appendStr( fields,var.positiveEvidence())
+				self.appendStr( fields,var.negativeEvidence())
+				self.appendStr( fields,var.pathogenicity)
+
 				outFH.write( delim.join( fields ) + "\n" )
 		except:
 			print "CharGer Warning: Cannot write summary"
+	@staticmethod
+	def appendStr( array, value ):
+		#print value
+		try:
+			if value:
+				try:
+					str(value)
+					array.append(str(value))
+					print "appended value " + str(value) + "\n"
+				except: 
+					print "the value can not be converted to strings\n"
+					array.append(str("NA"))
+			else: 
+				print "the value does not exist\n"
+				array.append(str("NA"))
+		except:
+			print "failed for unexpected reason\n"
+			array.append(str("NAerr"))
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
