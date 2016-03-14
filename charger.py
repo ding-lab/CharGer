@@ -290,19 +290,31 @@ class charger(object):
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
 		doVEP = kwargs.get( 'vep' , True )
+		doREST = kwargs.get( 'rest' , False )
+		doCMD = kwargs.get( 'cmd' , False )
+
 		if doVEP:
-			vep = ensemblAPI()
-			luv = len(self.userVariants)
-			vepVariants = vep.annotateVariantsPost( self.userVariants )
-			self.matchVEP( vepVariants )
-			aluv = 0
-			for var in self.userVariants:
-				print var.proteogenomicVar()
-				if var.vepVariant:
-					aluv += 1
-			luvafter = len(self.userVariants)
-			print "\nVEP annotated userVariants " + str( luvafter )
-			print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
+			if doREST or ( not doREST and not doCMD ):
+				self.getVEPviaREST( **kwargs )
+			if doCMD:
+				self.getVEPviaCMD( **kwargs )
+
+	def getVEPviaREST( self , **kwargs ):
+		doAllOptions = kwargs.get( 'allOptions' , True )
+		vep = ensemblAPI()
+		luv = len(self.userVariants)
+		vepVariants = vep.annotateVariantsPost( self.userVariants , **kwargs )
+		self.matchVEP( vepVariants )
+		aluv = 0
+		for var in self.userVariants:
+			if var.vepVariant:
+				aluv += 1
+		luvafter = len(self.userVariants)
+		print "\nVEP annotated userVariants " + str( luvafter )
+		print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
+
+	def getVEPviaCMD( self , **kwargs ):
+		NotImplemented
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
@@ -319,16 +331,9 @@ class charger(object):
 			vepVar = vepVariant()
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
-			print ""
-			print var.proteogenomicVar() + "\t" ,
 			if var.sameGenomicVariant( vepVar ):
 				var.vepVariant = vepVar
 				var.copyMostSevereConsequence()
-			if var.vepVariant:
-				print "VEP+" ,
-				if var.vepVariant.consequences:
-					print "CONS\t" ,
-			print ""
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -657,7 +662,8 @@ class charger(object):
 			"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
-			"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
+			"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification" , \
+			"PubMed_Link"] )
 		try:
 			outFH.write( headLine )
 			outFH.write( "\n" )
@@ -687,6 +693,11 @@ class charger(object):
 				self.appendStr( fields,var.positiveEvidence())
 				self.appendStr( fields,var.negativeEvidence())
 				self.appendStr( fields,var.pathogenicity)
+				try:
+					self.appendStr( fields,var.clinvarVariant.linkPubMed())
+				except:
+					self.appendStr( fields , "NA" )
+					pass
 
 				outFH.write( delim.join( fields ) )
 				outFH.write( "\n" )
@@ -700,7 +711,7 @@ class charger(object):
 			array.append( str( value ) )
 		except:
 			print "failed to append a value\n"
-			array.append( str( "NA" ) )
+			array.append( "NA" )
 			pass
 
 	@staticmethod
