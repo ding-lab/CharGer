@@ -36,7 +36,7 @@ def parseArgs( argv ):
 	assumedDeNovoFile = ""
 	coSegregationFile = ""
 	diseasesFile = ""
-	output = ""
+	output = "charger_summary.tsv"
 	clinvarSummaryBatchSize = 100
 	clinvarSearchBatchSize = 100
 	chrColumn = 0

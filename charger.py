@@ -137,8 +137,8 @@ class charger(object):
 		sampleColumn = kwargs.get( 'sample' , 21 )
 		tcga = kwargs.get( 'tcga' , True )
 		specific = kwargs.get( 'specific' , True )
+		headerLine = next(inFile).split( "\t" ) 
 		try:
-			next(inFile)
 			for line in inFile:
 				fields = line.split( "\t" )
 				chrom = fields[int(chrColumn)]
@@ -175,6 +175,8 @@ class charger(object):
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .tsv file" )
+			print "Hint: correct columns?"
+			print headerLine
 			
 	def readExpression( self , inputFile ): # expect sample(col)-gene(row) matrixes
 		try:
@@ -648,16 +650,17 @@ class charger(object):
 				var.clinical["description"] ] )
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
+		outFH = self.safeOpen( outFile , 'w' , warning=True )
+		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
+			"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
+			"Variant_Type" , "Variant_Classification" , \
+			"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
+			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
+			"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
 		try:
-			outFH = self.safeOpen( outFile , 'w' , warning=True )
-			headLine = '\t'.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
-				"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
-				"Variant_Type" , "Variant_Classification" , \
-				"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
-				"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
-				"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
-				"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification"] )
-			outFH.write( headLine + "\n" )
+			outFH.write( headLine )
+			outFH.write( "\n" )
 			for var in self.userVariants:
 				fields = []
 
@@ -685,27 +688,20 @@ class charger(object):
 				self.appendStr( fields,var.negativeEvidence())
 				self.appendStr( fields,var.pathogenicity)
 
-				outFH.write( delim.join( fields ) + "\n" )
+				outFH.write( delim.join( fields ) )
+				outFH.write( "\n" )
 		except:
-			print "CharGer Warning: Cannot write summary"
+			print "CharGer Error: Could not write output summary"
+			pass
+
 	@staticmethod
 	def appendStr( array, value ):
-		#print value
 		try:
-			if value:
-				try:
-					str(value)
-					array.append(str(value))
-					print "appended value " + str(value) + "\n"
-				except: 
-					print "the value can not be converted to strings\n"
-					array.append(str("NA"))
-			else: 
-				print "the value does not exist\n"
-				array.append(str("NA"))
+			array.append( str( value ) )
 		except:
-			print "failed for unexpected reason\n"
-			array.append(str("NAerr"))
+			print "failed to append a value\n"
+			array.append( str( "NA" ) )
+			pass
 
 	@staticmethod
 	def safeOpen( inputFile , rw , **kwargs ):
@@ -714,9 +710,11 @@ class charger(object):
 			return open( inputFile , rw )
 		except:
 			if errwar:
-				return "CharGer Warning: could not open " + inputFile
+				print "CharGer Warning: could not open " + inputFile
 			else:
-				return "CharGer Error: could not open " + inputFile
+				print "CharGer Error: could not open " + inputFile
+			pass
+
 	@staticmethod
 	def getUniqueGenomicVariantList( aVarList ):
 		uniqueVarList = []
