@@ -186,6 +186,15 @@ class charger(object):
 				inFile = self.safeOpen( fileName , 'r' , warning=True )
 				header = inFile.readline()
 				samples = header.split( "\t" )
+
+				# make sure the sample names are matching up, assuming
+				# sample name in RSEM: TCGA-OR-A5J1-01A-11R-A29S-07
+				# sample name in MAF: TCGA-H4-A2HQ
+				for idx, sample in enumerate(samples):
+					sample_s = sample.split( "-" )
+					sample_only = "-".join(sample_s[0:3])
+					samples[idx] = sample_only
+					
 				for line in inFile:
 					fields = line.split( "\t" )		
 					gene = fields[0] 
