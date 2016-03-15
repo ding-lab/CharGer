@@ -663,7 +663,7 @@ class charger(object):
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification" , \
-			"PubMed_Link"] )
+			"PubMed_Link" , "ClinVar_Traits"] )
 		try:
 			outFH.write( headLine )
 			outFH.write( "\n" )
@@ -695,6 +695,11 @@ class charger(object):
 				self.appendStr( fields,var.pathogenicity)
 				try:
 					self.appendStr( fields,var.clinvarVariant.linkPubMed())
+				except:
+					self.appendStr( fields , "NA" )
+					pass
+				try:
+					self.appendStr( fields,var.clinvarVariant.getTraits( '|' ) )
 				except:
 					self.appendStr( fields , "NA" )
 					pass
