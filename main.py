@@ -15,6 +15,7 @@ def parseArgs( argv ):
 	helpText += "-T \"tsv\" "
 	helpText += "(-l suppress ClinVar, "
 	helpText += "-x suppress ExAC, "
+	helpText += "-v VEP batch size, "
 	helpText += "-b ClinVar summary batch size, "
 	helpText += "-B ClinVar search batch size, "
 	helpText += "-p peptide change column-0base in .maf, "
@@ -39,6 +40,7 @@ def parseArgs( argv ):
 	output = "charger_summary.tsv"
 	clinvarSummaryBatchSize = 100
 	clinvarSearchBatchSize = 100
+	vepBatchSize = 400
 	chrColumn = 0
 	startColumn = 1
 	stopColumn = 2
@@ -55,8 +57,8 @@ def parseArgs( argv ):
 	exac = True
 	vep = True
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhX:s:A:R:S:P:M:G:m:f:T:o:b:B:p:C:g:d:e:n:a:c:" , \
-		["maf=" , "vcf=" , "tsv=" , "output=" , "summaryBatchSize=" , "searchBatchSize=" , \
+		opts, args = getopt.getopt( argv , "DEtlxhX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:" , \
+		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
 	except getopt.GetoptError:
@@ -81,10 +83,12 @@ def parseArgs( argv ):
 			tsvFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
+		elif opt in ( "-v" , "--vepBatchSize" ):
+			vepBatchSize = int( arg )
 		elif opt in ( "-b" , "--summaryBatchSize" ):
-			clinvarSummaryBatchSize = arg
+			clinvarSummaryBatchSize = int( arg )
 		elif opt in ( "-B" , "--searchBatchSize" ):
-			clinvarSearchBatchSize = arg
+			clinvarSearchBatchSize = int( arg )
 		elif opt in ( "-p" , "--peptideChange" ):
 			peptideChangeColumn = arg
 		# all customized .tsv options are in caps for now
@@ -137,6 +141,7 @@ def parseArgs( argv ):
 	"clinvar" : clinvar , \
 	"vep" : vep , \
 	"exac" : exac , \
+	"vepBatchSize" : vepBatchSize , \
 	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
 	"clinvarSearchBatchSize" : clinvarSearchBatchSize , \
 	"peptideChangeColumn" : peptideChangeColumn , \
@@ -176,6 +181,7 @@ def main( argv ):
 	doClinVar = values["clinvar"]
 	doExAC = values["exac"]
 	doVEP = values["vep"]
+	vepBatchSize = values["vepBatchSize"]
 	clinvarSummaryBatchSize = values["clinvarSummaryBatchSize"]
 	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
 	peptideChangeColumn = values["peptideChangeColumn"]
@@ -221,6 +227,8 @@ def main( argv ):
 	vep=doVEP , \
 	summaryBatchSize=clinvarSummaryBatchSize , \
 	searchBatchSize=clinvarSearchBatchSize , \
+	allOptions=False , \
+	maxPost=vepBatchSize , \
 	#timeout=(20,20) , \
 	)
 
