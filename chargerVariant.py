@@ -46,8 +46,14 @@ class chargerVariant(MAFVariant):
 		self.BP7 = kwargs.get( 'BP7' , False )
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
-		self.pathogenicity = kwargs.get( 'pathogenicity' , chargerVariant.uncertain )
+		self.pathogenicity = kwargs.get( 'pathogenicity' , \
+			{ "CharGer" : chargerVariant.uncertain , \
+			  "ACMG" : chargerVariant.uncertain 
+			}
+		)
 		self.clinical = kwargs.get( 'clinical' , { "description" : chargerVariant.uncertain , "review_status" : "" } )
+		self.pathogenicScore = kwargs.get( 'pathogenicScore' , 0 )
+		self.benignScore = kwargs.get( 'benignScore' , 0 )
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
 			super( chargerVariant , self ).copyInfo( aParentVariant )
@@ -185,7 +191,7 @@ class chargerVariant(MAFVariant):
 		if self.PP5:
 			count += 1
 		return count
-	def isPathogenic( self ):
+	def isPathogenic( self , **kwargs ):
 		numPathogenicStrong = self.countPathogenicStrong()
 		numPathogenicModerate = self.countPathogenicModerate()
 		numPathogenicSupport = self.countPathogenicSupport()
@@ -194,38 +200,38 @@ class chargerVariant(MAFVariant):
 			numPathogenicModerate >= 2 or \
 			(numPathogenicModerate+numPathogenicSupport) >= 2 or \
 			numPathogenicSupport >= 2:
-				self.setAsPathogenic()
+				self.setAsPathogenic( **kwargs )
 				return True
 		elif numPathogenicStrong >= 2:
-			self.setAsPathogenic()
+			self.setAsPathogenic( **kwargs )
 			return True
 		elif numPathogenicStrong >= 1:
 			if numPathogenicModerate >= 3 or \
 			(numPathogenicModerate == 2 and numPathogenicSupport >= 2) or \
 			(numPathogenicModerate == 1 and numPathogenicSupport >= 4):
-				self.setAsPathogenic()
+				self.setAsPathogenic( **kwargs )
 				return True
-	def isLikelyPathogenic( self ):
+	def isLikelyPathogenic( self , **kwargs ):
 		numPathogenicStrong = self.countPathogenicStrong()
 		numPathogenicModerate = self.countPathogenicModerate()
 		numPathogenicSupport = self.countPathogenicSupport()
 		if numPathogenicStrong and numPathogenicModerate == 1:
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 		if numPathogenicStrong == 1 and ( numPathogenicModerate == 1 or numPathogenicModerate == 2 ):
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 		if numPathogenicStrong == 1 and numPathogenicSupport >= 2:
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 		if numPathogenicModerate >= 3:
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 		if numPathogenicModerate == 2 and numPathogenicSupport >= 2:
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 		if numPathogenicModerate == 1 and numPathogenicSupport >= 4:
-			self.setAsLikelyPathogenic()
+			self.setAsLikelyPathogenic( **kwargs )
 			return True
 	def countBenignStrong( self ):
 		count = 0
@@ -251,7 +257,7 @@ class chargerVariant(MAFVariant):
 		if self.BP5:
 			count += 1
 		return count
-	def isLikelyBenign( self ):
+	def isLikelyBenign( self , **kwargs ):
 		numBenignStrong = self.countBenignStrong()
 		numBenignSupport = self.countBenignSupport()
 		if numBenignStrong == 1 and \
@@ -260,7 +266,7 @@ class chargerVariant(MAFVariant):
 		if numBenignSupport >= 2:
 			return True
 		return False
-	def isBenign( self ):
+	def isBenign( self , **kwargs ):
 		numBenignStrong = self.countBenignStrong()
 		if self.BA1:
 			return True
@@ -268,19 +274,23 @@ class chargerVariant(MAFVariant):
 			return True
 		return False
 
-	def isUncertainSignificance( self ):
+	def isUncertainSignificance( self , **kwargs ):
 		if ( self.isPathogenic() or self.isLikelyPathogenic() )and \
 		( self.isBenign() or self.isLikelyBenign() ):
-			self.setAsUncertainSignificance()
+			self.setAsUncertainSignificance( **kwargs )
 			return True
-	def setAsPathogenic( self ):
-		self.pathogenicity = chargerVariant.pathogenic
-	def setAsLikelyPathogenic( self ):
-		self.pathogenicity = chargerVariant.likelyPathogenic
-	def setAsLikelyBenign( self ):
-		self.pathogenicity = chargerVariant.likelyBenign
-	def setAsBenign( self ):
-		self.pathogenicity = chargerVariant.benign
+	def setAsPathogenic( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		self.pathogenicity[scoreSystem] = chargerVariant.pathogenic
+	def setAsLikelyPathogenic( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		self.pathogenicity[scoreSystem]  = chargerVariant.likelyPathogenic
+	def setAsLikelyBenign( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		self.pathogenicity[scoreSystem]  = chargerVariant.likelyBenign
+	def setAsBenign( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		self.pathogenicity[scoreSystem]  = chargerVariant.benign
 	def positiveEvidence( self ):
 		positive = []
 		checks = self.checks( negative=False )
@@ -296,4 +306,29 @@ class chargerVariant(MAFVariant):
 				negative.append(k)
 		return ",".join(negative)
 
-
+	def tallyScore( self , **kwargs ):
+		self.pathogenicScore = 0
+		self.pathogenicScore += self.countPathogenicSupport()
+		self.pathogenicScore += 2*self.countPathogenicModerate()
+		self.pathogenicScore += 4*self.countPathogenicStrong()
+		self.pathogenicScore += 8 if self.PVS1 else 0
+		self.benignScore = 0
+		self.benignScore += self.countBenignSupport()
+		self.benignScore += 4*self.countBenignStrong()
+		self.benignScore += 8 if self.BA1 else 0
+		self.compositeScore( **kwargs )
+	def compositeScore( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		if self.pathogenicScore > 8:
+			self.setAsPathogenic( **kwargs )
+		elif self.pathogenicScore > 5:
+			self.setAsLikelyPathogenic( **kwargs )
+		elif self.benignScore >= 4:
+			if self.pathogenicity[scoreSystem] == chargerVariant.pathogenic \
+			or self.pathogenicity[scoreSystem] == chargerVariant.likelyPathogenic:
+				self.setAsUncertainSignificance( **kwargs ) 
+			else:
+				if self.benignScore >= 8:
+					self.setAsBenign( **kwargs )
+				elif self.benignScore >= 4:
+					self.setAsLikelyBenign( **kwargs )
