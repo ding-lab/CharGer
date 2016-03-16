@@ -86,6 +86,7 @@ class charger(object):
 			for line in inFile:
 				var = chargerVariant()
 				var.mafLine2Variant( line , peptideChange=peptideChangeColumn , codon=codonColumn )
+				print var.proteogenomicVar()
 				if specific:
 					if tcga:
 						match = re.match( "TCGA\-(\w\w)" , var.sample )
@@ -636,14 +637,18 @@ class charger(object):
 		print "CharGer module BP7: not yet implemented"
 
 ### Classifier ###
-	def classify( self ):
+	def classify( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
 		for var in self.userVariants:
-			var.isPathogenic( )
-			var.isLikelyPathogenic( )
-			var.isLikelyBenign( )
-			var.isBenign( )
-			var.isUncertainSignificance( )
-	def printClassifications( self ):
+			var.isPathogenic( **kwargs )
+			var.isLikelyPathogenic( **kwargs )
+			var.isLikelyBenign( **kwargs )
+			var.isBenign( **kwargs )
+			var.isUncertainSignificance( **kwargs )
+			if scoreSystem == "CharGer":
+				var.tallyScore( )
+	def printClassifications( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
 		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
 			"CharGerClassification" , "ClinVarAnnoation"] )
 		print headLine
@@ -651,7 +656,7 @@ class charger(object):
 		for var in self.userVariants:
 			i += 1
 			print '\t'.join( [ str(i) , var.uniqueProteogenomicVar() , \
-				var.positiveEvidence() , var.pathogenicity , \
+				var.positiveEvidence() , var.pathogenicity[scoreSystem] , \
 				var.clinical["description"] ] )
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
@@ -662,7 +667,9 @@ class charger(object):
 			"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
-			"PositiveEvidence" , "NegativeEvidence" , "CharGerClassification" , \
+			"Positive_Evidence" , "Negative_Evidence" , \
+			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
+			"CharGer_Classification" , "ACMG_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits"] )
 		try:
 			outFH.write( headLine )
@@ -692,7 +699,10 @@ class charger(object):
 				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
 				self.appendStr( fields,var.negativeEvidence())
-				self.appendStr( fields,var.pathogenicity)
+				self.appendStr( fields,var.pathogenicScore)
+				self.appendStr( fields,var.benignScore)
+				self.appendStr( fields,var.pathogenicity["CharGer"])
+				self.appendStr( fields,var.pathogenicity["ACMG"])
 				try:
 					self.appendStr( fields,var.clinvarVariant.linkPubMed())
 				except:

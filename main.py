@@ -270,7 +270,8 @@ def main( argv ):
 
 	t4 = time.time() 
 
-	CharGer.classify()
+	CharGer.classify( system="CharGer" )
+	CharGer.classify( system="ACMG" )
 
 	t5 = time.time() 
 
