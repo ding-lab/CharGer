@@ -100,6 +100,7 @@ class charger(object):
 	def readVCF( self , inputFile , **kwargs ):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
 		for record in inFile:
+			chrom = self.getChrNum( record.CHROM )
 			reference = record.REF
 			alternates = record.ALT
 			start = record.POS #1-base beginning of ref
@@ -108,7 +109,7 @@ class charger(object):
 				if alternate == "None":
 					alternate = None
 				var = chargerVariant( \
-					chromosome = record.CHROM , \
+					chromosome = chrom , \
 					start = start , \
 					stop = stop , \
 					dbsnp = record.ID , \
@@ -142,7 +143,7 @@ class charger(object):
 		try:
 			for line in inFile:
 				fields = line.split( "\t" )
-				chrom = fields[int(chrColumn)]
+				chrom = self.getChrNum( fields[int(chrColumn)] )
 				alt = fields[int(altColumn)]
 				ref = fields[int(refColumn)]
 				start = fields[int(startColumn)]
@@ -504,6 +505,7 @@ class charger(object):
 							if evidence >= minimumEvidence:
 								var.PP3 = True
 
+
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
 #		print "- "
@@ -675,7 +677,7 @@ class charger(object):
 			"Variant_Type" , "Variant_Classification" , \
 			"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
-			"VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , \
@@ -699,11 +701,19 @@ class charger(object):
 				self.appendStr( fields,var.sample)
 				self.appendStr( fields,var.transcriptCodon)
 				self.appendStr( fields,var.positionCodon)
+				self.appendStr( fields,var.HGVSg() )
 				self.appendStr( fields,var.transcriptPeptide)
 				self.appendStr( fields,var.referencePeptide)
 				self.appendStr( fields,var.positionPeptide)
 				self.appendStr( fields,var.alternatePeptide)
+				self.appendStr( fields, var.HGVSp() )
+				self.appendStr( fields,var.alleleFrequency)
 				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
+				try:
+					self.appendStr( fields,var.vepVariant.mostSevereConsequence)
+				except:
+					self.appendStr( fields , "NA" )
+					pass
 				#self.appendStr( fields,var.clinvarVariant.trait)
 				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
@@ -778,3 +788,7 @@ class charger(object):
 	def printVariants( variants ):
 		for var in variants:
 			print var.proteogenomicVar()
+	@staticmethod
+	def getChrNum( chrString ):
+		''' Used to get the chromosome number in case chr or Chr or whatever is present'''
+		return str(''.join(ele for ele in chrString if ele.isdigit()))
