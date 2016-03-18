@@ -3,9 +3,9 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
 
-from WebAPI.Variant.clinvarVariant import clinvarVariant
-from WebAPI.Variant.vepVariant import vepVariant
-from WebAPI.Variant.MAFVariant import MAFVariant
+from Variant.clinvarVariant import clinvarVariant
+from Variant.vepVariant import vepVariant
+from Variant.MAFVariant import MAFVariant
 from autovivification import autovivification
 
 class chargerVariant(MAFVariant):

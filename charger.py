@@ -11,10 +11,10 @@ import glob
 from scipy import stats
 from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
-from WebAPI.Variant.clinvarVariant import clinvarVariant
-from WebAPI.Variant.vepVariant import vepVariant
-from WebAPI.Variant.MAFVariant import MAFVariant
-from WebAPI.Variant.variant import variant
+from Variant.clinvarVariant import clinvarVariant
+from Variant.vepVariant import vepVariant
+from Variant.MAFVariant import MAFVariant
+from Variant.variant import variant
 from chargerVariant import chargerVariant
 from autovivification import autovivification as AV
 import vcf
