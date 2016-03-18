@@ -675,9 +675,9 @@ class charger(object):
 		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
 			"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
 			"Variant_Type" , "Variant_Classification" , \
-			"Sample" , "Transcript" , "Codon_Position" , "Protein" , \
+			"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "Protein" , \
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
-			"Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , \
@@ -701,12 +701,12 @@ class charger(object):
 				self.appendStr( fields,var.sample)
 				self.appendStr( fields,var.transcriptCodon)
 				self.appendStr( fields,var.positionCodon)
-				self.appendStr( fields,var.HGVSg() )
+				self.appendStr( fields,var.HGVSg() ) # need to be corrected to cDNA change on the most severe peptide
 				self.appendStr( fields,var.transcriptPeptide)
 				self.appendStr( fields,var.referencePeptide)
 				self.appendStr( fields,var.positionPeptide)
 				self.appendStr( fields,var.alternatePeptide)
-				self.appendStr( fields, var.HGVSp() )
+				self.appendStr( fields, var.HGVSp() ) # need to be corrected too
 				self.appendStr( fields,var.alleleFrequency)
 				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
 				try:
@@ -714,6 +714,7 @@ class charger(object):
 				except:
 					self.appendStr( fields , "NA" )
 					pass
+				# TODO: add all the bioinformatic good stuff from VEP
 				#self.appendStr( fields,var.clinvarVariant.trait)
 				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
@@ -790,5 +791,5 @@ class charger(object):
 			print var.proteogenomicVar()
 	@staticmethod
 	def getChrNum( chrString ):
-		''' Used to get the chromosome number in case chr or Chr or whatever is present'''
-		return str(''.join(ele for ele in chrString if ele.isdigit()))
+		''' Get the chromosome number in case chr or Chr is present'''
+		return chrString.lower().replace("chr", "")
