@@ -104,7 +104,7 @@ class charger(object):
 			reference = record.REF
 			alternates = record.ALT
 			start = record.POS #1-base beginning of ref
-			stop = record.end+1 #0-base ending of ref
+			stop = record.end #+1 #0-base ending of ref, but +1 shouldn't be needed
 			for alternate in alternates:
 				if alternate == "None":
 					alternate = None
@@ -792,4 +792,4 @@ class charger(object):
 	@staticmethod
 	def getChrNum( chrString ):
 		''' Get the chromosome number in case chr or Chr is present'''
-		return chrString.lower().replace("chr", "")
+		return chrString.upper().replace("CHR", "")
