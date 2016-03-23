@@ -99,8 +99,11 @@ class charger(object):
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
+		#for meta in  inFile.metadata:
+		#	if meta == "VEP":
+
 		for record in inFile:
-			chrom = self.getChrNum( record.CHROM )
+			chrom = record.CHROM
 			reference = record.REF
 			alternates = record.ALT
 			start = record.start+1 #1-base beginning of ref
@@ -111,6 +114,14 @@ class charger(object):
 				print "\t".join( [ reference , str( start ) , alt , str( stop ) ] )
 				if alt == "None":
 					alt = None
+				if record.is_indel and not record.is_deletion: #insertion
+					reference = "-"
+					alt = alt[1:len(alt)]
+					stop = stop + 1
+				elif record.is_deletion:
+					reference = reference[1:len(reference)] #assumes only one base overlap
+					alt = "-"
+					stop = stop - 1
 				var = chargerVariant( \
 					chromosome = chrom , \
 					start = start , \
@@ -349,7 +360,8 @@ class charger(object):
 			if var.sameGenomicVariant( vepVar ):
 				var.vepVariant = vepVar
 				var.copyMostSevereConsequence()
-			var.vepInfo = var.vepVariant.printVariant( delim="|" , minimal=True )
+			if var.vepVariant:
+				var.vepAnnotations = var.vepVariant.printVariant( delim="|" , minimal=True )
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -688,7 +700,7 @@ class charger(object):
 			"CharGer_Classification" , "ACMG_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"VEP_Annotations" , \
-			"VCF_INFO"] )
+			"VCF_Headers" , "VCF_INFO"] )
 		try:
 			outFH.write( headLine )
 			outFH.write( "\n" )
@@ -721,7 +733,6 @@ class charger(object):
 				except:
 					self.appendStr( fields , "NA" )
 					pass
-				# TODO: add all the bioinformatic good stuff from VEP
 				#self.appendStr( fields,var.clinvarVariant.trait)
 				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
@@ -740,7 +751,9 @@ class charger(object):
 				except:
 					self.appendStr( fields , "NA" )
 					pass
-				self.appendStr( fields , var.vepAnnotations )
+				# TODO: add all the bioinformatic good stuff from VEP
+				self.appendStr( fields , var.vepAnnotations ) #make sure this works
+				self.appendStr( fields , var.vcfHeaders )
 				self.appendStr( fields , var.vcfInfo )
 
 				outFH.write( delim.join( fields ) )

@@ -47,6 +47,7 @@ class chargerVariant(MAFVariant):
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.vepAnnotations = kwargs.get( 'VEP' , None )
+		self.vcfHeaders = kwargs.get( 'headers' , None )
 		self.vcfInfo = kwargs.get( 'INFO' , None )
 		self.pathogenicity = kwargs.get( 'pathogenicity' , \
 			{ "CharGer" : chargerVariant.uncertain , \
