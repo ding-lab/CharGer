@@ -103,18 +103,22 @@ class charger(object):
 			chrom = self.getChrNum( record.CHROM )
 			reference = record.REF
 			alternates = record.ALT
-			start = record.POS #1-base beginning of ref
-			stop = record.end+1 #0-base ending of ref
+			start = record.start+1 #1-base beginning of ref
+			stop = record.end #0-base ending of ref
+			info = record.INFO
 			for alternate in alternates:
-				if alternate == "None":
-					alternate = None
+				alt = str( alternate )
+				print "\t".join( [ reference , str( start ) , alt , str( stop ) ] )
+				if alt == "None":
+					alt = None
 				var = chargerVariant( \
 					chromosome = chrom , \
 					start = start , \
 					stop = stop , \
 					dbsnp = record.ID , \
 					reference = reference , \
-					alternate = str(alternate) , \
+					alternate = alt , \
+					INFO = info
 				)
 				#quality = record.QUAL
 				#vcfFilter = record.FILTER
@@ -345,6 +349,7 @@ class charger(object):
 			if var.sameGenomicVariant( vepVar ):
 				var.vepVariant = vepVar
 				var.copyMostSevereConsequence()
+			var.vepInfo = var.vepVariant.printVariant( delim="|" , minimal=True )
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -681,7 +686,9 @@ class charger(object):
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , \
-			"PubMed_Link" , "ClinVar_Traits"] )
+			"PubMed_Link" , "ClinVar_Traits" , \
+			"VEP_Annotations" , \
+			"VCF_INFO"] )
 		try:
 			outFH.write( headLine )
 			outFH.write( "\n" )
@@ -733,6 +740,8 @@ class charger(object):
 				except:
 					self.appendStr( fields , "NA" )
 					pass
+				self.appendStr( fields , var.vepAnnotations )
+				self.appendStr( fields , var.vcfInfo )
 
 				outFH.write( delim.join( fields ) )
 				outFH.write( "\n" )
