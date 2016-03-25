@@ -127,7 +127,7 @@ class charger(object):
 							key_index = {}
 							i = 0
 							for key in self.vcfInfo:
-								print key
+								print str(i) + " => " + key
 								vepInfo[key] = None
 								key_index[key] = i
 								i = i + 1
@@ -140,7 +140,6 @@ class charger(object):
 			info = record.INFO
 			for alternate in alternates:
 				alt = str( alternate )
-#				print "\t".join( [ reference , str( start ) , alt , str( stop ) ] )
 				if alt == "None":
 					alt = None
 				if record.is_indel and not record.is_deletion: #insertion
@@ -176,7 +175,6 @@ class charger(object):
 						aas = [None , None] 
 						if values[key_index["Amino_acids"]]: #8 => Amino_acids
 							aas = values[key_index["Amino_acids"]].split("/") 
-							print aas
 							if len( aas ) > 1:
 								aas[0] = mafvariant().convertAA( aas[0] )
 								aas[1] = mafvariant().convertAA( aas[1] )
@@ -184,7 +182,6 @@ class charger(object):
 								#28 => HGVSc
 								#29 => HGVSp
 								hgvsp = values[key_index["HGVSp"]].split( ":" )
-								print hgvsp
 								if len( hgvsp ) > 1:
 									changep = re.match( "p\." , hgvsp[1] )
 								if changep:
@@ -205,8 +202,20 @@ class charger(object):
 							introns = values[key_index["INTRON"]].split( "/" )
 							if len( introns ) == 1:
 								introns.append(None)
-
-						vcv = vepConsequenceVariant( \
+						siftStuff = [None , None]
+						if values[key_index["SIFT"]]:
+							siftStuff = values[key_index["SIFT"]].split( "(" ) 
+							if len( siftStuff ) == 1:
+								siftStuff.append( None )
+							else:
+						polyPhenStuff = [None , None]
+						if values[key_index["PolyPhen"]]:
+							polyPhenStuff = values[key_index["PolyPhen"]].split( "(" ) 
+							if len( polyPhenStuff ) == 1:
+								polyPhenStuff.append( None )
+							else:
+								polyPhenStuff[1].rstrip( ")" )
+						vcv = vepconsequencevariant( \
 							#parentVariant=var
 							chromosome = chrom , \
 							start = start , \
@@ -243,9 +252,11 @@ class charger(object):
 							#19 => ENSP
 							transcriptPeptide=values[key_index["ENSP"]] , \
 							#23 => SIFT
-							scoreSIFT=values[key_index["SIFT"]] , \
+							predictionSIFT=siftStuff[0] , \
+							scoreSIFT=siftStuff[1] , \
 							#24 => POLYPHEN
-							scorePolyPhen=values[key_index["PolyPhen"]] , \
+							predicitionPolyphen=polyPhenStuff[0] , \
+							scorePolyphen=polyPhenStuff[1] , \
 							exon=exons[0] , \
 							totalExons=exons[1] , \
 							intron=introns[0] , \
