@@ -167,7 +167,10 @@ class charger(object):
 						if values[8]: #8 => Amino_acids
 							aas = values[8].split("/") 
 							aas[0] = MAFVariant().convertAA( aas[0] )
-							aas[1] = MAFVariant().convertAA( aas[1] )
+							if len(aas)>1:
+								aas[1] = MAFVariant().convertAA( aas[1] )
+							else:
+								aas.append(None)
 						exons = [None , None]
 						if values[25]: #25 => EXON
 							exons = values[25].split( "/" )
