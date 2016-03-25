@@ -14,7 +14,7 @@ def parseArgs( argv ):
 	helpText += "-f \"vcf\" "
 	helpText += "-T \"tsv\" "
 	helpText += "(-l suppress ClinVar, "
-	helpText += "-x suppress ExAC, "
+	helpText += "-x suppress exac, "
 	helpText += "-v VEP batch size, "
 	helpText += "-b ClinVar summary batch size, "
 	helpText += "-B ClinVar search batch size, "
@@ -66,7 +66,7 @@ def parseArgs( argv ):
 		print( helpText ) 
 		sys.exit(2)
 	if not opts:
-		print "ADSERROR: Expected flagged input"
+		print "CharGer ERROR: Expected flagged input"
 		print( helpText ) 
 		sys.exit(2)
 	for opt, arg in opts:

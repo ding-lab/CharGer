@@ -6,17 +6,17 @@
 import time
 import math
 import re
-from WebAPI.Ensembl.ensemblAPI import ensemblAPI
+from biomine.webapi.ensembl.ensemblapi import ensemblapi
 import glob
 from scipy import stats
-from WebAPI.Entrez.entrezAPI import entrezAPI
-from WebAPI.ExAC.exacAPI import exacAPI
-from Variant.clinvarVariant import clinvarVariant
-from Variant.vepVariant import vepVariant
-from Variant.vepConsequenceVariant import vepConsequenceVariant
-from Variant.MAFVariant import MAFVariant
-from Variant.variant import variant
-from chargerVariant import chargerVariant
+from biomine.webapi.entrez.entrezapi import entrezapi
+from biomine.webapi.exac.exacapi import exacapi
+from biomine.variant.clinvarvariant import clinvarvariant
+from biomine.variant.vepvariant import vepvariant
+from biomine.variant.vepconsequencevariant import vepconsequencevariant
+from biomine.variant.mafvariant import mafvariant
+from biomine.variant.variant import variant
+from chargervariant import chargervariant
 from autovivification import autovivification as AV
 import vcf
 from collections import OrderedDict as OD
@@ -91,7 +91,7 @@ class charger(object):
 		try:
 			next(inFile)
 			for line in inFile:
-				var = chargerVariant()
+				var = chargervariant()
 				var.mafLine2Variant( line , peptideChange=peptideChangeColumn , codon=codonColumn )
 				print var.proteogenomicVar()
 				if specific:
@@ -135,7 +135,7 @@ class charger(object):
 			info = record.INFO
 			for alternate in alternates:
 				alt = str( alternate )
-				print "\t".join( [ reference , str( start ) , alt , str( stop ) ] )
+#				print "\t".join( [ reference , str( start ) , alt , str( stop ) ] )
 				if alt == "None":
 					alt = None
 				if record.is_indel and not record.is_deletion: #insertion
@@ -148,7 +148,7 @@ class charger(object):
 					start = start + 1
 					stop = stop + 1
 
-				parentVar = MAFVariant( \
+				parentVar = mafvariant( \
 					chromosome = chrom , \
 					start = start , \
 					stop = stop , \
@@ -157,7 +157,7 @@ class charger(object):
 					alternate = alt , \
 				)
 
-				var = chargerVariant( \
+				var = chargervariant( \
 					parentVariant=parentVar
 				)
 
@@ -165,37 +165,39 @@ class charger(object):
 				if not csq == "noCSQ":
 					vepDone = True
 					exacDone = True
-					var.vepVariant = vepVariant()
+					var.vepVariant = vepvariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
 						aas = [None , None] 
 						if values[8]: #8 => Amino_acids
 							aas = values[8].split("/") 
-							print aas
 							if len( aas ) > 1:
-								aas[0] = MAFVariant().convertAA( aas[0] )
-								aas[1] = MAFVariant().convertAA( aas[1] )
+								aas[0] = mafvariant().convertAA( aas[0] )
+								aas[1] = mafvariant().convertAA( aas[1] )
 							else:
 								#28 => HGVSc
 								#29 => HGVSp
 								hgvsp = values[29].split( ":" )
-								print hgvsp
 								changep = re.match( "p\." , hgvsp[1] )
 								if changep:
-									aas = MAFVariant().splitHGVSp( hgvsp[1] )
-									aas[0] = MAFVariant().convertAA( aas[0] )
-									aas[2] = MAFVariant().convertAA( aas[2] )
+									aas = mafvariant().splitHGVSp( hgvsp[1] )
+									aas[0] = mafvariant().convertAA( aas[0] )
+									aas[2] = mafvariant().convertAA( aas[2] )
 								else:
-									aas = [None , None]
+									aas.append( None )
 									needVEP = True
 									preVEP.append( var )
 						exons = [None , None]
 						if values[25]: #25 => EXON
 							exons = values[25].split( "/" )
+							if len( exons ) == 1:
+								exons.append( None )
 						introns = [None , None]
 						if values[26]: #26 => INTRON
 							introns = values[26].split( "/" )
-						vcv = vepConsequenceVariant( \
+							if len( introns ) == 1:
+								introns.append( None )
+						vcv = vepconsequencevariant( \
 							#parentVariant=var
 							chromosome = chrom , \
 							start = start , \
@@ -301,9 +303,8 @@ class charger(object):
 								"intergenic_variant" ]
 				mostSevere = None
 				rankMostSevere = 10000
+				mostSevereCons = severeRank[-1]
 				for cons in var.vepVariant.consequences:
-					if cons.gene == "FANCG":
-						cons.printVariant(", ")
 					for term in cons.terms:
 						if term in severeRank:
 							rank = severeRank.index( term )
@@ -316,14 +317,15 @@ class charger(object):
 						elif rank == rankMostSevere:
 							if cons.canonical:
 								mostSevere = cons
-				var.gene = mostSevere.gene
-				var.referencePeptide = mostSevere.referencePeptide
-				var.positionPeptide = mostSevere.positionPeptide
-				var.alternatePeptide = mostSevere.alternatePeptide
-				var.transcriptPeptide = mostSevere.transcriptPeptide
-				var.transcriptCodon = mostSevere.transcriptCodon
-				var.positionCodon = mostSevere.positionCodon
-				var.vepVariant.mostSevereConsequence = mostSevereCons
+				if mostSevere:
+					var.gene = mostSevere.gene
+					var.referencePeptide = mostSevere.referencePeptide
+					var.positionPeptide = mostSevere.positionPeptide
+					var.alternatePeptide = mostSevere.alternatePeptide
+					var.transcriptPeptide = mostSevere.transcriptPeptide
+					var.transcriptCodon = mostSevere.transcriptCodon
+					var.positionCodon = mostSevere.positionCodon
+					var.vepVariant.mostSevereConsequence = mostSevereCons
 				print var.proteogenomicVar()
 
 				self.userVariants.append( var )
@@ -357,7 +359,7 @@ class charger(object):
 				#gene = fields[int(geneColumn)]
 				sample = fields[int(sampleColumn)]
 				
-				var = chargerVariant( \
+				var = chargervariant( \
 					chromosome = chrom , \
 					start = start , \
 					stop = stop , \
@@ -440,7 +442,7 @@ class charger(object):
 			next(inFile)
 			for line in inFile:
 				fields = line.split( "\t" )
-				var = MAFVariant()
+				var = mafvariant()
 				var.mafLine2Variant( line )
 				varDict[var.uniqueVar()] = 1
 		except:
@@ -453,7 +455,7 @@ class charger(object):
 		self.printRunTime( "ClinVar" , self.runTime( t ) )
 		t = time.time()
 		self.getExAC( **kwargs )
-		self.printRunTime( "ExAC" , self.runTime( t ) )
+		self.printRunTime( "exac" , self.runTime( t ) )
 		t = time.time()
 		self.getVEP( **kwargs )
 		self.printRunTime( "VEP" , self.runTime( t ) )
@@ -466,14 +468,14 @@ class charger(object):
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
 		if doClinVar:
-			ent = entrezAPI()
+			ent = entrezapi()
 			i = 0
 			for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
 				varsEnd = varsStart + int(searchBatchSize)
 				varsSet = self.userVariants[varsStart:varsEnd]
 				ent.prepQuery( varsSet )
-				ent.subset = entrezAPI.esearch
-				ent.database = entrezAPI.clinvar
+				ent.subset = entrezapi.esearch
+				ent.database = entrezapi.clinvar
 				clinvarsSet = ent.doBatch( summaryBatchSize )
 				varsBoth = self.matchClinVar( varsSet , clinvarsSet )
 				self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
@@ -487,7 +489,7 @@ class charger(object):
 			common = 0
 			rare = 0
 			totalVars = len( self.userVariants )
-			exac = exacAPI(harvard=useHarvard)
+			exac = exacapi(harvard=useHarvard)
 #entries by genomivVar
 			exacIn = self.getUniqueGenomicVariantList( self.userVariants )
 			#entries = exac.getAlleleFrequencies( self.userVariants )
@@ -503,7 +505,7 @@ class charger(object):
 				else:
 					rare += 1
 			elen = len(entries.keys())
-			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
+			print "exac found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
 		doVEP = kwargs.get( 'vep' , True )
 		preVEP = kwargs.get( 'prevep' , [] )
@@ -525,7 +527,7 @@ class charger(object):
 		doAllOptions = kwargs.get( 'allOptions' , True )
 		doVEP = kwargs.get( 'vep' , [] )
 		preVEP = kwargs.get( 'prevep' , [] )
-		vep = ensemblAPI()
+		vep = ensemblapi()
 		luv = len(self.userVariants)
 		vepVariants = []
 		if doVEP:
@@ -556,7 +558,7 @@ class charger(object):
 	def matchVEP( self , vepVariants ):
 		for var in self.userVariants:
 			genVar = var.vcf()
-			vepVar = vepVariant()
+			vepVar = vepvariant()
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
 			if var.sameGenomicVariant( vepVar ):
@@ -632,7 +634,7 @@ class charger(object):
 		for var in self.userVariants:
 			return
 			caseVarFreq = "NEED UPDATE" # may take input from current MAF
-			controlVarFreq = "NEED UPDATE" # may take input from ExAC
+			controlVarFreq = "NEED UPDATE" # may take input from exac
 			if ( caseVarFreq != 0 and controlVarFreq != 0):
 				OR = (caseVarFreq/controlVarFreq) / ( (1-caseVarFreq)/(1-controlVarFreq) )
 				# Adam will update
@@ -755,14 +757,14 @@ class charger(object):
 							for consequence in var.vepVariant.consequences:
 								if consequence.sameGenomicVariant( clinvarVar ):
 								#if genomic change is the same, then PS1
-									if clin["description"] == clinvarVariant.pathogenic:
+									if clin["description"] == clinvarvariant.pathogenic:
 										if mod == "PS1":
 											var.PS1 = True # already pathogenic still suffices to be PS1
 											called += 1
 								elif consequence.sameGenomicReference( clinvarVar ):
 								#if genomic change is different, but the peptide change is the same, then PS1
 									if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
-										if clin["description"] == clinvarVariant.pathogenic:
+										if clin["description"] == clinvarvariant.pathogenic:
 											if mod == "PS1":
 												var.PS1 = True
 												called += 1
@@ -770,7 +772,7 @@ class charger(object):
 									if not consequence.samePeptideChange( clinvarVar ):
 									#if peptide change is different, but the peptide reference is the same, then PM5
 										if consequence.plausibleCodonFrame( clinvarVar ):
-											if clin["description"] == clinvarVariant.pathogenic:
+											if clin["description"] == clinvarvariant.pathogenic:
 												if mod == "PM5":
 													var.PM5 = True # already pathogenic still suffices to be PS1
 													called += 1

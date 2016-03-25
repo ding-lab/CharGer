@@ -1,21 +1,21 @@
 #!/usr/bin/python
-# chargerVariant - CharGer annotated variants
+# chargervariant - CharGer annotated variants
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
 
-from Variant.clinvarVariant import clinvarVariant
-from Variant.vepVariant import vepVariant
-from Variant.MAFVariant import MAFVariant
+from biomine.variant.clinvarvariant import clinvarvariant
+from biomine.variant.vepvariant import vepvariant
+from biomine.variant.mafvariant import mafvariant
 from autovivification import autovivification
 
-class chargerVariant(MAFVariant):
+class chargervariant(mafvariant):
 	pathogenic = "Pathogenic"
 	likelyPathogenic = "Likely Pathogenic"
 	likelyBenign = "Likely Benign"
 	benign = "Benign"
 	uncertain = "Uncertain Significance"
 	def __init__( self , **kwargs ):
-		super(chargerVariant,self).__init__(**kwargs)
+		super(chargervariant,self).__init__(**kwargs)
 		self.PVS1 = kwargs.get( 'PVS1' , False )
 		self.PS1 = kwargs.get( 'PS1' , False )
 		self.PS2 = kwargs.get( 'PS2' , False )
@@ -50,20 +50,20 @@ class chargerVariant(MAFVariant):
 		self.vcfHeaders = kwargs.get( 'headers' , None )
 		self.vcfInfo = kwargs.get( 'INFO' , [] )
 		self.pathogenicity = kwargs.get( 'pathogenicity' , \
-			{ "CharGer" : chargerVariant.uncertain , \
-			  "ACMG" : chargerVariant.uncertain 
+			{ "CharGer" : chargervariant.uncertain , \
+			  "ACMG" : chargervariant.uncertain 
 			}
 		)
-		self.clinical = kwargs.get( 'clinical' , { "description" : chargerVariant.uncertain , "review_status" : "" } )
+		self.clinical = kwargs.get( 'clinical' , { "description" : chargervariant.uncertain , "review_status" : "" } )
 		self.pathogenicScore = kwargs.get( 'pathogenicScore' , 0 )
 		self.benignScore = kwargs.get( 'benignScore' , 0 )
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
-			super( chargerVariant , self ).copyInfo( aParentVariant )
+			super( chargervariant , self ).copyInfo( aParentVariant )
 
-		# make vep and clinvar variants attributes of chargerVariant
-		self.vepVariant = kwargs.get( 'vepVariant' , None )
-		self.clinvarVariant = kwargs.get( 'clinvarVariant' , None )
+		# make vep and clinvar variants attributes of chargervariant
+		self.vepVariant = kwargs.get( 'vepvariant' , None )
+		self.clinvarVariant = kwargs.get( 'clinvarvariant' , None )
 
 	def copyInfo( self , other ):
 		self.vepAnnotations = other.vepAnnotations
@@ -295,16 +295,16 @@ class chargerVariant(MAFVariant):
 			return True
 	def setAsPathogenic( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem] = chargerVariant.pathogenic
+		self.pathogenicity[scoreSystem] = chargervariant.pathogenic
 	def setAsLikelyPathogenic( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargerVariant.likelyPathogenic
+		self.pathogenicity[scoreSystem]  = chargervariant.likelyPathogenic
 	def setAsLikelyBenign( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargerVariant.likelyBenign
+		self.pathogenicity[scoreSystem]  = chargervariant.likelyBenign
 	def setAsBenign( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargerVariant.benign
+		self.pathogenicity[scoreSystem]  = chargervariant.benign
 	def positiveEvidence( self ):
 		positive = []
 		checks = self.checks( negative=False )
@@ -338,8 +338,8 @@ class chargerVariant(MAFVariant):
 		elif self.pathogenicScore > 5:
 			self.setAsLikelyPathogenic( **kwargs )
 		elif self.benignScore >= 4:
-			if self.pathogenicity[scoreSystem] == chargerVariant.pathogenic \
-			or self.pathogenicity[scoreSystem] == chargerVariant.likelyPathogenic:
+			if self.pathogenicity[scoreSystem] == chargervariant.pathogenic \
+			or self.pathogenicity[scoreSystem] == chargervariant.likelyPathogenic:
 				self.setAsUncertainSignificance( **kwargs ) 
 			else:
 				if self.benignScore >= 8:
