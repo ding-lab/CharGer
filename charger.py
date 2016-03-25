@@ -192,14 +192,12 @@ class charger(object):
 						exons = [None , None]
 						if values[25]: #25 => EXON
 							exons = values[25].split( "/" )
-							if len( exons ) == 1:
-								exons.append(None)
 						introns = [None , None]
 						if values[26]: #26 => INTRON
 							introns = values[26].split( "/" )
-							if len( introns ) == 1:
-								introns.append(None)
-
+							if len( aas ) <= 1:
+								aas[0] = MAFVariant().convertAA( aas[0] )
+								aas[1] = MAFVariant().convertAA( aas[1] )
 						vcv = vepConsequenceVariant( \
 							#parentVariant=var
 							chromosome = chrom , \
@@ -306,7 +304,6 @@ class charger(object):
 								"intergenic_variant" ]
 				mostSevere = None
 				rankMostSevere = 10000
-				mostSevereCons = None
 				for cons in var.vepVariant.consequences:
 					if cons.gene == "FANCG":
 						cons.printVariant(", ")
@@ -322,15 +319,14 @@ class charger(object):
 						elif rank == rankMostSevere:
 							if cons.canonical:
 								mostSevere = cons
-				if mostSevere:
-					var.gene = mostSevere.gene
-					var.referencePeptide = mostSevere.referencePeptide
-					var.positionPeptide = mostSevere.positionPeptide
-					var.alternatePeptide = mostSevere.alternatePeptide
-					var.transcriptPeptide = mostSevere.transcriptPeptide
-					var.transcriptCodon = mostSevere.transcriptCodon
-					var.positionCodon = mostSevere.positionCodon
-					var.vepVariant.mostSevereConsequence = mostSevereCons
+				var.gene = mostSevere.gene
+				var.referencePeptide = mostSevere.referencePeptide
+				var.positionPeptide = mostSevere.positionPeptide
+				var.alternatePeptide = mostSevere.alternatePeptide
+				var.transcriptPeptide = mostSevere.transcriptPeptide
+				var.transcriptCodon = mostSevere.transcriptCodon
+				var.positionCodon = mostSevere.positionCodon
+				var.vepVariant.mostSevereConsequence = mostSevereCons
 				print var.proteogenomicVar()
 
 				self.userVariants.append( var )
