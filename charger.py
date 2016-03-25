@@ -13,11 +13,13 @@ from WebAPI.Entrez.entrezAPI import entrezAPI
 from WebAPI.ExAC.exacAPI import exacAPI
 from Variant.clinvarVariant import clinvarVariant
 from Variant.vepVariant import vepVariant
+from Variant.vepConsequenceVariant import vepConsequenceVariant
 from Variant.MAFVariant import MAFVariant
 from Variant.variant import variant
 from chargerVariant import chargerVariant
 from autovivification import autovivification as AV
 import vcf
+from collections import OrderedDict as OD
 
 class charger(object):
 	''' Example usage:
@@ -41,6 +43,7 @@ class charger(object):
 		#self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
 		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
+		self.vcfInfos = kwargs.get( 'vcfInfo' , [] )
 
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
@@ -56,10 +59,11 @@ class charger(object):
 		diseaseFile = kwargs.get( 'diseases' , "" )
 		specific = kwargs.get( 'specific' , False )
 		self.getDiseases( diseaseFile , **kwargs )
+		vepDone = False
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			self.readVCF( vcfFile , **kwargs )
+			vepDone = self.readVCF( vcfFile , **kwargs )
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
 		if expressionFile:
@@ -75,6 +79,7 @@ class charger(object):
 				var.reference = "-"
 			if str(var.alternate) == "0" or not var.alternate:
 				var.alternate = "-"
+		return vepDone
 	def readMAF( self , inputFile , **kwargs ):
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
@@ -99,9 +104,22 @@ class charger(object):
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
-		#for meta in  inFile.metadata:
-		#	if meta == "VEP":
-
+		vepDone = False
+		vepInfo = OD()
+		self.vcfInfo = []
+		metadata = inFile.metadata
+		for pairs in metadata:
+			if pairs == 'VEP':
+				print "This .vcf has VEP annotations!"
+				infos = inFile.infos
+				csq = infos.items()[0]
+				Info = csq[1] #Info(...)
+				if Info:
+					desc = Info[3] #Consequence type...Format: Allele|Gene|...
+					keysString = desc.split( "Format: " )[1]
+					self.vcfInfo = keysString.split( "|" )
+					for key in self.vcfInfo:
+						vepInfo[key] = None
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
@@ -121,23 +139,173 @@ class charger(object):
 				elif record.is_deletion:
 					reference = reference[1:len(reference)] #assumes only one base overlap
 					alt = "-"
-					stop = stop - 1
-				var = chargerVariant( \
+					start = start + 1
+					stop = stop + 1
+
+				parentVar = MAFVariant( \
 					chromosome = chrom , \
 					start = start , \
 					stop = stop , \
 					dbsnp = record.ID , \
 					reference = reference , \
 					alternate = alt , \
-					INFO = info
 				)
-				#quality = record.QUAL
-				#vcfFilter = record.FILTER
-				#info = record.INFO
-				#if ( vcfFilter == "PASS" or quality >= 10 ) or \
-				#	( not vcfFilter and not quality ):
-				#	self.userVariants.append( var )
+
+				var = chargerVariant( \
+					parentVariant=parentVar
+				)
+
+				csq = info.get( 'CSQ' , "noCSQ" )
+				if not csq == "noCSQ":
+					vepDone = True
+					var.vepVariant = vepVariant()
+					for thisCSQ in csq:
+						values = thisCSQ.split( "|" )
+						aas = [None , None] 
+						if values[8]: #8 => Amino_acids
+							aas = values[8].split("/") 
+							aas[0] = MAFVariant().convertAA( aas[0] )
+							aas[1] = MAFVariant().convertAA( aas[1] )
+						exons = [None , None]
+						if values[25]: #25 => EXON
+							exons = values[25].split( "/" )
+						introns = [None , None]
+						if values[26]: #26 => INTRON
+							introns = values[26].split( "/" )
+						vcv = vepConsequenceVariant( \
+							#parentVariant=var
+							chromosome = chrom , \
+							start = start , \
+							stop = stop , \
+							dbsnp = record.ID , \
+							reference = reference , \
+							alternate = alt , \
+							#1 => Gene
+							gene_id=values[1] , \
+							#2 => Feature
+							transcriptCodon=values[2] , \
+							#4 => Consequence
+							consequence_terms=values[4].split( "&" ) , \
+							#5 => cDNA_position
+							positionCodon=values[5] , \
+							#7 => Protein_position
+							positionPeptide=values[7] , \
+							referencePeptide=aas[0] , \
+							alternatePeptide=aas[1] , \
+							#12 => STRAND
+							strand=values[12] , \
+							#13 => SYMBOL
+							gene=values[13] , \
+							#14 => SYMBOL_SOURCE
+							gene_symbol_source=values[14] , \
+							#15 => HGNC_ID
+							hgnc_id=values[15] , \
+							#16 => BIOTYPE
+							biotype=values[16] , \
+							#17 => CANONICAL
+							canonical=values[17] , \
+							#18 => CCDS
+							ccds=values[18] , \
+							#19 => ENSP
+							transcriptPeptide=values[19] , \
+							#23 => SIFT
+							scoreSIFT=values[23] , \
+							#24 => POLYPHEN
+							scorePolyPhen=values[24] , \
+							exon=exons[0] , \
+							totalExons=exons[1] , \
+							intron=introns[0] , \
+							totalIntrons=introns[1] , \
+						)
+#6 => CDS_position
+#10 => Existing_variation
+#11 => DISTANCE
+#20 => SWISSPROT
+#21 => TREMBL
+#22 => UNIPARC
+#27 => DOMAINS
+#28 => HGVSc
+#29 => HGVSp
+#30 => GMAF
+#31 => AFR_MAF
+#32 => AMR_MAF
+#33 => ASN_MAF
+#34 => EUR_MAF
+#35 => AA_MAF
+#36 => EA_MAF
+#37 => CLIN_SIG
+#38 => SOMATIC
+#39 => PUBMED
+#40 => MOTIF_NAME
+#41 => MOTIF_POS
+#42 => HIGH_INF_POS
+#43 => MOTIF_SCORE_CHANGE
+
+						var.vepVariant.consequences.append( vcv )
+				severeRank = [ 	"transcript_ablation" , \
+								"splice_acceptor_variant" , \
+								"splice_donor_variant" , \
+								"stop_gained" , \
+								"frameshift_variant" , \
+								"stop_lost" , \
+								"start_lost" , \
+								"transcript_amplification" , \
+								"inframe_insertion" , \
+								"inframe_deletion" , \
+								"missense_variant" , \
+								"protein_altering_variant" , \
+								"splice_region_variant" , \
+								"incomplete_terminal_codon_variant" , \
+								"stop_retained_variant" , \
+								"synonymous_variant" , \
+								"coding_sequence_variant" , \
+								"mature_miRNA_variant" , \
+								"5_prime_UTR_variant" , \
+								"3_prime_UTR_variant" , \
+								"non_coding_transcript_exon_variant" , \
+								"intron_variant" , \
+								"NMD_transcript_variant" , \
+								"non_coding_transcript_variant" , \
+								"upstream_gene_variant" , \
+								"downstream_gene_variant" , \
+								"TFBS_ablation" , \
+								"TFBS_amplification" , \
+								"TF_binding_site_variant" , \
+								"regulatory_region_ablation" , \
+								"regulatory_region_amplification" , \
+								"feature_elongation" , \
+								"regulatory_region_variant" , \
+								"feature_truncation" , \
+								"intergenic_variant" ]
+				mostSevere = None
+				rankMostSevere = 10000
+				for cons in var.vepVariant.consequences:
+					if cons.gene == "FANCG":
+						cons.printVariant(", ")
+					for term in cons.terms:
+						if term in severeRank:
+							rank = severeRank.index( term )
+						else:
+							rank = 10000
+						if rank < rankMostSevere:
+							mostSevere = cons
+							rankMostSevere = rank
+							mostSevereCons = term
+						elif rank == rankMostSevere:
+							if cons.canonical:
+								mostSevere = cons
+				var.gene = mostSevere.gene
+				var.referencePeptide = mostSevere.referencePeptide
+				var.positionPeptide = mostSevere.positionPeptide
+				var.alternatePeptide = mostSevere.alternatePeptide
+				var.transcriptPeptide = mostSevere.transcriptPeptide
+				var.transcriptCodon = mostSevere.transcriptCodon
+				var.positionCodon = mostSevere.positionCodon
+				var.vepVariant.mostSevereConsequence = mostSevereCons
+				print var.proteogenomicVar()
+
 				self.userVariants.append( var )
+		return vepDone
 
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"

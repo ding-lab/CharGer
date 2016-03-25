@@ -48,7 +48,7 @@ class chargerVariant(MAFVariant):
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.vepAnnotations = kwargs.get( 'VEP' , None )
 		self.vcfHeaders = kwargs.get( 'headers' , None )
-		self.vcfInfo = kwargs.get( 'INFO' , None )
+		self.vcfInfo = kwargs.get( 'INFO' , [] )
 		self.pathogenicity = kwargs.get( 'pathogenicity' , \
 			{ "CharGer" : chargerVariant.uncertain , \
 			  "ACMG" : chargerVariant.uncertain 
@@ -65,6 +65,14 @@ class chargerVariant(MAFVariant):
 		self.vepVariant = kwargs.get( 'vepVariant' , None )
 		self.clinvarVariant = kwargs.get( 'clinvarVariant' , None )
 
+	def copyInfo( self , other ):
+		self.vepAnnotations = other.vepAnnotations
+		self.vcfHeaders = other.vcfHeaders
+		self.vcfInfo = other.vcfInfo
+		self.pathogenicity = other.pathogenicity
+		self.clinical = other.clinical
+		self.otherTranscripts = other.otherTranscripts
+		self.alleleFrequency = other.alleleFrequency
 	def fillMissingInfo( self ):
 		if self.vepVariant:
 			self.vepVariant.fillMissingInfo( self )
@@ -147,6 +155,9 @@ class chargerVariant(MAFVariant):
 		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
 		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' \
 		]
+	def readVCFInfo( self , **kwargs ):
+		for info in self.vcfInfo:
+			print info
 	def hasAlleleFrequency( self ):
 		if var.alleleFrequency == None:
 			return False

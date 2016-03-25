@@ -198,7 +198,7 @@ def main( argv ):
 
 	CharGer = charger.charger()
 
-	CharGer.getInputData( maf=mafFile , \
+	vepDone = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
 	tsv=tsvFile , \
 	specific=diseaseSpecific , \
@@ -219,6 +219,10 @@ def main( argv ):
 	alt=altColumn , \
 	sample=sampleColumn , \
 	)
+
+	if doVEP:
+		if vepDone:
+			doVEP = False
 
 	t2 = time.time() 
 
