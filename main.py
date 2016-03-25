@@ -198,7 +198,7 @@ def main( argv ):
 
 	CharGer = charger.charger()
 
-	vepDone = CharGer.getInputData( maf=mafFile , \
+	[ vepDone , preVEP ] = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
 	tsv=tsvFile , \
 	specific=diseaseSpecific , \
@@ -229,6 +229,7 @@ def main( argv ):
 	CharGer.getExternalData( clinvar=doClinVar , \
 	exac=doExAC , \
 	vep=doVEP , \
+	prevep=preVEP , \
 	summaryBatchSize=clinvarSummaryBatchSize , \
 	searchBatchSize=clinvarSearchBatchSize , \
 	allOptions=False , \

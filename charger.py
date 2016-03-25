@@ -59,11 +59,12 @@ class charger(object):
 		diseaseFile = kwargs.get( 'diseases' , "" )
 		specific = kwargs.get( 'specific' , False )
 		self.getDiseases( diseaseFile , **kwargs )
+		preVEP = []
 		vepDone = False
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			vepDone = self.readVCF( vcfFile , **kwargs )
+			[ vepDone , preVEP ] = self.readVCF( vcfFile , **kwargs )
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
 		if expressionFile:
@@ -79,7 +80,7 @@ class charger(object):
 				var.reference = "-"
 			if str(var.alternate) == "0" or not var.alternate:
 				var.alternate = "-"
-		return vepDone
+		return [ vepDone , preVEP ]
 	def readMAF( self , inputFile , **kwargs ):
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
@@ -104,6 +105,7 @@ class charger(object):
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
+		preVEP = []
 		vepDone = False
 		vepInfo = OD()
 		self.vcfInfo = []
@@ -166,8 +168,24 @@ class charger(object):
 						aas = [None , None] 
 						if values[8]: #8 => Amino_acids
 							aas = values[8].split("/") 
-							aas[0] = MAFVariant().convertAA( aas[0] )
-							aas[1] = MAFVariant().convertAA( aas[1] )
+							print aas
+							if len( aas ) > 1:
+								aas[0] = MAFVariant().convertAA( aas[0] )
+								aas[1] = MAFVariant().convertAA( aas[1] )
+							else:
+								#28 => HGVSc
+								#29 => HGVSp
+								hgvsp = values[29].split( ":" )
+								print hgvsp
+								changep = re.match( "p\." , hgvsp[1] )
+								if changep:
+									aas = MAFVariant().splitHGVSp( hgvsp[1] )
+									aas[0] = MAFVariant().convertAA( aas[0] )
+									aas[2] = MAFVariant().convertAA( aas[2] )
+								else:
+									aas = [None , None]
+									needVEP = True
+									preVEP.append( var )
 						exons = [None , None]
 						if values[25]: #25 => EXON
 							exons = values[25].split( "/" )
@@ -226,8 +244,6 @@ class charger(object):
 #21 => TREMBL
 #22 => UNIPARC
 #27 => DOMAINS
-#28 => HGVSc
-#29 => HGVSp
 #30 => GMAF
 #31 => AFR_MAF
 #32 => AMR_MAF
@@ -307,7 +323,7 @@ class charger(object):
 				print var.proteogenomicVar()
 
 				self.userVariants.append( var )
-		return vepDone
+		return [ vepDone , preVEP ]
 
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"
@@ -486,6 +502,7 @@ class charger(object):
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
 		doVEP = kwargs.get( 'vep' , True )
+		preVEP = kwargs.get( 'prevep' , [] )
 		doREST = kwargs.get( 'rest' , False )
 		doCMD = kwargs.get( 'cmd' , False )
 
@@ -494,12 +511,22 @@ class charger(object):
 				self.getVEPviaREST( **kwargs )
 			if doCMD:
 				self.getVEPviaCMD( **kwargs )
+		elif len( preVEP ) > 0:
+			if doREST or ( not doREST and not doCMD ):
+				self.getVEPviaREST( **kwargs )
+			if doCMD:
+				self.getVEPviaCMD( **kwargs )
 
 	def getVEPviaREST( self , **kwargs ):
 		doAllOptions = kwargs.get( 'allOptions' , True )
+		preVEP = kwargs.preVEP( 'prevep' , [] )
 		vep = ensemblAPI()
 		luv = len(self.userVariants)
-		vepVariants = vep.annotateVariantsPost( self.userVariants , **kwargs )
+		vepVariants = []
+		if doVEP:
+			vepVariants = vep.annotateVariantsPost( self.userVariants , **kwargs )
+		elif len( preVEP ) > 0:
+			vepVariants = vep.annotateVariantsPost( preVEP , **kwargs )
 		self.matchVEP( vepVariants )
 		aluv = 0
 		for var in self.userVariants:
