@@ -124,8 +124,13 @@ class charger(object):
 							desc = Info[3] #Consequence type...Format: Allele|Gene|...
 							keysString = desc.split( "Format: " )[1]
 							self.vcfInfo = keysString.split( "|" )
+							key_index = {}
+							i = 0
 							for key in self.vcfInfo:
+								print key
 								vepInfo[key] = None
+								key_index[key] = i
+								i = i + 1
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
@@ -169,16 +174,19 @@ class charger(object):
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
 						aas = [None , None] 
-						if values[8]: #8 => Amino_acids
-							aas = values[8].split("/") 
+						if values[key_index["Amino_acids"]]: #8 => Amino_acids
+							aas = values[key_index["Amino_acids"]].split("/") 
+							print aas
 							if len( aas ) > 1:
 								aas[0] = mafvariant().convertAA( aas[0] )
 								aas[1] = mafvariant().convertAA( aas[1] )
 							else:
 								#28 => HGVSc
 								#29 => HGVSp
-								hgvsp = values[29].split( ":" )
-								changep = re.match( "p\." , hgvsp[1] )
+								hgvsp = values[key_index["HGVSp"]].split( ":" )
+								print hgvsp
+								if len( hgvsp ) > 1:
+									changep = re.match( "p\." , hgvsp[1] )
 								if changep:
 									aas = mafvariant().splitHGVSp( hgvsp[1] )
 									aas[0] = mafvariant().convertAA( aas[0] )
@@ -188,16 +196,17 @@ class charger(object):
 									needVEP = True
 									preVEP.append( var )
 						exons = [None , None]
-						if values[25]: #25 => EXON
-							exons = values[25].split( "/" )
+						if values[key_index["EXON"]]: #25 => EXON
+							exons = values[key_index["EXON"]].split( "/" )
 							if len( exons ) == 1:
-								exons.append( None )
+								exons.append(None)
 						introns = [None , None]
-						if values[26]: #26 => INTRON
-							introns = values[26].split( "/" )
+						if values[key_index["INTRON"]]: #26 => INTRON
+							introns = values[key_index["INTRON"]].split( "/" )
 							if len( introns ) == 1:
-								introns.append( None )
-						vcv = vepconsequencevariant( \
+								introns.append(None)
+
+						vcv = vepConsequenceVariant( \
 							#parentVariant=var
 							chromosome = chrom , \
 							start = start , \
@@ -206,37 +215,37 @@ class charger(object):
 							reference = reference , \
 							alternate = alt , \
 							#1 => Gene
-							gene_id=values[1] , \
+							gene_id=values[key_index["Gene"]] , \
 							#2 => Feature
-							transcriptCodon=values[2] , \
+							transcriptCodon=values[key_index["Feature"]] , \
 							#4 => Consequence
-							consequence_terms=values[4].split( "&" ) , \
+							consequence_terms=values[key_index["Consequence"]].split( "&" ) , \
 							#5 => cDNA_position
-							positionCodon=values[5] , \
+							positionCodon=values[key_index["cDNA_position"]] , \
 							#7 => Protein_position
-							positionPeptide=values[7] , \
+							positionPeptide=values[key_index["Protein_position"]] , \
 							referencePeptide=aas[0] , \
 							alternatePeptide=aas[1] , \
 							#12 => STRAND
-							strand=values[12] , \
+							strand=values[key_index["STRAND"]] , \
 							#13 => SYMBOL
-							gene=values[13] , \
+							gene=values[key_index["SYMBOL"]] , \
 							#14 => SYMBOL_SOURCE
-							gene_symbol_source=values[14] , \
+							gene_symbol_source=values[key_index["SYMBOL_SOURCE"]] , \
 							#15 => HGNC_ID
-							hgnc_id=values[15] , \
+							hgnc_id=values[key_index["HGNC_ID"]] , \
 							#16 => BIOTYPE
-							biotype=values[16] , \
+							biotype=values[key_index["BIOTYPE"]] , \
 							#17 => CANONICAL
-							canonical=values[17] , \
+							canonical=values[key_index["CANONICAL"]] , \
 							#18 => CCDS
-							ccds=values[18] , \
+							ccds=values[key_index["CCDS"]] , \
 							#19 => ENSP
-							transcriptPeptide=values[19] , \
+							transcriptPeptide=values[key_index["ENSP"]] , \
 							#23 => SIFT
-							scoreSIFT=values[23] , \
+							scoreSIFT=values[key_index["SIFT"]] , \
 							#24 => POLYPHEN
-							scorePolyPhen=values[24] , \
+							scorePolyPhen=values[key_index["PolyPhen"]] , \
 							exon=exons[0] , \
 							totalExons=exons[1] , \
 							intron=introns[0] , \
@@ -250,7 +259,7 @@ class charger(object):
 #22 => UNIPARC
 #27 => DOMAINS
 #30 => GMAF
-						var.alleleFrequency = values[30]
+						var.alleleFrequency = values[key_index["GMAF"]]
 #31 => AFR_MAF
 #32 => AMR_MAF
 #33 => ASN_MAF
