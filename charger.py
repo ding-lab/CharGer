@@ -61,10 +61,11 @@ class charger(object):
 		self.getDiseases( diseaseFile , **kwargs )
 		preVEP = []
 		vepDone = False
+		exacDone = False
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			[ vepDone , preVEP ] = self.readVCF( vcfFile , **kwargs )
+			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , **kwargs )
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
 		if expressionFile:
@@ -80,7 +81,7 @@ class charger(object):
 				var.reference = "-"
 			if str(var.alternate) == "0" or not var.alternate:
 				var.alternate = "-"
-		return [ vepDone , preVEP ]
+		return [ vepDone , preVEP , exacDone ]
 	def readMAF( self , inputFile , **kwargs ):
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
@@ -107,6 +108,7 @@ class charger(object):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
 		preVEP = []
 		vepDone = False
+		exacDone = False
 		vepInfo = OD()
 		self.vcfInfo = []
 		metadata = inFile.metadata
@@ -114,20 +116,20 @@ class charger(object):
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
 				infos = inFile.infos
-				csq = infos.items()[0]
-				Info = csq[1] #Info(...)
-				if Info:
-					desc = Info[3] #Consequence type...Format: Allele|Gene|...
-					keysString = desc.split( "Format: " )[1]
-					self.vcfInfo = keysString.split( "|" )
-					for key in self.vcfInfo:
-						vepInfo[key] = None
+				for info_ID in infos.items():
+					if info_ID[0] == "CSQ": #CSQ tag the VEP annotation, probably means consequence
+						csq = info_ID
+						Info = csq[1] #Info(...)
+						if Info:
+							desc = Info[3] #Consequence type...Format: Allele|Gene|...
+							keysString = desc.split( "Format: " )[1]
+							self.vcfInfo = keysString.split( "|" )
+							for key in self.vcfInfo:
+								vepInfo[key] = None
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
 			alternates = record.ALT
-			start = record.POS #1-base beginning of ref
-			stop = record.end #+1 #0-base ending of ref, but +1 shouldn't be needed
 			start = record.start+1 #1-base beginning of ref
 			stop = record.end #0-base ending of ref
 			info = record.INFO
@@ -162,6 +164,7 @@ class charger(object):
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
 					vepDone = True
+					exacDone = True
 					var.vepVariant = vepVariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
@@ -245,6 +248,7 @@ class charger(object):
 #22 => UNIPARC
 #27 => DOMAINS
 #30 => GMAF
+						var.alleleFrequency = values[30]
 #31 => AFR_MAF
 #32 => AMR_MAF
 #33 => ASN_MAF
@@ -323,7 +327,7 @@ class charger(object):
 				print var.proteogenomicVar()
 
 				self.userVariants.append( var )
-		return [ vepDone , preVEP ]
+		return [ vepDone , preVEP , exacDone ]
 
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"
@@ -519,7 +523,8 @@ class charger(object):
 
 	def getVEPviaREST( self , **kwargs ):
 		doAllOptions = kwargs.get( 'allOptions' , True )
-		preVEP = kwargs.preVEP( 'prevep' , [] )
+		doVEP = kwargs.get( 'vep' , [] )
+		preVEP = kwargs.get( 'prevep' , [] )
 		vep = ensemblAPI()
 		luv = len(self.userVariants)
 		vepVariants = []

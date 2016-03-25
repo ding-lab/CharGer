@@ -198,7 +198,7 @@ def main( argv ):
 
 	CharGer = charger.charger()
 
-	[ vepDone , preVEP ] = CharGer.getInputData( maf=mafFile , \
+	[ vepDone , preVEP , exacDone ] = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
 	tsv=tsvFile , \
 	specific=diseaseSpecific , \
@@ -223,6 +223,9 @@ def main( argv ):
 	if doVEP:
 		if vepDone:
 			doVEP = False
+	if doExAC:
+		if exacDone:
+			doExac = False
 
 	t2 = time.time() 
 
