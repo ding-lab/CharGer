@@ -112,14 +112,16 @@ class charger(object):
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
 				infos = inFile.infos
-				csq = infos.items()[0]
-				Info = csq[1] #Info(...)
-				if Info:
-					desc = Info[3] #Consequence type...Format: Allele|Gene|...
-					keysString = desc.split( "Format: " )[1]
-					self.vcfInfo = keysString.split( "|" )
-					for key in self.vcfInfo:
-						vepInfo[key] = None
+				for info_ID in infos.items():
+					if info_ID[0] == "CSQ": #CSQ tag the VEP annotation, probably means consequence
+						csq = info_ID
+						Info = csq[1] #Info(...)
+						if Info:
+							desc = Info[3] #Consequence type...Format: Allele|Gene|...
+							keysString = desc.split( "Format: " )[1]
+							self.vcfInfo = keysString.split( "|" )
+							for key in self.vcfInfo:
+								vepInfo[key] = None
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
