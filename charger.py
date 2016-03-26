@@ -208,6 +208,7 @@ class charger(object):
 							if len( siftStuff ) == 1:
 								siftStuff.append( None )
 							else:
+								siftStuff[1].rstrip( ")" )
 						polyPhenStuff = [None , None]
 						if values[key_index["PolyPhen"]]:
 							polyPhenStuff = values[key_index["PolyPhen"]].split( "(" ) 
@@ -701,7 +702,22 @@ class charger(object):
 			if var.uniqueVar() in self.userCoSegregateVariants:
 				var.PP1 = True
 	def PP2( self ):
-		print "CharGer module PP2: not yet implemented"
+		print "CharGer module PP2: Missense variant in a gene of the given gene list"
+		if self.userGeneList: #gene, disease, mode of inheritance
+			for var in self.userVariants:
+				varGene = var.gene
+				varDisease = var.disease # no disease field in MAF; may require user input	
+				varSample = var.sample
+				varClass = var.variantClass
+				varVEPClass = ""
+				if var.vepVariant:
+					varVEPClass = var.vepVariant.mostSevereConsequence
+				if (varClass == "missense") or \
+					(varVEPClass == "missense_variant"):
+					if varGene in self.userGeneList: # check if in gene list
+						var.PP2 = True # if call is true then check expression effect
+		else: 
+			print "CharGer Error: Cannot evaluate PP2: No gene list supplied."
 #		print "- "
 	def PP3( self , minimumEvidence ):
 		print "CharGer module PP3"
