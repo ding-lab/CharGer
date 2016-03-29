@@ -208,13 +208,14 @@ class charger(object):
 							if len( siftStuff ) == 1:
 								siftStuff.append( None )
 							else:
+								siftStuff[1] = siftStuff[1].rstrip( ")" )
 						polyPhenStuff = [None , None]
 						if values[key_index["PolyPhen"]]:
 							polyPhenStuff = values[key_index["PolyPhen"]].split( "(" ) 
 							if len( polyPhenStuff ) == 1:
 								polyPhenStuff.append( None )
 							else:
-								polyPhenStuff[1].rstrip( ")" )
+								polyPhenStuff[1] = polyPhenStuff[1].rstrip( ")" )
 						vcv = vepconsequencevariant( \
 							#parentVariant=var
 							chromosome = chrom , \
@@ -255,7 +256,7 @@ class charger(object):
 							predictionSIFT=siftStuff[0] , \
 							scoreSIFT=siftStuff[1] , \
 							#24 => POLYPHEN
-							predicitionPolyphen=polyPhenStuff[0] , \
+							predictionPolyphen=polyPhenStuff[0] , \
 							scorePolyphen=polyPhenStuff[1] , \
 							exon=exons[0] , \
 							totalExons=exons[1] , \
@@ -346,6 +347,7 @@ class charger(object):
 					var.transcriptCodon = mostSevere.transcriptCodon
 					var.positionCodon = mostSevere.positionCodon
 					var.vepVariant.mostSevereConsequence = mostSevereCons
+					var.variantClass = mostSevereCons
 				print var.proteogenomicVar()
 
 				self.userVariants.append( var )
@@ -441,13 +443,14 @@ class charger(object):
 			inFile = self.safeOpen( inputFile , 'r' , warning=True )
 			for line in inFile:
 				fields = line.split( "\t" )
-				gene = fields[0]
+				gene = fields[0].rstrip()
 				if specific:
-					disease = fields[1]
+					disease = fields[1].rstrip()
 				else: #set the gene to match all disease
 					disease = charger.allDiseases
-				mode_inheritance = fields[2]
+				mode_inheritance = fields[2].rstrip()
 				self.userGeneList[gene][disease] = mode_inheritance
+				print '__'.join( [ gene , disease , mode_inheritance ] )
 		except:
 			print "CharGer Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
@@ -616,6 +619,7 @@ class charger(object):
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
+				print varClass
 				varVEPClass = ""
 				if var.vepVariant:
 					varVEPClass = var.vepVariant.mostSevereConsequence
@@ -631,6 +635,8 @@ class charger(object):
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
 									var.PVS1 = False 
+				if var.PVS1:
+					var.addSummary( "PVS1(Truncation in gene " + varGene + ")" )
 		else: 
 			print "CharGer Error: Cannot evaluate PVS1: No gene list supplied."
 
@@ -645,6 +651,7 @@ class charger(object):
 		for var in self.userVariants:
 			if var.uniqueVar() in self.userDeNovoVariants:
 				var.PS2 = True
+				var.addSummary( "PS2(de novo with parent confirmation and no history)" )
 	def PS3( self ):
 		print "CharGer module PS3: not yet implemented"
 #		print "- "
@@ -662,6 +669,7 @@ class charger(object):
 					CIlower = math.log(OR) - math.sqrt( 1/caseVarFreq + 1/controlVarFreq + 1/caseVarFreq + 1/controlVarFreq)
 					if (CIlower > 1):
 						var.PS4 = True
+						var.addSummary( "PS4(Prevalence significantly greater than controls)" )
 
 ##### Moderate #####
 	def PM1( self ):
@@ -678,10 +686,14 @@ class charger(object):
 		print "CharGer module PM4"
 		print "- protein length changes due to inframe indels or nonstop variant"
 		lenShift = ["In_Frame_Del","In_Frame_Ins","Nonstop_Mutation"]
+		vep_inframe = [	"inframe_insertion" , "inframe_deletion" , \
+						"stop_lost" ]
 		for var in self.userVariants:
 			varClass = var.variantClass
-			if varClass in lenShift:
+			if varClass in lenShift \
+			or varClass in vep_inframe:
 				var.PM4 = True
+				var.addSummary( "PM4(Protein length change from inframe indel or nonstop)" )
 	def PM5( self ):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
@@ -692,6 +704,7 @@ class charger(object):
 		for var in self.userVariants:
 			if var.uniqueVar() in self.userAssumedDeNovoVariants:
 				var.PM6 = True
+				var.addSummary( "PM6(Assumed de novo without parent confirmation)" )
 
 ##### Supporing #####
 	def PP1( self ):
@@ -700,6 +713,7 @@ class charger(object):
 		for var in self.userVariants:
 			if var.uniqueVar() in self.userCoSegregateVariants:
 				var.PP1 = True
+				var.addSummary( "PP1(Cosegregation with disease in family from known disease gene " + self.gene + ")" )
 	def PP2( self ):
 		print "CharGer module PP2: not yet implemented"
 #		print "- "
@@ -708,13 +722,16 @@ class charger(object):
 		print "- multiple lines of in silico evidence of deliterous effect"
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
+		thresholdSIFT = 0.5
 		callPolyphen = "probably damaging"
+		thresholdPolyphen = 0.432
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
+			case = []
 			if var.vepVariant:
 				if var.vepVariant.consequences:
 					for vcVar in var.vepVariant.consequences:
@@ -722,30 +739,60 @@ class charger(object):
 							evidence = 0
 							if vcVar.blosum:
 								if vcVar.blosum < callBlosum62:
+									case.append( "Blosum62:" \
+										+ str( vcVar.blosum ) \
+										+ "<" + str( callBlosum62 ) )
 									evidence += 1
-							if vcVar.predictionSIFT:
-								if vcVar.predictionSIFT.lower() == callSIFTdam or \
-								vcVar.predictionSIFT.lower() == callSIFTdel:
+							elif vcVar.predictionSIFT:
+								if vcVar.predictionSIFT.lower() != callSIFTdam and \
+								vcVar.predictionSIFT.lower() != callSIFTdel:
+									case.append( "SIFT:" \
+										+ str( vcVar.predictionSIFT ) )
 									evidence += 1
-							if vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower() == callPolyphen:
+							if vcVar.scoreSIFT < thresholdSIFT:
+								case.append( "SIFT:" \
+									+ str( vcVar.scoreSIFT ) \
+									+ "<" + str( thresholdSIFT ) )
+								evidence += 1
+							elif vcVar.predictionPolyphen:
+								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
+									case.append( "PolyPhen:" \
+										+ str( vcVar.predictionPolyphen ) )
 									evidence += 1
+							if vcVar.scorePolyphen > thresholdPolyphen:
+								case.append( "PolyPhen:" \
+									+ str( vcVar.scorePolyphen ) \
+									+ ">" + str( thresholdPolyphen ) )
+								evidence += 1
 							if vcVar.compara:
 								if vcVar.compara > callCompara:
+									case.append( "Compara:" \
+										+ str( vcVar.compara ) \
+										+ ">" + str( callCompara ) )
 									evidence += 1
 							if vcVar.impact:
 								if vcVar.impact.lower() == callImpact:
+									case.append( "VEP_Impact:" \
+										+ str( vcVar.impact ) )
 									evidence += 1
 							if vcVar.maxentscan:
 								callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
 								if vcVar.maxentscan[1] <= callMaxEntScan:
+									case.append( "MaxEntScan:" \
+										+ str( vcVar.maxentscan[1] ) \
+										+ "<=" + str( callMaxEntScan ) )
 									evidence += 1
 							if vcVar.genesplicer:
 								if vcVar.genesplicer.lower() == callGeneSplicer:
+									case.append( "GeneSplicer:" \
+										+ str( vcVar.genesplicer ) )
 									evidence += 1
 							if evidence >= minimumEvidence:
 								var.PP3 = True
-
+				if var.PP3:
+					var.addSummary( "PP3(Multiple (>=" + str( minimumEvidence ) \
+						+ ") in silico predictions of deliterious effect=" \
+						+ "|".join( case ) + ")" )
 
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
@@ -796,6 +843,10 @@ class charger(object):
 												if mod == "PM5":
 													var.PM5 = True # already pathogenic still suffices to be PS1
 													called += 1
+			if var.PS1 and mod == "PS1":
+				var.addSummary( "PS1(Peptide change is known pathogenic)" )
+			if var.PM5 and mod == "PM5":
+				var.addSummary( "PM5(Peptide change at the same location of a known pathogenic change)" )
 		print mod + " found " + str(called) + " pathogenic variants"
 	def printResult( self ):
 		for var in self.userVariants:
@@ -810,9 +861,15 @@ class charger(object):
 			if mod == "PM2":
 				if not var.isFrequentAllele( threshold ):
 					var.PM2 = True
+					var.addSummary( "PM2(Low/absent allele frequency " \
+						+ str( var.alleleFrequency ) \
+						+ "<=" + str( threshold ) + ")" )
 			if mod == "BA1":
 				if var.isFrequentAllele( threshold ):
 					var.BA1 = True
+					var.addSummary( "BA1(Frequent allele " \
+						+ str( var.alleleFrequency ) \
+						+ ">" + str( threshold ) + ")" )
 
 ### Benign Modules ###
 #### Stand-alone ####
@@ -842,43 +899,76 @@ class charger(object):
 		print " - in silico evidence of no damage"
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
+		thresholdSIFT = 0.05
 		callPolyphen = "probably damaging"
+		thresholdPolyphen = 0.432
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
 		for var in self.userVariants:
+			case = []
 			if var.vepVariant:
 				if var.vepVariant.consequences:
 					for vcVar in var.vepVariant.consequences:
-						if not var.PP3:
+						if not var.BP4:
 							evidence = 0
 							if vcVar.blosum:
 								if vcVar.blosum > callBlosum62:
+									case.append( "Blosum62:" \
+										+ str( vcVar.blosum ) \
+										+ ">" + str( callBlosum62 ) )
 									evidence += 1
-							if vcVar.predictionSIFT:
+							if vcVar.scoreSIFT >= thresholdSIFT:
+								case.append( "SIFT:" \
+									+ str( vcVar.scoreSIFT ) \
+									+ ">=" + str( thresholdSIFT ) )
+								evidence += 1
+							elif vcVar.predictionSIFT:
 								if vcVar.predictionSIFT.lower() != callSIFTdam and \
 								vcVar.predictionSIFT.lower() != callSIFTdel:
+									case.append( "SIFT:" \
+										+ str( vcVar.predictionSIFT ) )
 									evidence += 1
-							if vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower() != callPolyphen:
+							if vcVar.scorePolyphen <= thresholdPolyphen:
+								case.append( "PolyPhen:" \
+									+ str( vcVar.scorePolyphen ) \
+									+ "<=" + str( thresholdPolyphen ) )
+								evidence += 1
+							elif vcVar.predictionPolyphen:
+								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
+									case.append( "PolyPhen:" \
+										+ str( vcVar.predictionPolyphen ) )
 									evidence += 1
 							if vcVar.compara:
 								if vcVar.compara <= callCompara:
+									case.append( "Compara:" \
+										+ str( vcVar.compara ) )
 									evidence += 1
 							if vcVar.impact:
 								if vcVar.impact.lower() != callImpact:
+									case.append( "VEP_Impact:" \
+										+ str( vcVar.impact ) )
 									evidence += 1
 							if vcVar.maxentscan:
 								callMaxEntScan = vcVar.maxentscan[0]*fracMaxEntScan
 								if vcVar.maxentscan[1] > callMaxEntScan:
+									case.append( "MaxEntScan:" \
+										+ str( vcVar.maxentscan[1] ) \
+										+ ">" + str( callMaxEntScan ) )
 									evidence += 1
 							if vcVar.genesplicer:
 								if vcVar.genesplicer.lower() != callGeneSplicer:
+									case.append( "GeneSplicer:" \
+										+ str( vcVar.genesplicer ) )
 									evidence += 1
 							if evidence >= minimumEvidence:
 								var.BP4 = True
+				if var.BP4:
+					var.addSummary( "BP4(Multiple (>=" + str( minimumEvidence ) \
+						+ ") in silico predictions of non-deleterious effect=" \
+						+ "|".join( case ) + ")" )
 
 	def BP5( self ):
 		print "CharGer module BP5: not yet implemented"
@@ -916,7 +1006,7 @@ class charger(object):
 		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
 			"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
 			"Variant_Type" , "Variant_Classification" , \
-			"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "Protein" , \
+			"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
 			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"Positive_Evidence" , "Negative_Evidence" , \
@@ -924,7 +1014,7 @@ class charger(object):
 			"CharGer_Classification" , "ACMG_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"VEP_Annotations" , \
-			"VCF_Headers" , "VCF_INFO"] )
+			"VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
 		try:
 			outFH.write( headLine )
 			outFH.write( "\n" )
@@ -945,6 +1035,7 @@ class charger(object):
 				self.appendStr( fields,var.transcriptCodon)
 				self.appendStr( fields,var.positionCodon)
 				self.appendStr( fields,var.HGVSg() ) # need to be corrected to cDNA change on the most severe peptide
+				self.appendStr( fields,var.HGVSc() ) # need to be corrected to cDNA change on the most severe peptide
 				self.appendStr( fields,var.transcriptPeptide)
 				self.appendStr( fields,var.referencePeptide)
 				self.appendStr( fields,var.positionPeptide)
@@ -979,6 +1070,7 @@ class charger(object):
 				self.appendStr( fields , var.vepAnnotations ) #make sure this works
 				self.appendStr( fields , var.vcfHeaders )
 				self.appendStr( fields , var.vcfInfo )
+				self.appendStr( fields , '--'.join( var.callSummary ) )
 
 				outFH.write( delim.join( fields ) )
 				outFH.write( "\n" )

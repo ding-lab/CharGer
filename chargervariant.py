@@ -57,6 +57,7 @@ class chargervariant(mafvariant):
 		self.clinical = kwargs.get( 'clinical' , { "description" : chargervariant.uncertain , "review_status" : "" } )
 		self.pathogenicScore = kwargs.get( 'pathogenicScore' , 0 )
 		self.benignScore = kwargs.get( 'benignScore' , 0 )
+		self.callSummary = kwargs.get( 'summary' , [] )
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
 			super( chargervariant , self ).copyInfo( aParentVariant )
@@ -346,3 +347,5 @@ class chargervariant(mafvariant):
 					self.setAsBenign( **kwargs )
 				elif self.benignScore >= 4:
 					self.setAsLikelyBenign( **kwargs )
+	def addSummary( self , string , **kwargs ):
+		self.callSummary.append( string )
