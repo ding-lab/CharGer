@@ -27,7 +27,8 @@ def parseArgs( argv ):
 	helpText += "-n de novo, "
 	helpText += "-a assumed de novo, "
 	helpText += "-c co-segregation, "
-	helpText += "-o \"output\")\n"
+	helpText += "-o \"output\""
+	helpText += "-w output as HTML)\n"
 	mafFile = ""
 	vcfFile = ""
 	tsvFile = ""
@@ -56,8 +57,9 @@ def parseArgs( argv ):
 	clinvar = True
 	exac = True
 	vep = True
+	asHTML = False
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhwX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
@@ -132,6 +134,8 @@ def parseArgs( argv ):
 			vep = False
 		elif opt in ( "-x" , "--noexac" ):
 			exac = False
+		elif opt in ( "-w" , "--html" ):
+			asHTML = True
 	return { "maf" : mafFile , \
 	"vcf" : vcfFile , \
 	"tsv" : tsvFile , \
@@ -141,6 +145,7 @@ def parseArgs( argv ):
 	"clinvar" : clinvar , \
 	"vep" : vep , \
 	"exac" : exac , \
+	"html" : asHTML , \
 	"vepBatchSize" : vepBatchSize , \
 	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
 	"clinvarSearchBatchSize" : clinvarSearchBatchSize , \
@@ -193,6 +198,7 @@ def main( argv ):
 	refColumn = values["refColumn"]
 	altColumn = values["altColumn"]
 	sampleColumn = values["sampleColumn"]
+	asHTML = values["html"]
 	
 	t1 = time.time()
 
@@ -285,7 +291,7 @@ def main( argv ):
 
 	CharGer.printClassifications( )
 
-	CharGer.writeSummary( outputFile , delim='\t' )
+	CharGer.writeSummary( outputFile , delim='\t' , html=asHTML )
 
 	#CharGer.pdfSummary( outputFile )
 

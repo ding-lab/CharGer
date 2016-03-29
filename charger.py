@@ -1017,13 +1017,20 @@ class charger(object):
 				var.clinical["description"] ] )
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
+		asHTML = kwargs.get( 'html' , False )
 		outFH = self.safeOpen( outFile , 'w' , warning=True )
+		if asHTML:
+			print "Writing to .html with delim = </td><td>"
+			delim = "</td><td>"
+			outFH.write( "<html><head></head><body><table style=\"width: 100%;\"><tr><td>" )
 		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
 			"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
 			"Variant_Type" , "Variant_Classification" , \
-			"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
-			"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
-			"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"Sample" , "HGVSg", "HGVSc", "HGVSp" , \
+			#"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
+			#"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
+			#"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , \
@@ -1032,7 +1039,10 @@ class charger(object):
 			"VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
 		try:
 			outFH.write( headLine )
-			outFH.write( "\n" )
+			if asHTML:
+				outFH.write( "</td></tr>" )
+			else:
+				outFH.write( "\n" )
 			for var in self.userVariants:
 				fields = []
 
@@ -1047,14 +1057,14 @@ class charger(object):
 				self.appendStr( fields,var.variantType)
 				self.appendStr( fields,var.variantClass)
 				self.appendStr( fields,var.sample)
-				self.appendStr( fields,var.transcriptCodon)
-				self.appendStr( fields,var.positionCodon)
+				#self.appendStr( fields,var.transcriptCodon)
+				#self.appendStr( fields,var.positionCodon)
 				self.appendStr( fields,var.HGVSg() ) # need to be corrected to cDNA change on the most severe peptide
 				self.appendStr( fields,var.HGVSc() ) # need to be corrected to cDNA change on the most severe peptide
-				self.appendStr( fields,var.transcriptPeptide)
-				self.appendStr( fields,var.referencePeptide)
-				self.appendStr( fields,var.positionPeptide)
-				self.appendStr( fields,var.alternatePeptide)
+				#self.appendStr( fields,var.transcriptPeptide)
+				#self.appendStr( fields,var.referencePeptide)
+				#self.appendStr( fields,var.positionPeptide)
+				#self.appendStr( fields,var.alternatePeptide)
 				self.appendStr( fields, var.HGVSp() ) # need to be corrected too
 				self.appendStr( fields,var.alleleFrequency)
 				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
@@ -1072,7 +1082,15 @@ class charger(object):
 				self.appendStr( fields,var.pathogenicity["CharGer"])
 				self.appendStr( fields,var.pathogenicity["ACMG"])
 				try:
-					self.appendStr( fields,var.clinvarVariant.linkPubMed())
+					if asHTML:
+						text = "<a href=\""
+						text += var.clinvarVariant.linkPubMed()
+						text += "\">uid="
+						text += str( var.clinvarVariant.uid )
+						text += "</a>"
+						self.appendStr( fields, text )
+					else:
+						self.appendStr( fields,var.clinvarVariant.linkPubMed())
 				except:
 					self.appendStr( fields , "NA" )
 					pass
@@ -1085,13 +1103,20 @@ class charger(object):
 				self.appendStr( fields , var.vepAnnotations ) #make sure this works
 				self.appendStr( fields , var.vcfHeaders )
 				self.appendStr( fields , var.vcfInfo )
-				self.appendStr( fields , '--'.join( var.callSummary ) )
+				self.appendStr( fields , ' -- '.join( var.callSummary ) )
 
+				if asHTML:
+					outFH.write( "<tr><td>" )
 				outFH.write( delim.join( fields ) )
-				outFH.write( "\n" )
+				if asHTML:
+					outFH.write( "</td></tr>" )
+				else:
+					outFH.write( "\n" )
 		except:
 			print "CharGer Error: Could not write output summary"
 			pass
+		if asHTML:
+			outFH.write( "</table></body></html>" )
 
 	@staticmethod
 	def appendStr( array, value ):
