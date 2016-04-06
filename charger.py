@@ -43,7 +43,8 @@ class charger(object):
 		#self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
 		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
-		self.vcfInfos = kwargs.get( 'vcfInfo' , [] )
+		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
+		#### ADD key index here to access vcf info for individual variant
 
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
@@ -110,7 +111,7 @@ class charger(object):
 		vepDone = False
 		exacDone = False
 		vepInfo = OD()
-		self.vcfInfo = []
+		self.vcfHeaderInfo = []
 		metadata = inFile.metadata
 		for pairs in metadata:
 			if pairs == 'VEP':
@@ -123,10 +124,10 @@ class charger(object):
 						if Info:
 							desc = Info[3] #Consequence type...Format: Allele|Gene|...
 							keysString = desc.split( "Format: " )[1]
-							self.vcfInfo = keysString.split( "|" )
+							self.vcfHeaderInfo = keysString.split( "|" )
 							key_index = {}
 							i = 0
-							for key in self.vcfInfo:
+							for key in self.vcfHeaderInfo:
 								print str(i) + " => " + key
 								vepInfo[key] = None
 								key_index[key] = i
@@ -165,6 +166,8 @@ class charger(object):
 					parentVariant=parentVar
 				)
 
+				
+
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
 					vepDone = True
@@ -172,6 +175,7 @@ class charger(object):
 					var.vepVariant = vepvariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
+						var.vcfInfo = values
 						aas = [None , None] 
 						if values[key_index["Amino_acids"]]: #8 => Amino_acids
 							aas = values[key_index["Amino_acids"]].split("/") 
@@ -713,7 +717,7 @@ class charger(object):
 		print "- multiple lines of in silico evidence of deliterous effect"
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
-		thresholdSIFT = 0.5
+		thresholdSIFT = 0.05
 		callPolyphen = "probably damaging"
 		thresholdPolyphen = 0.432
 		callBlosum62 = -2
@@ -734,27 +738,27 @@ class charger(object):
 										+ str( vcVar.blosum ) \
 										+ "<" + str( callBlosum62 ) )
 									evidence += 1
-							elif vcVar.predictionSIFT:
-								if vcVar.predictionSIFT.lower() != callSIFTdam and \
-								vcVar.predictionSIFT.lower() != callSIFTdel:
-									case.append( "SIFT:" \
-										+ str( vcVar.predictionSIFT ) )
-									evidence += 1
-							if vcVar.scoreSIFT < thresholdSIFT:
+							if vcVar.scoreSIFT and (vcVar.scoreSIFT < thresholdSIFT):
 								case.append( "SIFT:" \
 									+ str( vcVar.scoreSIFT ) \
 									+ "<" + str( thresholdSIFT ) )
 								evidence += 1
-							elif vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
-									case.append( "PolyPhen:" \
-										+ str( vcVar.predictionPolyphen ) )
-									evidence += 1
-							if vcVar.scorePolyphen > thresholdPolyphen:
+							# elif vcVar.predictionSIFT:
+							# 	if vcVar.predictionSIFT.lower() == callSIFTdam and \
+							# 	vcVar.predictionSIFT.lower() == callSIFTdel:
+							# 		case.append( "SIFT:" \
+							# 			+ str( vcVar.predictionSIFT ) )
+							# 		evidence += 1
+							if vcVar.scorePolyphen and (vcVar.scorePolyphen > thresholdPolyphen):
 								case.append( "PolyPhen:" \
 									+ str( vcVar.scorePolyphen ) \
 									+ ">" + str( thresholdPolyphen ) )
 								evidence += 1
+							# elif vcVar.predictionPolyphen:
+							# 	if vcVar.predictionPolyphen.lower().replace( "_" , " " ) == callPolyphen:
+							# 		case.append( "PolyPhen:" \
+							# 			+ str( vcVar.predictionPolyphen ) )
+							# 		evidence += 1
 							if vcVar.compara:
 								if vcVar.compara > callCompara:
 									case.append( "Compara:" \
@@ -977,27 +981,27 @@ class charger(object):
 										+ str( vcVar.blosum ) \
 										+ ">" + str( callBlosum62 ) )
 									evidence += 1
-							if vcVar.scoreSIFT >= thresholdSIFT:
+							if vcVar.scoreSIFT and (vcVar.scoreSIFT >= thresholdSIFT):
 								case.append( "SIFT:" \
 									+ str( vcVar.scoreSIFT ) \
 									+ ">=" + str( thresholdSIFT ) )
 								evidence += 1
-							elif vcVar.predictionSIFT:
-								if vcVar.predictionSIFT.lower() != callSIFTdam and \
-								vcVar.predictionSIFT.lower() != callSIFTdel:
-									case.append( "SIFT:" \
-										+ str( vcVar.predictionSIFT ) )
-									evidence += 1
-							if vcVar.scorePolyphen <= thresholdPolyphen:
+							# elif vcVar.predictionSIFT:
+							# 	if vcVar.predictionSIFT.lower() != callSIFTdam and \
+							# 	vcVar.predictionSIFT.lower() != callSIFTdel:
+							# 		case.append( "SIFT:" \
+							# 			+ str( vcVar.predictionSIFT ) )
+							# 		evidence += 1
+							if vcVar.scorePolyphen and (vcVar.scorePolyphen <= thresholdPolyphen):
 								case.append( "PolyPhen:" \
 									+ str( vcVar.scorePolyphen ) \
 									+ "<=" + str( thresholdPolyphen ) )
 								evidence += 1
-							elif vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
-									case.append( "PolyPhen:" \
-										+ str( vcVar.predictionPolyphen ) )
-									evidence += 1
+							# elif vcVar.predictionPolyphen:
+							# 	if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
+							# 		case.append( "PolyPhen:" \
+							# 			+ str( vcVar.predictionPolyphen ) )
+							# 		evidence += 1
 							if vcVar.compara:
 								if vcVar.compara <= callCompara:
 									case.append( "Compara:" \
@@ -1077,8 +1081,9 @@ class charger(object):
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
-			"VEP_Annotations" , \
-			"VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
+			"CharGer_Summary"] )
+			# "VEP_Annotations" , \
+			# "VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
 		try:
 			outFH.write( headLine )
 			if asHTML:
@@ -1096,6 +1101,9 @@ class charger(object):
 				self.appendStr( fields,var.alternate)
 				self.appendStr( fields,var.strand)
 				self.appendStr( fields,var.assembly)
+
+				#self.appendStr( fields,var.sift)
+				#self.appendStr( fields,var.polyphen)
 				self.appendStr( fields,var.variantType)
 				self.appendStr( fields,var.variantClass)
 				self.appendStr( fields,var.sample)
@@ -1142,9 +1150,9 @@ class charger(object):
 					self.appendStr( fields , "NA" )
 					pass
 				# TODO: add all the bioinformatic good stuff from VEP
-				self.appendStr( fields , var.vepAnnotations ) #make sure this works
-				self.appendStr( fields , var.vcfHeaders )
-				self.appendStr( fields , var.vcfInfo )
+				# self.appendStr( fields , var.vepAnnotations ) #make sure this works
+				# self.appendStr( fields , self.vcfHeaderInfo )
+				# self.appendStr( fields , var.vcfInfo )
 				self.appendStr( fields , ' -- '.join( var.callSummary ) )
 
 				if asHTML:
