@@ -182,6 +182,7 @@ class charger(object):
 								#28 => HGVSc
 								#29 => HGVSp
 								hgvsp = values[key_index["HGVSp"]].split( ":" )
+								changep = None
 								if len( hgvsp ) > 1:
 									changep = re.match( "p\." , hgvsp[1] )
 								if changep:
@@ -605,40 +606,17 @@ class charger(object):
 
 
 ### Evidence levels ### 
+
+# any level ending with C (ex. PSC1, PPC1) are CharGer-invented modules #
+
 ##### Very Strong #####
 	def PVS1( self , expressionThreshold = 0.2 ):
 		print "CharGer module PVS1"
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
-		maf_truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Splice_Site"] #,"Nonstop_Mutation"
-		vep_truncations = ["transcript_ablation","splice_acceptor_variant","splice_donor_variant","stop_gained",\
-							"frameshift_variant","start_lost"]
-		if self.userGeneList: #gene, disease, mode of inheritance
-			for var in self.userVariants:
-				varGene = var.gene
-				varDisease = var.disease # no disease field in MAF; may require user input	
-				varSample = var.sample
-				varClass = var.variantClass
-				print varClass
-				varVEPClass = ""
-				if var.vepVariant:
-					varVEPClass = var.vepVariant.mostSevereConsequence
-				altPeptide = var.alternatePeptide
-				if (varClass in maf_truncations) or \
-					(varVEPClass in vep_truncations) or \
-					altPeptide == "*" or \
-					altPeptide == "fs":
-					if varGene in self.userGeneList: # check if in gene list
-						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
-							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
-							var.PVS1 = True # if call is true then check expression effect
-							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
-								if self.userExpression[varSample][varGene] >= expressionThreshold:
-									var.PVS1 = False 
-				if var.PVS1:
-					var.addSummary( "PVS1(Truncation in gene " + varGene + ")" )
-		else: 
-			print "CharGer Error: Cannot evaluate PVS1: No gene list supplied."
+		print "- run concurrently with PSC1, PM4, and PPC1 - "
+		self.runIndelModules()
+		
 
 ##### Strong #####
 	def PS1( self ):
@@ -653,7 +631,8 @@ class charger(object):
 				var.PS2 = True
 				var.addSummary( "PS2(de novo with parent confirmation and no history)" )
 	def PS3( self ):
-		print "CharGer module PS3: not yet implemented"
+		print "CharGer module PS3: Well-established in vitro or in vivo functional studies \
+		supportive of a damaging effect on the gene or gene product"
 #		print "- "
 	def PS4( self ): # not relevant in rare variants, such big effect size common variants are so rare may as well just take a input variant list
 		print "CharGer module PS4: not yet implemented"
@@ -671,9 +650,14 @@ class charger(object):
 						var.PS4 = True
 						var.addSummary( "PS4(Prevalence significantly greater than controls)" )
 
+	def PSC1( self ):
+		print "CharGer module PSC1"
+		print "Truncations of other, not-specificied genes"
+
 ##### Moderate #####
 	def PM1( self ):
-		print "CharGer module PM1: not yet implemented"
+		print "CharGer module PM1:  Located in a mutational hot spot and/or critical and well-established \
+		functional domain (e.g., active site of an enzyme) without benign variation"
 #		print "- "
 	def PM2( self , threshold ):
 		print "CharGer module PM2"
@@ -684,16 +668,8 @@ class charger(object):
 #		print "- "
 	def PM4( self ):
 		print "CharGer module PM4"
-		print "- protein length changes due to inframe indels or nonstop variant"
-		lenShift = ["In_Frame_Del","In_Frame_Ins","Nonstop_Mutation"]
-		vep_inframe = [	"inframe_insertion" , "inframe_deletion" , \
-						"stop_lost" ]
-		for var in self.userVariants:
-			varClass = var.variantClass
-			if varClass in lenShift \
-			or varClass in vep_inframe:
-				var.PM4 = True
-				var.addSummary( "PM4(Protein length change from inframe indel or nonstop)" )
+		print "- protein length changes due to inframe indels or nonstop variant of selected genes - "
+		
 	def PM5( self ):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
@@ -815,8 +791,74 @@ class charger(object):
 	def PP5( self ):
 		print "CharGer module PP5: not yet implemented"
 #		print "- "
+	def PPC1( self ):
+		print "CharGer module PPC1"
+		print "- protein length changes due to inframe indels or nonstop variant of other, not-specificied genes - "
 
 ### helper functions of evidence levels ###
+	def runIndelModules( self ):
+		maf_truncations = ["Frame_Shift_Del","Frame_Shift_Ins","Nonsense_Mutation","Splice_Site"] #,"Nonstop_Mutation"
+		vep_truncations = ["transcript_ablation","splice_acceptor_variant","splice_donor_variant","stop_gained",\
+							"frameshift_variant","start_lost"]
+		lenShift = ["In_Frame_Del","In_Frame_Ins","Nonstop_Mutation"]
+		vep_inframe = [	"inframe_insertion" , "inframe_deletion" , \
+						"stop_lost" ]
+
+		for var in self.userVariants:
+			varClass = var.variantClass
+			varGene = var.gene
+			print varClass
+			varVEPClass = ""
+			if var.vepVariant:
+				varVEPClass = var.vepVariant.mostSevereConsequence
+			altPeptide = var.alternatePeptide
+
+			if (varClass in maf_truncations) or \
+					(varVEPClass in vep_truncations) or \
+					altPeptide == "*" or \
+					altPeptide == "fs":
+				if self.userGeneList:
+					if varGene in self.userGeneList: # check if in gene list
+						varDisease = var.disease # no disease field in MAF; may require user input	
+						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
+							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
+							var.PVS1 = True # if call is true then check expression effect
+							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
+								varSample = var.sample
+								if self.userExpression[varSample][varGene] >= expressionThreshold:
+									var.PVS1 = False
+					else:
+						var.PSC1 = True 
+				else: 
+					print "CharGer Error: Cannot evaluate PVS1: No gene list supplied."
+					# in case of no gene list, make all truncations PSC1
+					var.PSC1 = True
+
+
+			elif (varClass in lenShift \
+				or varClass in vep_inframe):
+				if self.userGeneList:
+					if varGene in self.userGeneList: # check if in gene list
+						varDisease = var.disease # no disease field in MAF; may require user input	
+						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
+							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
+							var.PM4 = True
+					else: 
+						var.PPC1 = True
+				else: 
+					print "CharGer Error: Cannot evaluate PM4: No gene list supplied."
+					# in case of no gene list, make all inframes PSC1
+					var.PPC1 = True
+
+			if var.PVS1:
+				var.addSummary( "PVS1(" + varClass + " in gene " + varGene + ")" )
+			if var.PSC1:
+				var.addSummary( "PSC1(" + varClass + " in gene " + varGene + ")" )
+			if var.PM4:
+				var.addSummary( "PM4(" + varClass + " in gene " + varGene + ")" )
+			if var.PPC1:
+				var.addSummary( "PPC1(" + varClass + " in gene " + varGene + ")" )
+
 	def peptideChange( self , mod ):
 		called = 0
 		for var in self.userVariants:

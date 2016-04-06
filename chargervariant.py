@@ -32,6 +32,7 @@ class chargervariant(mafvariant):
 		self.PP3 = kwargs.get( 'PP3' , False )
 		self.PP4 = kwargs.get( 'PP4' , False )
 		self.PP5 = kwargs.get( 'PP5' , False )
+
 		self.BA1 = kwargs.get( 'BA1' , False )
 		self.BS1 = kwargs.get( 'BS1' , False )
 		self.BS2 = kwargs.get( 'BS2' , False )
@@ -44,6 +45,9 @@ class chargervariant(mafvariant):
 		self.BP5 = kwargs.get( 'BP5' , False )
 		self.BP6 = kwargs.get( 'BP6' , False )
 		self.BP7 = kwargs.get( 'BP7' , False )
+
+		self.PSC1 = kwargs.get( 'PSC1' , False )
+		self.PPC1 = kwargs.get( 'PPC1' , False )
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.vepAnnotations = kwargs.get( 'VEP' , None )
@@ -133,6 +137,9 @@ class chargervariant(mafvariant):
 			checks[mods[13]] = self.PP3
 			checks[mods[14]] = self.PP4
 			checks[mods[15]] = self.PP5
+
+			checks[mods[28]] = self.PSC1
+			checks[mods[29]] = self.PPC1
 		if doNegative:
 			checks[mods[16]] = self.BA1
 			checks[mods[17]] = self.BS1
@@ -149,13 +156,13 @@ class chargervariant(mafvariant):
 		return checks
 	def modules( self ):
 		return ['PVS1' , \
-		'PS1' , 'PS2' , 'PS3' , 'PS4' , \
+		'PS1' , 'PS2' , 'PS3' , 'PS4' ,  \
 		'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' , \
 		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' , \
 		'BA1' , \
 		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
-		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' \
-		]
+		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7', \
+		'PSC1', 'PPC1']
 	def readVCFInfo( self , **kwargs ):
 		for info in self.vcfInfo:
 			print info
@@ -176,6 +183,8 @@ class chargervariant(mafvariant):
 		if self.PS3:
 			count += 1
 		if self.PS4:
+			count += 1
+		if self.PSC1:
 			count += 1
 		return count
 	def countPathogenicModerate( self ):
@@ -204,6 +213,8 @@ class chargervariant(mafvariant):
 		if self.PP4:
 			count += 1
 		if self.PP5:
+			count += 1
+		if self.PPC1:
 			count += 1
 		return count
 	def isPathogenic( self , **kwargs ):
