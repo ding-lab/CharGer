@@ -310,13 +310,13 @@ class chargervariant(mafvariant):
 		self.pathogenicity[scoreSystem] = chargervariant.pathogenic
 	def setAsLikelyPathogenic( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargervariant.likelyPathogenic
+		self.pathogenicity[scoreSystem] = chargervariant.likelyPathogenic
 	def setAsLikelyBenign( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargervariant.likelyBenign
+		self.pathogenicity[scoreSystem] = chargervariant.likelyBenign
 	def setAsBenign( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
-		self.pathogenicity[scoreSystem]  = chargervariant.benign
+		self.pathogenicity[scoreSystem] = chargervariant.benign
 	def positiveEvidence( self ):
 		positive = []
 		checks = self.checks( negative=False )
@@ -332,6 +332,12 @@ class chargervariant(mafvariant):
 				negative.append(k)
 		return ",".join(negative)
 
+	def compareDescription( self , checkBetter , **kwargs ):
+		desc = self.clinvarVariant.clinical["description"]
+		if desc.lower() == checkBetter.lower():
+			return True
+		else:
+			return False
 	def tallyScore( self , **kwargs ):
 		self.pathogenicScore = 0
 		self.pathogenicScore += self.countPathogenicSupport()
@@ -345,6 +351,7 @@ class chargervariant(mafvariant):
 		self.compositeScore( **kwargs )
 	def compositeScore( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		override = kwargs.get( 'override' , False )
 		if self.pathogenicScore > 8:
 			self.setAsPathogenic( **kwargs )
 		elif self.pathogenicScore > 5:
@@ -358,5 +365,30 @@ class chargervariant(mafvariant):
 					self.setAsBenign( **kwargs )
 				elif self.benignScore >= 4:
 					self.setAsLikelyBenign( **kwargs )
+		if override:
+			self.clinvarOverride()
+	def clinvarOverride( self , **kwargs ):
+		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		desc = self.clinvarVariant.clinical["description"].lower()
+		call = self.pathogenicity[scoreSystem].lower()
+		path = chargervariant.pathogenic.lower()
+		lPath = chargervariant.likelyPathogenic.lower()
+		lBen = chargervariant.likelyBenign.lower()
+		ben = chargervariant.benign.lower()
+		if call == lPath:
+			if desc == path:
+				self.pathogenicity[scoreSystem] = chargervariant.pathogenic
+		elif call == lBen:
+			if desc == path:
+				self.pathogenicity[scoreSystem] = chargervariant.pathogenic
+			else desc == lPath:
+				self.pathogenicity[scoreSystem] = chargervariant.likelyPathogenic
+		elif call == ben:
+			if desc == path:
+				self.pathogenicity[scoreSystem] = chargervariant.pathogenic
+			elif desc == lPath:
+				self.pathogenicity[scoreSystem] = chargervariant.likelyPathogenic
+			else desc == lBen:
+				self.pathogenicity[scoreSystem] = chargervariant.likelyBenign
 	def addSummary( self , string , **kwargs ):
 		self.callSummary.append( string )
