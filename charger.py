@@ -44,7 +44,7 @@ class charger(object):
 		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
 		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
-		self.vcfKeyIndex = kwargs.get( 'self.vcfKeyIndex' , {} )
+		self.vcfKeyIndex = kwargs.get( 'self.vcfKeyIndex' , AV({}) )
 		#### ADD key index here to access vcf info for individual variant
 
 ### Retrieve input data from user ###
@@ -1106,8 +1106,18 @@ class charger(object):
 				# self.appendStr( fields,var.variantType)
 				#elf.appendStr( fields, self.vcfKeyIndex["SIFT"])
 				#self.appendStr( fields, var.vcfInfo)
-				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
-				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+				if var.vcfInfo:
+					if "SIFT" in self.vcfKeyIndex:
+						self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
+					else:
+						self.appendStr( fields , "NA" )
+					if "PolyPhen" in self.vcfKeyIndex:
+						self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+					else:
+						self.appendStr( fields , "NA" )
+				else:
+					self.appendStr( fields , "NA" )
+					self.appendStr( fields , "NA" )
 				#self.appendStr( fields,var.polyphen)
 				self.appendStr( fields,var.variantClass)
 				self.appendStr( fields,var.sample)
