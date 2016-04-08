@@ -45,6 +45,7 @@ class charger(object):
 		self.diseases = kwargs.get( 'diseases' , {} )
 		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
 		self.vcfKeyIndex = kwargs.get( 'vcfKeyIndex' , {} )
+
 		#### ADD key index here to access vcf info for individual variant
 
 ### Retrieve input data from user ###
@@ -857,13 +858,13 @@ class charger(object):
 					var.PPC1 = True
 
 			if var.PVS1:
-				var.addSummary( "PVS1(" + varClass + " in susceptible gene " + varGene + ")" )
+				var.addSummary( "PVS1(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PSC1:
-				var.addSummary( "PSC1(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PSC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PM4:
-				var.addSummary( "PM4(" + varClass + " in susceptible gene " + varGene + ")" )
+				var.addSummary( "PM4(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PPC1:
-				var.addSummary( "PPC1(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PPC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 
 	def peptideChange( self , mod ):
 		called = 0
@@ -1043,17 +1044,17 @@ class charger(object):
 
 ### Classifier ###
 	def classify( self , **kwargs ):
-		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		scoreSystem = kwargs.get( "system" , "CharGer" )
 		for var in self.userVariants:
 			var.isPathogenic( **kwargs )
 			var.isLikelyPathogenic( **kwargs )
 			var.isLikelyBenign( **kwargs )
 			var.isBenign( **kwargs )
 			var.isUncertainSignificance( **kwargs )
-			if scoreSystem == "CharGer":
-				var.tallyScore( **kwargs )
+			var.tallyScore( **kwargs )
+
 	def printClassifications( self , **kwargs ):
-		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		scoreSystem = kwargs.get( "system" , "CharGer" )
 		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
 			"CharGerClassification" , "ClinVarAnnoation"] )
 		print headLine
@@ -1109,8 +1110,18 @@ class charger(object):
 				# self.appendStr( fields,var.variantType)
 				#elf.appendStr( fields, self.vcfKeyIndex["SIFT"])
 				#self.appendStr( fields, var.vcfInfo)
-				#self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
-				#self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+				# if var.vcfInfo:
+				# 	if "SIFT" in self.vcfKeyIndex:
+				# 		self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
+				# 	else:
+				# 		self.appendStr( fields , "NA" )
+				# 	if "PolyPhen" in self.vcfKeyIndex:
+				# 		self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+				# 	else:
+				# 		self.appendStr( fields , "NA" )
+				# else:
+				# 	self.appendStr( fields , "NA" )
+				# 	self.appendStr( fields , "NA" )
 				#self.appendStr( fields,var.polyphen)
 				self.appendStr( fields,var.variantClass)
 				#self.appendStr( fields,var.sample)
