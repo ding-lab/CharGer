@@ -43,7 +43,9 @@ class charger(object):
 		#self.clinvarVariants = kwargs.get( 'clinvarVariants' , {} )
 		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
-		self.vcfInfos = kwargs.get( 'vcfInfo' , [] )
+		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
+		self.vcfKeyIndex = kwargs.get( 'self.vcfKeyIndex' , {} )
+		#### ADD key index here to access vcf info for individual variant
 
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
@@ -110,7 +112,7 @@ class charger(object):
 		vepDone = False
 		exacDone = False
 		vepInfo = OD()
-		self.vcfInfo = []
+		self.vcfHeaderInfo = []
 		metadata = inFile.metadata
 		for pairs in metadata:
 			if pairs == 'VEP':
@@ -123,13 +125,13 @@ class charger(object):
 						if Info:
 							desc = Info[3] #Consequence type...Format: Allele|Gene|...
 							keysString = desc.split( "Format: " )[1]
-							self.vcfInfo = keysString.split( "|" )
-							key_index = {}
+							self.vcfHeaderInfo = keysString.split( "|" )
+							self.vcfKeyIndex = {}
 							i = 0
-							for key in self.vcfInfo:
+							for key in self.vcfHeaderInfo:
 								print str(i) + " => " + key
 								vepInfo[key] = None
-								key_index[key] = i
+								self.vcfKeyIndex[key] = i
 								i = i + 1
 		for record in inFile:
 			chrom = record.CHROM
@@ -165,6 +167,8 @@ class charger(object):
 					parentVariant=parentVar
 				)
 
+				
+
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
 					vepDone = True
@@ -172,16 +176,17 @@ class charger(object):
 					var.vepVariant = vepvariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
+						var.vcfInfo = values
 						aas = [None , None] 
-						if values[key_index["Amino_acids"]]: #8 => Amino_acids
-							aas = values[key_index["Amino_acids"]].split("/") 
+						if values[self.vcfKeyIndex["Amino_acids"]]: #8 => Amino_acids
+							aas = values[self.vcfKeyIndex["Amino_acids"]].split("/") 
 							if len( aas ) > 1:
 								aas[0] = mafvariant().convertAA( aas[0] )
 								aas[1] = mafvariant().convertAA( aas[1] )
 							else:
 								#28 => HGVSc
 								#29 => HGVSp
-								hgvsp = values[key_index["HGVSp"]].split( ":" )
+								hgvsp = values[self.vcfKeyIndex["HGVSp"]].split( ":" )
 								changep = None
 								if len( hgvsp ) > 1:
 									changep = re.match( "p\." , hgvsp[1] )
@@ -194,25 +199,25 @@ class charger(object):
 									needVEP = True
 									preVEP.append( var )
 						exons = [None , None]
-						if values[key_index["EXON"]]: #25 => EXON
-							exons = values[key_index["EXON"]].split( "/" )
+						if values[self.vcfKeyIndex["EXON"]]: #25 => EXON
+							exons = values[self.vcfKeyIndex["EXON"]].split( "/" )
 							if len( exons ) == 1:
 								exons.append(None)
 						introns = [None , None]
-						if values[key_index["INTRON"]]: #26 => INTRON
-							introns = values[key_index["INTRON"]].split( "/" )
+						if values[self.vcfKeyIndex["INTRON"]]: #26 => INTRON
+							introns = values[self.vcfKeyIndex["INTRON"]].split( "/" )
 							if len( introns ) == 1:
 								introns.append(None)
 						siftStuff = [None , None]
-						if values[key_index["SIFT"]]:
-							siftStuff = values[key_index["SIFT"]].split( "(" ) 
+						if values[self.vcfKeyIndex["SIFT"]]:
+							siftStuff = values[self.vcfKeyIndex["SIFT"]].split( "(" ) 
 							if len( siftStuff ) == 1:
 								siftStuff.append( None )
 							else:
 								siftStuff[1] = siftStuff[1].rstrip( ")" )
 						polyPhenStuff = [None , None]
-						if values[key_index["PolyPhen"]]:
-							polyPhenStuff = values[key_index["PolyPhen"]].split( "(" ) 
+						if values[self.vcfKeyIndex["PolyPhen"]]:
+							polyPhenStuff = values[self.vcfKeyIndex["PolyPhen"]].split( "(" ) 
 							if len( polyPhenStuff ) == 1:
 								polyPhenStuff.append( None )
 							else:
@@ -226,33 +231,33 @@ class charger(object):
 							reference = reference , \
 							alternate = alt , \
 							#1 => Gene
-							gene_id=values[key_index["Gene"]] , \
+							gene_id=values[self.vcfKeyIndex["Gene"]] , \
 							#2 => Feature
-							transcriptCodon=values[key_index["Feature"]] , \
+							transcriptCodon=values[self.vcfKeyIndex["Feature"]] , \
 							#4 => Consequence
-							consequence_terms=values[key_index["Consequence"]].split( "&" ) , \
+							consequence_terms=values[self.vcfKeyIndex["Consequence"]].split( "&" ) , \
 							#5 => cDNA_position
-							positionCodon=values[key_index["cDNA_position"]] , \
+							positionCodon=values[self.vcfKeyIndex["cDNA_position"]] , \
 							#7 => Protein_position
-							positionPeptide=values[key_index["Protein_position"]] , \
+							positionPeptide=values[self.vcfKeyIndex["Protein_position"]] , \
 							referencePeptide=aas[0] , \
 							alternatePeptide=aas[1] , \
 							#12 => STRAND
-							strand=values[key_index["STRAND"]] , \
+							strand=values[self.vcfKeyIndex["STRAND"]] , \
 							#13 => SYMBOL
-							gene=values[key_index["SYMBOL"]] , \
+							gene=values[self.vcfKeyIndex["SYMBOL"]] , \
 							#14 => SYMBOL_SOURCE
-							gene_symbol_source=values[key_index["SYMBOL_SOURCE"]] , \
+							gene_symbol_source=values[self.vcfKeyIndex["SYMBOL_SOURCE"]] , \
 							#15 => HGNC_ID
-							hgnc_id=values[key_index["HGNC_ID"]] , \
+							hgnc_id=values[self.vcfKeyIndex["HGNC_ID"]] , \
 							#16 => BIOTYPE
-							biotype=values[key_index["BIOTYPE"]] , \
+							biotype=values[self.vcfKeyIndex["BIOTYPE"]] , \
 							#17 => CANONICAL
-							canonical=values[key_index["CANONICAL"]] , \
+							canonical=values[self.vcfKeyIndex["CANONICAL"]] , \
 							#18 => CCDS
-							ccds=values[key_index["CCDS"]] , \
+							ccds=values[self.vcfKeyIndex["CCDS"]] , \
 							#19 => ENSP
-							transcriptPeptide=values[key_index["ENSP"]] , \
+							transcriptPeptide=values[self.vcfKeyIndex["ENSP"]] , \
 							#23 => SIFT
 							predictionSIFT=siftStuff[0] , \
 							scoreSIFT=siftStuff[1] , \
@@ -272,7 +277,7 @@ class charger(object):
 #22 => UNIPARC
 #27 => DOMAINS
 #30 => GMAF
-						var.alleleFrequency = values[key_index["GMAF"]]
+						var.alleleFrequency = values[self.vcfKeyIndex["GMAF"]]
 #31 => AFR_MAF
 #32 => AMR_MAF
 #33 => ASN_MAF
@@ -713,7 +718,7 @@ class charger(object):
 		print "- multiple lines of in silico evidence of deliterous effect"
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
-		thresholdSIFT = 0.5
+		thresholdSIFT = 0.05
 		callPolyphen = "probably damaging"
 		thresholdPolyphen = 0.432
 		callBlosum62 = -2
@@ -734,27 +739,27 @@ class charger(object):
 										+ str( vcVar.blosum ) \
 										+ "<" + str( callBlosum62 ) )
 									evidence += 1
-							elif vcVar.predictionSIFT:
-								if vcVar.predictionSIFT.lower() != callSIFTdam and \
-								vcVar.predictionSIFT.lower() != callSIFTdel:
-									case.append( "SIFT:" \
-										+ str( vcVar.predictionSIFT ) )
-									evidence += 1
-							if vcVar.scoreSIFT < thresholdSIFT:
+							if vcVar.scoreSIFT and (vcVar.scoreSIFT < thresholdSIFT):
 								case.append( "SIFT:" \
 									+ str( vcVar.scoreSIFT ) \
 									+ "<" + str( thresholdSIFT ) )
 								evidence += 1
-							elif vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
-									case.append( "PolyPhen:" \
-										+ str( vcVar.predictionPolyphen ) )
-									evidence += 1
-							if vcVar.scorePolyphen > thresholdPolyphen:
+							# elif vcVar.predictionSIFT:
+							# 	if vcVar.predictionSIFT.lower() == callSIFTdam and \
+							# 	vcVar.predictionSIFT.lower() == callSIFTdel:
+							# 		case.append( "SIFT:" \
+							# 			+ str( vcVar.predictionSIFT ) )
+							# 		evidence += 1
+							if vcVar.scorePolyphen and (vcVar.scorePolyphen > thresholdPolyphen):
 								case.append( "PolyPhen:" \
 									+ str( vcVar.scorePolyphen ) \
 									+ ">" + str( thresholdPolyphen ) )
 								evidence += 1
+							# elif vcVar.predictionPolyphen:
+							# 	if vcVar.predictionPolyphen.lower().replace( "_" , " " ) == callPolyphen:
+							# 		case.append( "PolyPhen:" \
+							# 			+ str( vcVar.predictionPolyphen ) )
+							# 		evidence += 1
 							if vcVar.compara:
 								if vcVar.compara > callCompara:
 									case.append( "Compara:" \
@@ -851,11 +856,11 @@ class charger(object):
 					var.PPC1 = True
 
 			if var.PVS1:
-				var.addSummary( "PVS1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
+				var.addSummary( "PVS1(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PSC1:
 				var.addSummary( "PSC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PM4:
-				var.addSummary( "PM4(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
+				var.addSummary( "PM4(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PPC1:
 				var.addSummary( "PPC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 
@@ -977,27 +982,27 @@ class charger(object):
 										+ str( vcVar.blosum ) \
 										+ ">" + str( callBlosum62 ) )
 									evidence += 1
-							if vcVar.scoreSIFT >= thresholdSIFT:
+							if vcVar.scoreSIFT and (vcVar.scoreSIFT >= thresholdSIFT):
 								case.append( "SIFT:" \
 									+ str( vcVar.scoreSIFT ) \
 									+ ">=" + str( thresholdSIFT ) )
 								evidence += 1
-							elif vcVar.predictionSIFT:
-								if vcVar.predictionSIFT.lower() != callSIFTdam and \
-								vcVar.predictionSIFT.lower() != callSIFTdel:
-									case.append( "SIFT:" \
-										+ str( vcVar.predictionSIFT ) )
-									evidence += 1
-							if vcVar.scorePolyphen <= thresholdPolyphen:
+							# elif vcVar.predictionSIFT:
+							# 	if vcVar.predictionSIFT.lower() != callSIFTdam and \
+							# 	vcVar.predictionSIFT.lower() != callSIFTdel:
+							# 		case.append( "SIFT:" \
+							# 			+ str( vcVar.predictionSIFT ) )
+							# 		evidence += 1
+							if vcVar.scorePolyphen and (vcVar.scorePolyphen <= thresholdPolyphen):
 								case.append( "PolyPhen:" \
 									+ str( vcVar.scorePolyphen ) \
 									+ "<=" + str( thresholdPolyphen ) )
 								evidence += 1
-							elif vcVar.predictionPolyphen:
-								if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
-									case.append( "PolyPhen:" \
-										+ str( vcVar.predictionPolyphen ) )
-									evidence += 1
+							# elif vcVar.predictionPolyphen:
+							# 	if vcVar.predictionPolyphen.lower().replace( "_" , " " ) != callPolyphen:
+							# 		case.append( "PolyPhen:" \
+							# 			+ str( vcVar.predictionPolyphen ) )
+							# 		evidence += 1
 							if vcVar.compara:
 								if vcVar.compara <= callCompara:
 									case.append( "Compara:" \
@@ -1065,8 +1070,10 @@ class charger(object):
 			delim = "</td><td>"
 			outFH.write( "<html><head></head><body><table style=\"width: 100%;\"><tr><td>" )
 		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
-			"Stop" , "Reference" , "Alternate" , "Strand" , "Assembly" , \
-			"Variant_Type" , "Variant_Classification" , \
+			"Stop" , "Reference" , "Alternate" , \
+			# "Strand" , "Assembly" ,"Variant_Type" , \
+			"SIFT" , "PolyPhen", \
+			"Variant_Classification" , \
 			"Sample" , "HGVSg", "HGVSc", "HGVSp" , \
 			#"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
 			#"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
@@ -1076,8 +1083,9 @@ class charger(object):
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
 			"CharGer_Classification" , "ACMG_Classification" , "ClinVar_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
-			"VEP_Annotations" , \
-			"VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
+			"CharGer_Summary"] )
+			# "VEP_Annotations" , \
+			# "VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
 		try:
 			outFH.write( headLine )
 			if asHTML:
@@ -1093,9 +1101,14 @@ class charger(object):
 				self.appendStr( fields,var.stop)
 				self.appendStr( fields,var.reference)
 				self.appendStr( fields,var.alternate)
-				self.appendStr( fields,var.strand)
-				self.appendStr( fields,var.assembly)
-				self.appendStr( fields,var.variantType)
+				# self.appendStr( fields,var.strand)
+				# self.appendStr( fields,var.assembly)
+				# self.appendStr( fields,var.variantType)
+				#elf.appendStr( fields, self.vcfKeyIndex["SIFT"])
+				#self.appendStr( fields, var.vcfInfo)
+				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
+				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+				#self.appendStr( fields,var.polyphen)
 				self.appendStr( fields,var.variantClass)
 				self.appendStr( fields,var.sample)
 				#self.appendStr( fields,var.transcriptCodon)
@@ -1141,9 +1154,9 @@ class charger(object):
 					self.appendStr( fields , "NA" )
 					pass
 				# TODO: add all the bioinformatic good stuff from VEP
-				self.appendStr( fields , var.vepAnnotations ) #make sure this works
-				self.appendStr( fields , var.vcfHeaders )
-				self.appendStr( fields , var.vcfInfo )
+				# self.appendStr( fields , var.vepAnnotations ) #make sure this works
+				# self.appendStr( fields , self.vcfHeaderInfo )
+				# self.appendStr( fields , var.vcfInfo )
 				self.appendStr( fields , ' -- '.join( var.callSummary ) )
 
 				if asHTML:
