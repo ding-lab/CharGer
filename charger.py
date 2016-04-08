@@ -44,7 +44,7 @@ class charger(object):
 		#self.vepVariants = kwargs.get( 'vepVariants' , [] )
 		self.diseases = kwargs.get( 'diseases' , {} )
 		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
-		self.vcfKeyIndex = kwargs.get( 'self.vcfKeyIndex' , {} )
+		self.vcfKeyIndex = kwargs.get( 'vcfKeyIndex' , {} )
 		#### ADD key index here to access vcf info for individual variant
 
 ### Retrieve input data from user ###
@@ -68,6 +68,7 @@ class charger(object):
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
 			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , **kwargs )
+			exacDone=False # currently only has 1000G
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
 		if expressionFile:
@@ -1050,7 +1051,7 @@ class charger(object):
 			var.isBenign( **kwargs )
 			var.isUncertainSignificance( **kwargs )
 			if scoreSystem == "CharGer":
-				var.tallyScore( )
+				var.tallyScore( **kwargs )
 	def printClassifications( self , **kwargs ):
 		scoreSystem = kwargs.get( 'system' , "CharGer" )
 		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
@@ -1073,16 +1074,17 @@ class charger(object):
 		headLine = delim.join( ["HUGO_Symbol" , "Chromosome" , "Start" , \
 			"Stop" , "Reference" , "Alternate" , \
 			# "Strand" , "Assembly" ,"Variant_Type" , \
-			"SIFT" , "PolyPhen", \
+			#"SIFT" , "PolyPhen", \
 			"Variant_Classification" , \
-			"Sample" , "HGVSg", "HGVSc", "HGVSp" , \
+			#"Sample" , \
+			"HGVSg", "HGVSc", "HGVSp" , \
 			#"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
 			#"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			#"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
-			"Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"Allele_Frequency","VEP_Most_Severe_Consequence" ,  \
 			"Positive_Evidence" , "Negative_Evidence" , \
-			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
-			"CharGer_Classification" , "ACMG_Classification" , \
+			"Positive_CharGer_Score" , "Negative_CharGer_Score" , "ClinVar_Pathogenicity" , \
+			"ACMG_Classification" , "CharGer_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"CharGer_Summary"] )
 			# "VEP_Annotations" , \
@@ -1107,11 +1109,11 @@ class charger(object):
 				# self.appendStr( fields,var.variantType)
 				#elf.appendStr( fields, self.vcfKeyIndex["SIFT"])
 				#self.appendStr( fields, var.vcfInfo)
-				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
-				self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
+				#self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["SIFT"]])
+				#self.appendStr( fields,var.vcfInfo[self.vcfKeyIndex["PolyPhen"]])
 				#self.appendStr( fields,var.polyphen)
 				self.appendStr( fields,var.variantClass)
-				self.appendStr( fields,var.sample)
+				#self.appendStr( fields,var.sample)
 				#self.appendStr( fields,var.transcriptCodon)
 				#self.appendStr( fields,var.positionCodon)
 				self.appendStr( fields,var.HGVSg() ) # need to be corrected to cDNA change on the most severe peptide
@@ -1129,13 +1131,13 @@ class charger(object):
 					self.appendStr( fields , "NA" )
 					pass
 				#self.appendStr( fields,var.clinvarVariant.trait)
-				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
 				self.appendStr( fields,var.negativeEvidence())
 				self.appendStr( fields,var.pathogenicScore)
 				self.appendStr( fields,var.benignScore)
-				self.appendStr( fields,var.pathogenicity["CharGer"])
+				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.pathogenicity["ACMG"])
+				self.appendStr( fields,var.pathogenicity["CharGer"])
 				try:
 					if asHTML:
 						text = "<a href=\""
