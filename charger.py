@@ -851,13 +851,13 @@ class charger(object):
 					var.PPC1 = True
 
 			if var.PVS1:
-				var.addSummary( "PVS1(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PVS1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PSC1:
-				var.addSummary( "PSC1(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PSC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PM4:
-				var.addSummary( "PM4(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PM4(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PPC1:
-				var.addSummary( "PPC1(" + varClass + " in gene " + varGene + ")" )
+				var.addSummary( "PPC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 
 	def peptideChange( self , mod ):
 		called = 0
@@ -1037,17 +1037,16 @@ class charger(object):
 
 ### Classifier ###
 	def classify( self , **kwargs ):
-		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		scoreSystem = kwargs.get( "system" , "CharGer" )
 		for var in self.userVariants:
 			var.isPathogenic( **kwargs )
 			var.isLikelyPathogenic( **kwargs )
 			var.isLikelyBenign( **kwargs )
 			var.isBenign( **kwargs )
 			var.isUncertainSignificance( **kwargs )
-			if scoreSystem == "CharGer":
-				var.tallyScore( )
+			var.tallyScore( **kwargs )
 	def printClassifications( self , **kwargs ):
-		scoreSystem = kwargs.get( 'system' , "CharGer" )
+		scoreSystem = kwargs.get( "system" , "CharGer" )
 		headLine = '\t'.join( ["Variant" , "PositiveEvidence" , \
 			"CharGerClassification" , "ClinVarAnnoation"] )
 		print headLine
@@ -1072,10 +1071,10 @@ class charger(object):
 			#"Sample" , "Transcript" , "Codon_Position" , "HGVSg", "HGVSc", "Protein" , \
 			#"Peptide_Reference" , "Peptide_Position" , "Peptide_Alternate" , \
 			#"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
-			"Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
+			"Allele_Frequency","VEP_Most_Severe_Consequence" , \
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , \
-			"CharGer_Classification" , "ACMG_Classification" , \
+			"CharGer_Classification" , "ACMG_Classification" , "ClinVar_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"VEP_Annotations" , \
 			"VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
@@ -1116,13 +1115,13 @@ class charger(object):
 					self.appendStr( fields , "NA" )
 					pass
 				#self.appendStr( fields,var.clinvarVariant.trait)
-				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.positiveEvidence())
 				self.appendStr( fields,var.negativeEvidence())
 				self.appendStr( fields,var.pathogenicScore)
 				self.appendStr( fields,var.benignScore)
-				self.appendStr( fields,var.pathogenicity["CharGer"])
-				self.appendStr( fields,var.pathogenicity["ACMG"])
+				self.appendStr( fields, var.pathogenicity["CharGer"])
+				self.appendStr( fields, var.pathogenicity["ACMG"])
+				self.appendStr( fields,var.clinical["description"])
 				try:
 					if asHTML:
 						text = "<a href=\""

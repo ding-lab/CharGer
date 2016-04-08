@@ -290,8 +290,8 @@ def main( argv ):
 
 	t4 = time.time() 
 
+	CharGer.classify( system="ACMG" )
 	CharGer.classify( system="CharGer" , override=override )
-	CharGer.classify( system="ACMG" , override=override )
 
 	t5 = time.time() 
 
