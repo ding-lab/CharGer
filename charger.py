@@ -1085,7 +1085,7 @@ class charger(object):
 			"Allele_Frequency","VEP_Most_Severe_Consequence" ,  \
 			"Positive_Evidence" , "Negative_Evidence" , \
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , "ClinVar_Pathogenicity" , \
-			"ACMG_Classification" , "CharGer_Classification" , \
+			"CharGer_Score","ACMG_Classification" , "CharGer_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"CharGer_Summary"] )
 			# "VEP_Annotations" , \
@@ -1146,6 +1146,7 @@ class charger(object):
 				self.appendStr( fields,var.negativeEvidence())
 				self.appendStr( fields,var.pathogenicScore)
 				self.appendStr( fields,var.benignScore)
+				self.appendStr( fields,var.chargerScore)
 				self.appendStr( fields,var.clinical["description"])
 				self.appendStr( fields,var.pathogenicity["ACMG"])
 				self.appendStr( fields,var.pathogenicity["CharGer"])
