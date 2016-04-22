@@ -29,7 +29,10 @@ def parseArgs( argv ):
 	helpText += "-c co-segregation, "
 	helpText += "-o \"output\""
 	helpText += "-O override with ClinVar description, "
+	helpText += "-r recurrence threshold, "
+	helpText += "-H HotSpot3D clusters file, "
 	helpText += "-w output as HTML)\n"
+
 	mafFile = ""
 	vcfFile = ""
 	tsvFile = ""
@@ -60,11 +63,14 @@ def parseArgs( argv ):
 	vep = True
 	asHTML = False
 	override = False
+	recurrenceThreshold = 2
+	clustersFile = ""
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:r:H:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
-		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation="] )
+		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
+		"recurrence=" , "hotspot3d=" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -140,6 +146,10 @@ def parseArgs( argv ):
 			asHTML = True
 		elif opt in ( "-O" , "--override" ):
 			override = True
+		elif opt in ( "-r" , "--recurrenc" ):
+			recurrenceThreshold = float( arg )
+		elif opt in ( "-H" , "--hotspot3d" ):
+			clustersFile = arg
 	return { "maf" : mafFile , \
 	"vcf" : vcfFile , \
 	"tsv" : tsvFile , \
@@ -170,6 +180,8 @@ def parseArgs( argv ):
 	"altColumn" : altColumn, \
 	"geneColumn" : geneColumn, \
 	"sampleColumn" : sampleColumn, \
+	"recurrenceThreshold" : recurrenceThreshold , \
+	"clustersFile" : clustersFile , \
 	}
 
 ### main ### 
@@ -205,6 +217,8 @@ def main( argv ):
 	sampleColumn = values["sampleColumn"]
 	asHTML = values["html"]
 	override = values["override"]
+	recurrenceThreshold = values["recurrenceThreshold"]
+	clustersFile = values["clustersFile"]
 	
 	t1 = time.time()
 
@@ -263,7 +277,7 @@ def main( argv ):
 	CharGer.PS2( )
 	CharGer.PS3( )
 	CharGer.PS4( )
-	CharGer.PM1( )
+	CharGer.PM1( recurrenceThreshold , hotspot3d=clustersFile )
 	CharGer.PM2( rareThreshold )
 	CharGer.PM3( )
 	CharGer.PM4( )
