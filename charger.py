@@ -666,30 +666,33 @@ class charger(object):
 		print "CharGer module PM1:  Located in a mutational hot spot and/or critical and well-established \
 		functional domain (e.g., active site of an enzyme) without benign variation"
 		clustersFile = kwargs.get( 'hotspot3d' , "" )
-		print clustersFile
-		with open( clustersFile , 'r' ) as clustersFH:
-			clustersFH.next()
-			for line in clustersFH:
-				line.strip()
-				fields = line.split('\t')
-				recurrence = fields[6]
-				if recurrence >= recurrenceThreshold:
-					chromosome = fields[9]
-					start = fields[10]
-					stop = fields[11]
-					reference = fields[12]
-					alternate = fields[13]
-					hotspot3dVar = mafvariant( 
-						chromosome = chromosome , 
-						start = start , 
-						stop = stop , 
-						reference = reference , 
-						alternate = alternate 
-					)
-					for var in self.userVariants:
-						if hotspot3dVar.sameGenomicVariant( var ):
-							var.PM1 = True
-							var.addSummary( "PM1(HotSpot3D: somatic hotspot among 19 TCGA cancer types with " + str( recurrence ) + "samples)" )
+		if clustersFile:
+			print clustersFile
+			with open( clustersFile , 'r' ) as clustersFH:
+				clustersFH.next()
+				for line in clustersFH:
+					line.strip()
+					fields = line.split('\t')
+					recurrence = fields[6]
+					if recurrence >= recurrenceThreshold:
+						chromosome = fields[9]
+						start = fields[10]
+						stop = fields[11]
+						reference = fields[12]
+						alternate = fields[13]
+						hotspot3dVar = mafvariant( 
+							chromosome = chromosome , 
+							start = start , 
+							stop = stop , 
+							reference = reference , 
+							alternate = alternate 
+							)
+						for var in self.userVariants:
+							if hotspot3dVar.sameGenomicVariant( var ):
+								var.PM1 = True
+								var.addSummary( "PM1(HotSpot3D: somatic hotspot among 19 TCGA cancer types with " + str( recurrence ) + "samples)" )
+		else:
+			print "clustersFile is not supplied. PM1 was not executed. "
 							#break #maybe don't break if possible redundant genomic variants
 #		print "- "
 	def PM2( self , threshold ):
