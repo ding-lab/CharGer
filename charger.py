@@ -139,7 +139,7 @@ class charger(object):
 			chrom = record.CHROM
 			reference = record.REF
 			alternates = record.ALT
-			start = record.start+1 #1-base beginning of ref
+			start = record.start + 1 #1-base beginning of ref
 			stop = record.end #0-base ending of ref
 			info = record.INFO
 			for alternate in alternates:
@@ -154,7 +154,7 @@ class charger(object):
 					reference = reference[1:len(reference)] #assumes only one base overlap
 					alt = "-"
 					start = start + 1
-					stop = stop + 1
+					stop = stop
 
 				parentVar = mafvariant( \
 					chromosome = chrom , \
