@@ -35,6 +35,7 @@ class charger(object):
 	allDiseases = "all"
 	def __init__( self , **kwargs ):
 		self.userVariants = kwargs.get( 'variants' , [] )
+		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
 		self.userExpression = kwargs.get( 'expressions' , AV({}) )
 		self.userGeneList = kwargs.get( 'geneList' , AV({}) )
 		self.userDeNovoVariants = kwargs.get( 'deNovo' , {} )
@@ -53,6 +54,7 @@ class charger(object):
 		mafFile = kwargs.get( 'maf' , "" )
 		vcfFile = kwargs.get( 'vcf' , "" )
 		tsvFile = kwargs.get( 'tsv' , "" )
+		pathogenicVariantsFile = kwargs.get( 'pathogenicVariants' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
 		deNovoFile = kwargs.get( 'deNovo' , "" )
@@ -68,10 +70,12 @@ class charger(object):
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , **kwargs )
+			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
 			exacDone=False # currently only has 1000G
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
+		if pathogenicVariantsFile:
+			self.readVCF( pathogenicVariantsFile , appendTo="pathogenic" , **kwargs )
 		if expressionFile:
 			self.readExpression( expressionFile )
 		else: 
@@ -110,6 +114,8 @@ class charger(object):
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
 		inFile = vcf.Reader( open( inputFile , 'r' ) )
+		appendTo = kwargs.get( "appendTo" , "user" )
+		print appendTo
 		preVEP = []
 		vepDone = False
 		exacDone = False
@@ -180,15 +186,15 @@ class charger(object):
 						values = thisCSQ.split( "|" )
 						var.vcfInfo = values
 						aas = [None , None] 
-						if values[self.vcfKeyIndex["Amino_acids"]]: #8 => Amino_acids
-							aas = values[self.vcfKeyIndex["Amino_acids"]].split("/") 
+						if self.getVCFKeyIndex( values , "Amino_acids" ): #8 => Amino_acids
+							aas = self.getVCFKeyIndex( values , "Amino_acids" ).split("/") 
 							if len( aas ) > 1:
 								aas[0] = mafvariant().convertAA( aas[0] )
 								aas[1] = mafvariant().convertAA( aas[1] )
 							else:
 								#28 => HGVSc
 								#29 => HGVSp
-								hgvsp = values[self.vcfKeyIndex["HGVSp"]].split( ":" )
+								hgvsp = self.getVCFKeyIndex( values , "HGVSp" ).split( ":" )
 								changep = None
 								if len( hgvsp ) > 1:
 									changep = re.match( "p\." , hgvsp[1] )
@@ -201,25 +207,25 @@ class charger(object):
 									needVEP = True
 									preVEP.append( var )
 						exons = [None , None]
-						if values[self.vcfKeyIndex["EXON"]]: #25 => EXON
-							exons = values[self.vcfKeyIndex["EXON"]].split( "/" )
+						if self.getVCFKeyIndex( values , "EXON" ): #25 => EXON
+							exons = self.getVCFKeyIndex( values , "EXON" ).split( "/" )
 							if len( exons ) == 1:
 								exons.append(None)
 						introns = [None , None]
-						if values[self.vcfKeyIndex["INTRON"]]: #26 => INTRON
-							introns = values[self.vcfKeyIndex["INTRON"]].split( "/" )
+						if self.getVCFKeyIndex( values , "INTRON" ): #26 => INTRON
+							introns = self.getVCFKeyIndex( values , "INTRON" ).split( "/" )
 							if len( introns ) == 1:
 								introns.append(None)
 						siftStuff = [None , None]
-						if values[self.vcfKeyIndex["SIFT"]]:
-							siftStuff = values[self.vcfKeyIndex["SIFT"]].split( "(" ) 
+						if self.getVCFKeyIndex( values , "SIFT" ):
+							siftStuff = self.getVCFKeyIndex( values , "SIFT" ).split( "(" ) 
 							if len( siftStuff ) == 1:
 								siftStuff.append( None )
 							else:
 								siftStuff[1] = siftStuff[1].rstrip( ")" )
 						polyPhenStuff = [None , None]
-						if values[self.vcfKeyIndex["PolyPhen"]]:
-							polyPhenStuff = values[self.vcfKeyIndex["PolyPhen"]].split( "(" ) 
+						if self.getVCFKeyIndex( values , "PolyPhen" ):
+							polyPhenStuff = self.getVCFKeyIndex( values , "PolyPhen" ).split( "(" ) 
 							if len( polyPhenStuff ) == 1:
 								polyPhenStuff.append( None )
 							else:
@@ -233,33 +239,34 @@ class charger(object):
 							reference = reference , \
 							alternate = alt , \
 							#1 => Gene
-							gene_id=values[self.vcfKeyIndex["Gene"]] , \
+							gene_id=self.getVCFKeyIndex( values , "Gene" ) , \
 							#2 => Feature
-							transcriptCodon=values[self.vcfKeyIndex["Feature"]] , \
+							transcriptCodon=self.getVCFKeyIndex( values , "Feature" ) , \
 							#4 => Consequence
-							consequence_terms=values[self.vcfKeyIndex["Consequence"]].split( "&" ) , \
+							consequence_terms=self.getVCFKeyIndex( values , "Consequence" ).split( "&" ) , \
 							#5 => cDNA_position
-							positionCodon=values[self.vcfKeyIndex["cDNA_position"]] , \
+							positionCodon=self.getVCFKeyIndex( values , "cDNA_position" ) , \
 							#7 => Protein_position
-							positionPeptide=values[self.vcfKeyIndex["Protein_position"]] , \
+							positionPeptide=self.getVCFKeyIndex( values , "Protein_position" ) , \
 							referencePeptide=aas[0] , \
 							alternatePeptide=aas[1] , \
 							#12 => STRAND
-							strand=values[self.vcfKeyIndex["STRAND"]] , \
+							strand=self.getVCFKeyIndex( values , "STRAND" ) , \
 							#13 => SYMBOL
-							gene=values[self.vcfKeyIndex["SYMBOL"]] , \
+							gene=self.getVCFKeyIndex( values , "SYMBOL" ) , \
 							#14 => SYMBOL_SOURCE
-							gene_symbol_source=values[self.vcfKeyIndex["SYMBOL_SOURCE"]] , \
+							gene_symbol_source=self.getVCFKeyIndex( values , "SYMBOL_SOURCE" ) , \
 							#15 => HGNC_ID
-							hgnc_id=values[self.vcfKeyIndex["HGNC_ID"]] , \
+							hgnc_id=self.getVCFKeyIndex( values , "HGNC_ID" ) , \
 							#16 => BIOTYPE
-							biotype=values[self.vcfKeyIndex["BIOTYPE"]] , \
+							biotype=self.getVCFKeyIndex( values , "BIOTYPE" ) , \
 							#17 => CANONICAL
-							canonical=values[self.vcfKeyIndex["CANONICAL"]] , \
+
+							canonical=self.getVCFKeyIndex( values , "CANONICAL" ) , \
 							#18 => CCDS
-							ccds=values[self.vcfKeyIndex["CCDS"]] , \
+							ccds=self.getVCFKeyIndex( values , "CCDS" ) , \
 							#19 => ENSP
-							transcriptPeptide=values[self.vcfKeyIndex["ENSP"]] , \
+							transcriptPeptide=self.getVCFKeyIndex( values , "ENSP" ) , \
 							#23 => SIFT
 							predictionSIFT=siftStuff[0] , \
 							scoreSIFT=siftStuff[1] , \
@@ -279,7 +286,7 @@ class charger(object):
 #22 => UNIPARC
 #27 => DOMAINS
 #30 => GMAF
-						var.alleleFrequency = values[self.vcfKeyIndex["GMAF"]]
+						var.alleleFrequency = self.getVCFKeyIndex( values , "GMAF" )
 #31 => AFR_MAF
 #32 => AMR_MAF
 #33 => ASN_MAF
@@ -358,7 +365,11 @@ class charger(object):
 					var.variantClass = mostSevereCons
 				#print var.proteogenomicVar()
 
-				self.userVariants.append( var )
+				if appendTo == "user":
+					self.userVariants.append( var )
+				elif appendTo == "pathogenic":
+					pathKey = self.pathogenicKey( var )
+					self.pathogenicVariants[pathKey] = var
 		return [ vepDone , preVEP , exacDone ]
 
 	def readTSV( self , inputFile , **kwargs ):
@@ -895,7 +906,7 @@ class charger(object):
 			if var.PPC1:
 				var.addSummary( "PPC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 
-	def peptideChange( self , mod ):
+	def peptideChange( self , mod , **kwargs ):
 		called = 0
 		for var in self.userVariants:
 			uniVar = var.uniqueVar()
@@ -907,40 +918,82 @@ class charger(object):
 			if mod == "PM5":
 				call = var.PM5
 			if not call: #is already true
-				#for genVar in self.clinvarVariants:
-					#clinvarVar = self.clinvarVariants[genVar]
-				if var.clinvarVariant:
-					clinvarVar = var.clinvarVariant
-					clin = clinvarVar.clinical
+				CVchecked = 0
+				PVchecked = 0
+				if var.clinvarVariant or self.pathogenicVariants:
 					if var.vepVariant:
 						if var.vepVariant.consequences:
 							for consequence in var.vepVariant.consequences:
-								if consequence.sameGenomicVariant( clinvarVar ):
-								#if genomic change is the same, then PS1
-									if clin["description"] == clinvarvariant.pathogenic:
-										if mod == "PS1":
-											var.PS1 = True # already pathogenic still suffices to be PS1
-											called += 1
-								elif consequence.sameGenomicReference( clinvarVar ):
-								#if genomic change is different, but the peptide change is the same, then PS1
-									if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
-										if clin["description"] == clinvarvariant.pathogenic:
-											if mod == "PS1":
-												var.PS1 = True
-												called += 1
-								if consequence.samePeptideReference( clinvarVar ):
-									if not consequence.samePeptideChange( clinvarVar ):
-									#if peptide change is different, but the peptide reference is the same, then PM5
-										if consequence.plausibleCodonFrame( clinvarVar ):
-											if clin["description"] == clinvarvariant.pathogenic:
-												if mod == "PM5":
-													var.PM5 = True # already pathogenic still suffices to be PS1
-													called += 1
+								CVchecked = self.checkClinVarPC( var , mod , consequence )
+								for pathVar in self.pathogenicVariants:
+									PVchecked = self.checkPathogenicVariants( var , mod , consequence )
+								if CVchecked or PVchecked:
+									called += 1
 			if var.PS1 and mod == "PS1":
 				var.addSummary( "PS1(Peptide change is known pathogenic)" )
 			if var.PM5 and mod == "PM5":
 				var.addSummary( "PM5(Peptide change at the same location of a known pathogenic change)" )
 		print mod + " found " + str(called) + " pathogenic variants"
+	def checkClinVarPC( self , var , mod , consequence ):
+		called = 0
+		if var.clinvarVariant:
+			clinvarVar = var.clinvarVariant
+			clin = clinvarVar.clinical
+			if consequence.sameGenomicVariant( clinvarVar ):
+			#if genomic change is the same, then PS1
+				if clin["description"] == clinvarvariant.pathogenic:
+					if mod == "PS1":
+						var.PS1 = True # already pathogenic still suffices to be PS1
+						called = 1
+			elif consequence.sameGenomicReference( clinvarVar ):
+			#if genomic change is different, but the peptide change is the same, then PS1
+				if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
+					if clin["description"] == clinvarvariant.pathogenic:
+						if mod == "PS1":
+							var.PS1 = True
+							called = 1
+			if consequence.samePeptideReference( clinvarVar ):
+				if not consequence.samePeptideChange( clinvarVar ):
+				#if peptide change is different, but the peptide reference is the same, then PM5
+					if consequence.plausibleCodonFrame( clinvarVar ):
+						if clin["description"] == clinvarvariant.pathogenic:
+							if mod == "PM5":
+								var.PM5 = True # already pathogenic still suffices to be PS1
+								called = 1
+		return called
+	def checkPathogenicVariants( self , var , mod , consequence ):
+		called = 0
+		if self.pathogenicVariants:
+			pathKey = self.pathogenicKey( consequence )
+			if pathKey in self.pathogenicVariants:
+				if self.pathogenicVariants[pathKey].vepVariant:
+					if self.pathogenicVariants[pathKey].vepVariant.consequences:
+						for pathVar in self.pathogenicVariants[pathKey].vepVariant.consequences:
+							if consequence.sameGenomicVariant( pathVar ):
+							#if genomic change is the same, then PS1
+								if mod == "PS1":
+									var.PS1 = True # already pathogenic still suffices to be PS1
+									called = 1
+									print var.genomicVar() ,
+									print " matched a pathogenic Variant in PS1 by same genomic change"
+							elif consequence.sameGenomicReference( pathVar ):
+							#if genomic change is different, but the peptide change is the same, then PS1
+								if pathVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
+									if mod == "PS1":
+										var.PS1 = True
+										called = 1
+										print var.genomicVar() ,
+										print " matched a pathogenic Variant in PS1 by same peptide change"
+							if consequence.samePeptideReference( pathVar ):
+								if not consequence.samePeptideChange( pathVar ):
+								#if peptide change is different, but the peptide reference is the same, then PM5
+									if consequence.plausibleCodonFrame( pathVar ):
+										if mod == "PM5":
+											var.PM5 = True # already pathogenic still suffices to be PS1
+											called = 1
+											print var.genomicVar() ,
+											print " matched a pathogenic Variant in PM5"
+		return called
 	def printResult( self ):
 		for var in self.userVariants:
 			for module in var.modules():
@@ -1216,6 +1269,11 @@ class charger(object):
 		if asHTML:
 			outFH.write( "</table></body></html>" )
 
+	def getVCFKeyIndex( self , values , field ):
+		if field in self.vcfKeyIndex:
+			return values[self.vcfKeyIndex[field]]
+		return None
+
 	@staticmethod
 	def appendStr( array, value ):
 		try:
@@ -1269,3 +1327,6 @@ class charger(object):
 	def getChrNum( chrString ):
 		''' Get the chromosome number in case chr or Chr is present'''
 		return chrString.upper().replace("CHR", "")
+	@staticmethod
+	def pathogenicKey( var ):
+		return str( var.gene ) + str( var.referencePeptide ) + str( var.positionPeptide )

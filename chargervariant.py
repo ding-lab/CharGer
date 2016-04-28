@@ -70,6 +70,7 @@ class chargervariant(mafvariant):
 		# make vep and clinvar variants attributes of chargervariant
 		self.vepVariant = kwargs.get( 'vepvariant' , None )
 		self.clinvarVariant = kwargs.get( 'clinvarvariant' , None )
+		self.transvarVariant = kwargs.get( 'transvarvariant' , None )
 
 	def copyInfo( self , other ):
 		self.vepAnnotations = other.vepAnnotations

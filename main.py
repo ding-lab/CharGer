@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # CharGer - Characterization of Germline variants
-# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
+# author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
 
 import sys
@@ -31,6 +31,7 @@ def parseArgs( argv ):
 	helpText += "-O override with ClinVar description, "
 	helpText += "-r recurrence threshold, "
 	helpText += "-H HotSpot3D clusters file, "
+	helpText += "-z pathogenic variants .vcf, "
 	helpText += "-w output as HTML)\n"
 
 	mafFile = ""
@@ -65,12 +66,13 @@ def parseArgs( argv ):
 	override = False
 	recurrenceThreshold = 2
 	clustersFile = ""
+	pathogenicVariantsFile = ""
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:r:H:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:r:H:z:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
-		"recurrence=" , "hotspot3d=" ] )
+		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -91,6 +93,8 @@ def parseArgs( argv ):
 			vcfFile = arg
 		elif opt in ( "-T" , "--tsv" ):
 			tsvFile = arg
+		elif opt in ( "-z" , "--pathogenicVariants" ):
+			pathogenicVariantsFile = arg
 		elif opt in ( "-o" , "--output" ):
 			output = arg
 		elif opt in ( "-v" , "--vepBatchSize" ):
@@ -153,6 +157,7 @@ def parseArgs( argv ):
 	return { "maf" : mafFile , \
 	"vcf" : vcfFile , \
 	"tsv" : tsvFile , \
+	"pathogenicVariantsFile" : pathogenicVariantsFile , \
 	"output" : output , \
 	"specific" : specific , \
 	"tcga" : tcga , \
@@ -219,6 +224,7 @@ def main( argv ):
 	override = values["override"]
 	recurrenceThreshold = values["recurrenceThreshold"]
 	clustersFile = values["clustersFile"]
+	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	
 	t1 = time.time()
 
@@ -227,6 +233,7 @@ def main( argv ):
 	[ vepDone , preVEP , exacDone ] = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
 	tsv=tsvFile , \
+	pathogenicVariants=pathogenicVariantsFile , \
 	specific=diseaseSpecific , \
 	tcga=doTCGA , \
 	geneList=geneListFile , \
