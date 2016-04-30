@@ -925,8 +925,8 @@ class charger(object):
 						if var.vepVariant.consequences:
 							for consequence in var.vepVariant.consequences:
 								CVchecked = self.checkClinVarPC( var , mod , consequence )
-								for pathVar in self.pathogenicVariants:
-									PVchecked = self.checkPathogenicVariants( var , mod , consequence )
+								#for pathVar in self.pathogenicVariants:
+								PVchecked = self.checkPathogenicVariants( var , mod , consequence )
 								if CVchecked or PVchecked:
 									called += 1
 			if var.PS1 and mod == "PS1":
