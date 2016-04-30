@@ -350,11 +350,11 @@ class chargervariant(mafvariant):
 		self.pathogenicScore = 0
 		self.pathogenicScore += self.countPathogenicSupport()
 		self.pathogenicScore += 2*self.countPathogenicModerate()
-		self.pathogenicScore += 4*self.countPathogenicStrong()
+		self.pathogenicScore += 6*self.countPathogenicStrong()
 		self.pathogenicScore += 8 if self.PVS1 else 0
 		self.benignScore = 0
 		self.benignScore += self.countBenignSupport()
-		self.benignScore += 4*self.countBenignStrong()
+		self.benignScore += 6*self.countBenignStrong()
 		self.benignScore += 8 if self.BA1 else 0
 		self.chargerScore = self.pathogenicScore - self.benignScore
 		if self.chargerScore < 0:
