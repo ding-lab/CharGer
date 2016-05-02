@@ -1166,8 +1166,8 @@ class charger(object):
 			#"HGVSp","Allele_Frequency","VEP_Most_Severe_Consequence" , "ClinVar_Pathogenicity" , \
 			"Allele_Frequency","VEP_Most_Severe_Consequence" ,  \
 			"Positive_Evidence" , "Negative_Evidence" , \
-			"Positive_CharGer_Score" , "Negative_CharGer_Score" , "ClinVar_Pathogenicity" , \
-			"CharGer_Score","ACMG_Classification" , "CharGer_Classification" , \
+			"Positive_CharGer_Score" , "Negative_CharGer_Score" , "CharGer_Score", "ClinVar_Pathogenicity" , \
+			"ACMG_Classification" , "CharGer_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
 			"CharGer_Summary"] )
 			# "VEP_Annotations" , \
