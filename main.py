@@ -10,29 +10,48 @@ import time
 
 def parseArgs( argv ):
 	helpText = "python main.py" + " "
-	helpText += "-m \"maf\" |"
-	helpText += "-f \"vcf\" "
-	helpText += "-T \"tsv\" "
-	helpText += "(-l suppress ClinVar, "
-	helpText += "-x suppress exac, "
-	helpText += "-v VEP batch size, "
-	helpText += "-b ClinVar summary batch size, "
-	helpText += "-B ClinVar search batch size, "
-	helpText += "-p peptide change column-0base in .maf, "
-	helpText += "-C codon column-0base in .maf, "
-	helpText += "-e expression, "
-	helpText += "-g gene list, "
-	helpText += "-d diseases, "
-	helpText += "-t suppress TCGA cancer types, "
-	helpText += "-n de novo, "
-	helpText += "-a assumed de novo, "
-	helpText += "-c co-segregation, "
-	helpText += "-o \"output\""
-	helpText += "-O override with ClinVar description, "
-	helpText += "-r recurrence threshold, "
-	helpText += "-H HotSpot3D clusters file, "
-	helpText += "-z pathogenic variants .vcf, "
-	helpText += "-w output as HTML)\n"
+	helpText += "Accepted input data files:\n"
+	helpText += "  -m Standard .maf\n"
+	helpText += "  -f Standard .vcf\n"
+	helpText += "  -T Custom .tsv\n\n"
+	helpText += "Output:\n"
+	helpText += "  -o output file\n"
+	helpText += "  -w output as HTML (flag)\n"
+	helpText += "Suppress accession of data:\n"
+	helpText += "  -l suppress ClinVar (flag)\n"
+	helpText += "  -x suppress ExAC (flag)\n"
+	helpText += "  -E suppress VEP (flag)\n"
+	helpText += "  -t suppress TCGA cancer types (flag)\n"
+	helpText += "  -O override with ClinVar description (flag)\n"
+	helpText += "  -D disease specific (flag)\n"
+	helpText += "Cross-reference data files:\n"
+	helpText += "  -z pathogenic variants .vcf\n"
+	helpText += "  -e expression matrix file .tsv\n"
+	helpText += "  -g gene list file .txt\n"
+	helpText += "  -d diseases file (format: gene\\tdisease) .tsv\n"
+	helpText += "  -n de novo file .?\n"
+	helpText += "  -a assumed de novo file .?\n"
+	helpText += "  -c co-segregation file .?\n"
+	helpText += "  -H HotSpot3D clusters file .clusters\n"
+	helpText += "ReST batch sizes:\n"
+	helpText += "  -v VEP\n"
+	helpText += "  -b ClinVar summary\n"
+	helpText += "  -B ClinVar searchsize\n"
+	helpText += "  -r recurrence threshold\n"
+	helpText += "Custom columns (0-based)\n"
+	helpText += "  -G HUGO gene symbol\n"
+	helpText += "  -X chromosome\n"
+	helpText += "  -S start position\n"
+	helpText += "  -P stop position\n"
+	helpText += "  -R reference allele\n"
+	helpText += "  -A alternate allele\n"
+	helpText += "  -s strand\n"
+	helpText += "  -M sample name\n"
+	helpText += "  -C codon\n"
+	helpText += "  -p peptide change\n"
+	helpText += "  -F allele frequency\n"
+	helpText += "\n"
+	helpText += "  -h this message\n"
 
 	mafFile = ""
 	vcfFile = ""
@@ -57,6 +76,7 @@ def parseArgs( argv ):
 	codonColumn = 14
 	peptideChangeColumn = 15
 	sampleColumn = 21
+	alleleFrequencyColumn= 33
 	specific = True
 	tcga = True
 	clinvar = True
@@ -68,9 +88,10 @@ def parseArgs( argv ):
 	clustersFile = ""
 	pathogenicVariantsFile = ""
 	try:
-		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:g:d:e:n:a:c:r:H:z:" , \
+		#opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
-		"peptideChange=" , "codon=" ,"geneList=" , "diseases=" , \
+		"peptideChange=" , "codon=" , "alleleFrequency=" , "geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
 		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" ] )
 	except getopt.GetoptError:
@@ -115,6 +136,25 @@ def parseArgs( argv ):
 		elif opt in ( "-R" , "--ref" ):
 			refColumn = arg
 		elif opt in ( "-S" , "--start" ):
+			output = arg
+		elif opt in ( "-v" , "--vepBatchSize" ):
+			vepBatchSize = int( arg )
+		elif opt in ( "-b" , "--summaryBatchSize" ):
+			clinvarSummaryBatchSize = int( arg )
+		elif opt in ( "-B" , "--searchBatchSize" ):
+			clinvarSearchBatchSize = int( arg )
+		elif opt in ( "-p" , "--peptideChange" ):
+			peptideChangeColumn = arg
+		# all customized .tsv options are in caps for now
+		elif opt in ( "-X" , "--chromosome" ):
+			chrColumn = arg
+		elif opt in ( "-s" , "--strand" ):
+			strandColumn = arg
+		elif opt in ( "-A" , "--alt" ):
+			altColumn = arg
+		elif opt in ( "-R" , "--ref" ):
+			refColumn = arg
+		elif opt in ( "-S" , "--start" ):
 			startColumn = arg
 		elif opt in ( "-P" , "--stop" ):
 			stopColumn = arg
@@ -124,6 +164,8 @@ def parseArgs( argv ):
 			sampleColumn = arg
 		elif opt in ( "-C" , "--codon" ):
 			codonColumn = arg
+		elif opt in ( "-F" , "--alleleFrequency" ):
+			alleleFrequencyColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
 			geneListFile = arg
 		elif opt in ( "-e" , "--expression" ):
@@ -185,6 +227,7 @@ def parseArgs( argv ):
 	"altColumn" : altColumn, \
 	"geneColumn" : geneColumn, \
 	"sampleColumn" : sampleColumn, \
+	"alleleFrequencyColumn" : alleleFrequencyColumn, \
 	"recurrenceThreshold" : recurrenceThreshold , \
 	"clustersFile" : clustersFile , \
 	}
@@ -220,6 +263,7 @@ def main( argv ):
 	refColumn = values["refColumn"]
 	altColumn = values["altColumn"]
 	sampleColumn = values["sampleColumn"]
+	alleleFrequencyColumn = values["alleleFrequencyColumn"]
 	asHTML = values["html"]
 	override = values["override"]
 	recurrenceThreshold = values["recurrenceThreshold"]
@@ -251,6 +295,7 @@ def main( argv ):
 	ref=refColumn , \
 	alt=altColumn , \
 	sample=sampleColumn , \
+	alleleFrequency=alleleFrequencyColumn \
 	)
 
 	if doVEP:
@@ -319,6 +364,7 @@ def main( argv ):
 	CharGer.printClassifications( )
 
 	CharGer.writeSummary( outputFile , delim='\t' , html=asHTML )
+
 
 	#CharGer.pdfSummary( outputFile )
 

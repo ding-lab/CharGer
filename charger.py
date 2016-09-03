@@ -54,6 +54,7 @@ class charger(object):
 		mafFile = kwargs.get( 'maf' , "" )
 		vcfFile = kwargs.get( 'vcf' , "" )
 		tsvFile = kwargs.get( 'tsv' , "" )
+		print( "Input: .maf = " + mafFile + ", .vcf = " + vcfFile + ", .tsv = " + tsvFile )
 		pathogenicVariantsFile = kwargs.get( 'pathogenicVariants' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
@@ -71,7 +72,7 @@ class charger(object):
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
 			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
-			exacDone=False # currently only has 1000G
+			#exacDone=False # currently only has 1000G
 		if tsvFile:
 			self.readTSV( tsvFile , **kwargs )
 		if pathogenicVariantsFile:
@@ -94,6 +95,7 @@ class charger(object):
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
 		peptideChangeColumn = kwargs.get( 'peptideChange' , 49 )
+		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		tcga = kwargs.get( 'tcga' , True )
 		specific = kwargs.get( 'specific' , True )
 		try:
@@ -113,15 +115,19 @@ class charger(object):
 		except:
 			raise Exception( "CharGer Error: bad .maf file" )
 	def readVCF( self , inputFile , **kwargs ):
-		inFile = vcf.Reader( open( inputFile , 'r' ) )
+		inFile = None
+		if ( re.match( "\.gz" , inputFile ) ):
+			inFile = vcf.Reader( open( inputFile , 'r' ) , compressed=True )    
+		else:
+			inFile = vcf.Reader( open( inputFile , 'r' ) )
 		appendTo = kwargs.get( "appendTo" , "user" )
-		print appendTo
 		preVEP = []
 		vepDone = False
 		exacDone = False
 		vepInfo = OD()
 		self.vcfHeaderInfo = []
 		metadata = inFile.metadata
+		print( str( metadata ) )
 		for pairs in metadata:
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
@@ -141,6 +147,9 @@ class charger(object):
 								vepInfo[key] = None
 								self.vcfKeyIndex[key] = i
 								i = i + 1
+			if pairs == 'AF':
+				print "This .vcf has AF!"
+				exacDone = True
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
@@ -148,7 +157,9 @@ class charger(object):
 			start = record.start + 1 #1-base beginning of ref
 			stop = record.end #0-base ending of ref
 			info = record.INFO
+			alti = -1
 			for alternate in alternates:
+				alti += 1
 				alt = str( alternate )
 				if alt == "None":
 					alt = None
@@ -175,12 +186,18 @@ class charger(object):
 					parentVariant=parentVar
 				)
 
-				
+				hasAF = False
+				var.alleleFrequency = info.get( 'AF' , "noAF" )
+				if ( not var.alleleFrequency == "noAF" ):
+					afs = var.alleleFrequency[alti]
+					var.alleleFrequency = afs
+					hasAF = True
+				print( str( var.alleleFrequency ) )
 
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
 					vepDone = True
-					exacDone = True
+					#exacDone = True
 					var.vepVariant = vepvariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
@@ -286,7 +303,8 @@ class charger(object):
 #22 => UNIPARC
 #27 => DOMAINS
 #30 => GMAF
-						var.alleleFrequency = self.getVCFKeyIndex( values , "GMAF" )
+						if ( not hasAF ):
+							var.alleleFrequency = self.getVCFKeyIndex( values , "GMAF" )
 #31 => AFR_MAF
 #32 => AMR_MAF
 #33 => ASN_MAF
@@ -340,29 +358,33 @@ class charger(object):
 				mostSevere = None
 				rankMostSevere = 10000
 				mostSevereCons = severeRank[-1]
-				for cons in var.vepVariant.consequences:
-					for term in cons.terms:
-						if term in severeRank:
-							rank = severeRank.index( term )
-						else:
-							rank = 10000
-						if rank < rankMostSevere:
-							mostSevere = cons
-							rankMostSevere = rank
-							mostSevereCons = term
-						elif rank == rankMostSevere:
-							if cons.canonical:
+				try:
+					for cons in var.vepVariant.consequences:
+						for term in cons.terms:
+							if term in severeRank:
+								rank = severeRank.index( term )
+							else:
+								rank = 10000
+							if rank < rankMostSevere:
 								mostSevere = cons
-				if mostSevere:
-					var.gene = mostSevere.gene
-					var.referencePeptide = mostSevere.referencePeptide
-					var.positionPeptide = mostSevere.positionPeptide
-					var.alternatePeptide = mostSevere.alternatePeptide
-					var.transcriptPeptide = mostSevere.transcriptPeptide
-					var.transcriptCodon = mostSevere.transcriptCodon
-					var.positionCodon = mostSevere.positionCodon
-					var.vepVariant.mostSevereConsequence = mostSevereCons
-					var.variantClass = mostSevereCons
+								rankMostSevere = rank
+								mostSevereCons = term
+							elif rank == rankMostSevere:
+								if cons.canonical:
+									mostSevere = cons
+					if mostSevere:
+						var.gene = mostSevere.gene
+						var.referencePeptide = mostSevere.referencePeptide
+						var.positionPeptide = mostSevere.positionPeptide
+						var.alternatePeptide = mostSevere.alternatePeptide
+						var.transcriptPeptide = mostSevere.transcriptPeptide
+						var.transcriptCodon = mostSevere.transcriptCodon
+						var.positionCodon = mostSevere.positionCodon
+						var.vepVariant.mostSevereConsequence = mostSevereCons
+						var.variantClass = mostSevereCons
+				except:
+					print( "CharGer Warning: no consequences" )
+					pass
 				#print var.proteogenomicVar()
 
 				if appendTo == "user":
@@ -385,12 +407,24 @@ class charger(object):
 		peptideColumn = kwargs.get( 'peptideChange' , 14 )
 		codonColumn = kwargs.get( 'codon' , 15 )
 		sampleColumn = kwargs.get( 'sample' , 21 )
+		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		tcga = kwargs.get( 'tcga' , True )
 		specific = kwargs.get( 'specific' , True )
 		headerLine = next(inFile).split( "\t" ) 
+		print( "aboutToRead" )
 		try:
+			print( "reading" )
 			for line in inFile:
 				fields = line.split( "\t" )
+				print( str( len( fields ) ) )
+				print( str( chrColumn ) )
+				print( str( altColumn ) )
+				print( str( refColumn ) )
+				print( str( startColumn ) )
+				print( str( stopColumn ) )
+				print( str( sampleColumn ) )
+				print( str( codonColumn ) )
+				print( str( peptideColumn ) )
 				chrom = self.getChrNum( fields[int(chrColumn)] )
 				alt = fields[int(altColumn)]
 				ref = fields[int(refColumn)]
@@ -527,7 +561,8 @@ class charger(object):
 		doExAC = kwargs.get( 'exac' , True )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
-		if doExAC:
+		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
+		if doExAC and not alleleFrequencyColumn:
 			common = 0
 			rare = 0
 			totalVars = len( self.userVariants )
@@ -729,7 +764,7 @@ class charger(object):
 				var.PM6 = True
 				var.addSummary( "PM6(Assumed de novo without parent confirmation)" )
 
-##### Supporing #####
+##### Supporting #####
 	def PP1( self ):
 		print "CharGer module PP1"
 		print "- cosegregation with disease in family members in a known disease gene"
