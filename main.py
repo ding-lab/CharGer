@@ -124,27 +124,6 @@ def parseArgs( argv ):
 			clinvarSummaryBatchSize = int( arg )
 		elif opt in ( "-B" , "--searchBatchSize" ):
 			clinvarSearchBatchSize = int( arg )
-		elif opt in ( "-p" , "--peptideChange" ):
-			peptideChangeColumn = arg
-		# all customized .tsv options are in caps for now
-		elif opt in ( "-X" , "--chromosome" ):
-			chrColumn = arg
-		elif opt in ( "-s" , "--strand" ):
-			strandColumn = arg
-		elif opt in ( "-A" , "--alt" ):
-			altColumn = arg
-		elif opt in ( "-R" , "--ref" ):
-			refColumn = arg
-		elif opt in ( "-S" , "--start" ):
-			output = arg
-		elif opt in ( "-v" , "--vepBatchSize" ):
-			vepBatchSize = int( arg )
-		elif opt in ( "-b" , "--summaryBatchSize" ):
-			clinvarSummaryBatchSize = int( arg )
-		elif opt in ( "-B" , "--searchBatchSize" ):
-			clinvarSearchBatchSize = int( arg )
-		elif opt in ( "-p" , "--peptideChange" ):
-			peptideChangeColumn = arg
 		# all customized .tsv options are in caps for now
 		elif opt in ( "-X" , "--chromosome" ):
 			chrColumn = arg
@@ -164,6 +143,8 @@ def parseArgs( argv ):
 			sampleColumn = arg
 		elif opt in ( "-C" , "--codon" ):
 			codonColumn = arg
+		elif opt in ( "-p" , "--peptideChange" ):
+			peptideChangeColumn = arg
 		elif opt in ( "-F" , "--alleleFrequency" ):
 			alleleFrequencyColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
@@ -288,7 +269,7 @@ def main( argv ):
 	diseases=diseasesFile , \
 	peptideChange=peptideChangeColumn , \
 	codon=codonColumn , \
-	chr=chrColumn , \
+	chromosome=chrColumn , \
 	strand=strandColumn , \
 	start=startColumn , \
 	stop=stopColumn , \
@@ -354,6 +335,7 @@ def main( argv ):
 	CharGer.BP6( )
 	CharGer.BP7( )
 
+	print( str( rareThreshold ) + " < " + str( commonThreshold ) )
 	t4 = time.time() 
 
 	CharGer.classify( system="ACMG" )

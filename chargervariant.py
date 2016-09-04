@@ -172,7 +172,8 @@ class chargervariant(mafvariant):
 			return False
 		return True
 	def isFrequentAllele( self , threshold ):
-		if self.alleleFrequency > threshold:
+		#print( "isFrequencyAllele? " + str( self.alleleFrequency ) + " > " + str( threshold ) )
+		if float( self.alleleFrequency ) > float( threshold ):
 			return True
 		return False
 	def countPathogenicStrong( self ):

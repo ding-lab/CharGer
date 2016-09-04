@@ -382,7 +382,7 @@ class charger(object):
 						var.vepVariant.mostSevereConsequence = mostSevereCons
 						var.variantClass = mostSevereCons
 				except:
-					print( "CharGer Warning: no consequences" )
+					print( "CharGer::readVCF Warning: no consequences" )
 					pass
 				#print var.proteogenomicVar()
 
@@ -396,7 +396,7 @@ class charger(object):
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"
 		inFile = self.safeOpen( inputFile , 'r' )
-		chrColumn = kwargs.get( 'chr' , 0 )
+		chrColumn = kwargs.get( 'chromosome' , 0 )
 		startColumn = kwargs.get( 'start' , 1 )
 		stopColumn = kwargs.get( 'stop' , 2 )
 		refColumn = kwargs.get( 'ref' , 3 )
@@ -415,22 +415,24 @@ class charger(object):
 			for line in inFile:
 				var = chargervariant()
 				fields = line.split( "\t" )
-				chro = self.getCustom( fields , chrColumn )
+				chro = self.getCustom( fields , chrColumn , desc="chromosome" )
 				var.chromosome = self.getChrNum( chro )
-				var.reference = self.getCustom( fields , refColumn )
-				var.start = self.getCustom( fields , startColumn )
-				var.stop = self.getCustom( fields , stopColumn )
-				var.sample = self.getCustom( fields , sampleColumn )
+				var.reference = self.getCustom( fields , refColumn , desc="reference" )
+				var.alternate = self.getCustom( fields , altColumn , desc="alternate" )
+				var.start = self.getCustom( fields , startColumn , desc="start" )
+				var.stop = self.getCustom( fields , stopColumn , desc="stop" )
+				if sampleColumn:
+					var.sample = self.getCustom( fields , sampleColumn , desc="sample" )
 				if codonColumn:
-					codon = self.getCustom( fields , codonColumn )
+					codon = self.getCustom( fields , codonColumn , desc="codonChange" )
 					var.splitHGVSc( codon )
 				if peptideColumn:
-					peptide = self.getCustom( fields , peptideColumn )
+					peptide = self.getCustom( fields , peptideColumn , desc="peptideChange" )
 					var.splitHGVSp( peptide )
 				if alleleFrequencyColumn:
-					var.alleleFrequency = self.getCustom( fields , alleleFrequencyColumn )
-					if var.alleleFrequency:
-						print( "\t" + var.genomicVar() )
+					var.alleleFrequency = self.getCustom( fields , alleleFrequencyColumn , desc="alleleFrequency" )
+					#if var.alleleFrequency:
+						#print( "\t" + var.genomicVar() )
 					exacDone = True
 
 				if specific:
@@ -443,18 +445,18 @@ class charger(object):
 
 				self.userVariants.append( var )
 		except:
-			raise Exception( "CharGer Error: bad .tsv file" )
+			raise Exception( "CharGer::readTSV Error: bad .tsv file" )
 			print "Hint: correct columns?"
 			print headerLine
 		return exacDone
 
 	@staticmethod
-	def getCustom( array , column ):
+	def getCustom( array , column , desc="" ):
 		thing = None
 		try:
 			thing = array[int( column )]
 		except:
-			print( "CharGer Error: column " + str( column ) + \
+			print( "CharGer::getCustom Error: " + desc + " column at " + str( column ) + \
 				   " not available in row from input .tsv" )
 			pass
 		return thing
@@ -485,7 +487,7 @@ class charger(object):
 						self.userExpression[samples[i+1]][gene] = gene_exp_p[i]
 
 		except:
-			print "CharGer Error: bad expression file"
+			print "CharGer::readExpression Error: bad expression file"
 
 	def readGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
 		specific = kwargs.get( 'specific', True )
@@ -502,7 +504,7 @@ class charger(object):
 				self.userGeneList[gene][disease] = mode_inheritance
 				print '__'.join( [ gene , disease , mode_inheritance ] )
 		except:
-			print "CharGer Error: bad gene list file"
+			print "CharGer::readGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
 		self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
 	def readCoSegregate( self , inputFile ):
@@ -519,7 +521,7 @@ class charger(object):
 				var.mafLine2Variant( line )
 				varDict[var.uniqueVar()] = 1
 		except:
-			print "CharGer Warning: bad .maf for " + inputFile
+			print "CharGer::readOtherMAF Warning: bad .maf for " + inputFile
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
@@ -579,7 +581,7 @@ class charger(object):
 				else:
 					rare += 1
 			elen = len(entries.keys())
-			print "exac found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
+			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
 		doVEP = kwargs.get( 'vep' , True )
 		preVEP = kwargs.get( 'prevep' , [] )
@@ -651,7 +653,7 @@ class charger(object):
 				return self.diseases
 			return
 		except:
-			print "CharGer Warning: No diseases file provided"
+			print "CharGer::getDiseases Warning: No diseases file provided"
 			return
 
 
@@ -735,7 +737,7 @@ class charger(object):
 								var.PM1 = True
 								var.addSummary( "PM1(HotSpot3D: somatic hotspot among 19 TCGA cancer types with " + str( recurrence ) + "samples)" )
 		else:
-			print "clustersFile is not supplied. PM1 was not executed. "
+			print "CharGer::PM1 Warning: clustersFile is not supplied. PM1 was not executed. "
 							#break #maybe don't break if possible redundant genomic variants
 #		print "- "
 	def PM2( self , threshold ):
@@ -785,7 +787,7 @@ class charger(object):
 					if varGene in self.userGeneList: # check if in gene list
 						var.PP2 = True # if call is true then check expression effect
 		else: 
-			print "CharGer Error: Cannot evaluate PP2: No gene list supplied."
+			print "CharGer::PP2 Error: Cannot evaluate PP2: No gene list supplied."
 #		print "- "
 	def PP3( self , minimumEvidence ):
 		print "CharGer module PP3"
@@ -909,7 +911,7 @@ class charger(object):
 					else:
 						var.PSC1 = True 
 				else: 
-					print "CharGer Error: Cannot evaluate PVS1: No gene list supplied."
+					print "CharGer::runIndelModules Error: Cannot evaluate PVS1: No gene list supplied."
 					# in case of no gene list, make all truncations PSC1
 					var.PSC1 = True
 
@@ -925,7 +927,7 @@ class charger(object):
 					else: 
 						var.PPC1 = True
 				else: 
-					print "CharGer Error: Cannot evaluate PM4: No gene list supplied."
+					print "CharGer::runIndelModules Error: Cannot evaluate PM4: No gene list supplied."
 					# in case of no gene list, make all inframes PSC1
 					var.PPC1 = True
 
@@ -1006,16 +1008,16 @@ class charger(object):
 								if mod == "PS1":
 									var.PS1 = True # already pathogenic still suffices to be PS1
 									called = 1
-									print var.genomicVar() ,
-									print " matched a pathogenic Variant in PS1 by same genomic change"
+									#print var.genomicVar() ,
+									#print " matched a pathogenic Variant in PS1 by same genomic change"
 							elif consequence.sameGenomicReference( pathVar ):
 							#if genomic change is different, but the peptide change is the same, then PS1
 								if pathVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
 									if mod == "PS1":
 										var.PS1 = True
 										called = 1
-										print var.genomicVar() ,
-										print " matched a pathogenic Variant in PS1 by same peptide change"
+										#print var.genomicVar() ,
+										#print " matched a pathogenic Variant in PS1 by same peptide change"
 							if consequence.samePeptideReference( pathVar ):
 								if not consequence.samePeptideChange( pathVar ):
 								#if peptide change is different, but the peptide reference is the same, then PM5
@@ -1023,8 +1025,8 @@ class charger(object):
 										if mod == "PM5":
 											var.PM5 = True # already pathogenic still suffices to be PS1
 											called = 1
-											print var.genomicVar() ,
-											print " matched a pathogenic Variant in PM5"
+											#print var.genomicVar() ,
+											#print " matched a pathogenic Variant in PM5"
 		return called
 	def printResult( self ):
 		for var in self.userVariants:
@@ -1037,12 +1039,14 @@ class charger(object):
 	def checkAlleleFrequencies( self , mod , threshold ):
 		for var in self.userVariants:
 			if mod == "PM2":
+				#print( "PM2: Checking if " + str( var.alleleFrequency ) + " <= " + str( threshold ) + str( var.isFrequentAllele( threshold ) ) )
 				if not var.isFrequentAllele( threshold ):
 					var.PM2 = True
 					var.addSummary( "PM2(Low/absent allele frequency " \
 						+ str( var.alleleFrequency ) \
 						+ "<=" + str( threshold ) + ")" )
 			if mod == "BA1":
+				#print( "BA1: Checking if " + str( var.alleleFrequency ) + " > " + str( threshold ) + str( var.isFrequentAllele( threshold ) ) )
 				if var.isFrequentAllele( threshold ):
 					var.BA1 = True
 					var.addSummary( "BA1(Frequent allele " \
@@ -1181,6 +1185,7 @@ class charger(object):
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
 		asHTML = kwargs.get( 'html' , False )
+		print( "write to " + outFile )
 		outFH = self.safeOpen( outFile , 'w' , warning=True )
 		if asHTML:
 			print "Writing to .html with delim = </td><td>"
