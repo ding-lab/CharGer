@@ -66,7 +66,6 @@ class chargervariant(mafvariant):
 		aParentVariant = kwargs.get( 'parentVariant' , None )
 		if aParentVariant:
 			super( chargervariant , self ).copyInfo( aParentVariant )
-
 		# make vep and clinvar variants attributes of chargervariant
 		self.vepVariant = kwargs.get( 'vepvariant' , None )
 		self.clinvarVariant = kwargs.get( 'clinvarvariant' , None )

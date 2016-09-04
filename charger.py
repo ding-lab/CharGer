@@ -54,7 +54,6 @@ class charger(object):
 		mafFile = kwargs.get( 'maf' , "" )
 		vcfFile = kwargs.get( 'vcf' , "" )
 		tsvFile = kwargs.get( 'tsv' , "" )
-		print( "Input: .maf = " + mafFile + ", .vcf = " + vcfFile + ", .tsv = " + tsvFile )
 		pathogenicVariantsFile = kwargs.get( 'pathogenicVariants' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
 		geneListFile = kwargs.get( 'geneList' , "" )
@@ -74,7 +73,7 @@ class charger(object):
 			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
 			#exacDone=False # currently only has 1000G
 		if tsvFile:
-			self.readTSV( tsvFile , **kwargs )
+			exacDone = self.readTSV( tsvFile , **kwargs )
 		if pathogenicVariantsFile:
 			self.readVCF( pathogenicVariantsFile , appendTo="pathogenic" , **kwargs )
 		if expressionFile:
@@ -103,7 +102,7 @@ class charger(object):
 			for line in inFile:
 				var = chargervariant()
 				var.mafLine2Variant( line , peptideChange=peptideChangeColumn , codon=codonColumn )
-				print var.proteogenomicVar()
+				#print var.proteogenomicVar()
 				if specific:
 					if tcga:
 						match = re.match( "TCGA\-(\w\w)" , var.sample )
@@ -127,7 +126,7 @@ class charger(object):
 		vepInfo = OD()
 		self.vcfHeaderInfo = []
 		metadata = inFile.metadata
-		print( str( metadata ) )
+		#print( str( metadata ) )
 		for pairs in metadata:
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
@@ -143,9 +142,9 @@ class charger(object):
 							self.vcfKeyIndex = {}
 							i = 0
 							for key in self.vcfHeaderInfo:
-								print str(i) + " => " + key
 								vepInfo[key] = None
 								self.vcfKeyIndex[key] = i
+								#print str(i) + " => " + key
 								i = i + 1
 			if pairs == 'AF':
 				print "This .vcf has AF!"
@@ -192,7 +191,7 @@ class charger(object):
 					afs = var.alleleFrequency[alti]
 					var.alleleFrequency = afs
 					hasAF = True
-				print( str( var.alleleFrequency ) )
+				#print( str( var.alleleFrequency ) )
 
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
@@ -402,52 +401,37 @@ class charger(object):
 		stopColumn = kwargs.get( 'stop' , 2 )
 		refColumn = kwargs.get( 'ref' , 3 )
 		altColumn = kwargs.get( 'alt' , 4 )
-		geneColumn = kwargs.get( 'gene' , 6 )
-		strandColumn = kwargs.get( 'strand' , 11 )
-		peptideColumn = kwargs.get( 'peptideChange' , 14 )
-		codonColumn = kwargs.get( 'codon' , 15 )
-		sampleColumn = kwargs.get( 'sample' , 21 )
+		geneColumn = kwargs.get( 'gene' , None )
+		strandColumn = kwargs.get( 'strand' , None )
+		peptideColumn = kwargs.get( 'peptideChange' , None )
+		codonColumn = kwargs.get( 'codon' , None )
+		sampleColumn = kwargs.get( 'sample' , None )
 		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		tcga = kwargs.get( 'tcga' , True )
 		specific = kwargs.get( 'specific' , True )
 		headerLine = next(inFile).split( "\t" ) 
-		print( "aboutToRead" )
+		exacDone = False
 		try:
-			print( "reading" )
 			for line in inFile:
+				var = chargervariant()
 				fields = line.split( "\t" )
-				print( str( len( fields ) ) )
-				print( str( chrColumn ) )
-				print( str( altColumn ) )
-				print( str( refColumn ) )
-				print( str( startColumn ) )
-				print( str( stopColumn ) )
-				print( str( sampleColumn ) )
-				print( str( codonColumn ) )
-				print( str( peptideColumn ) )
-				chrom = self.getChrNum( fields[int(chrColumn)] )
-				alt = fields[int(altColumn)]
-				ref = fields[int(refColumn)]
-				start = fields[int(startColumn)]
-				stop = fields[int(stopColumn)]
-				#strand = fields[int(strandColumn)]
-				#gene = fields[int(geneColumn)]
-				sample = fields[int(sampleColumn)]
-				
-				var = chargervariant( \
-					chromosome = chrom , \
-					start = start , \
-					stop = stop , \
-					reference = ref , \
-					alternate = alt , \
-					#strand = strand , \
-					#gene = gene , \
-					sample = sample , \
-					#codon = codonChange , \
-					#peptide = peptideChange , \
-				)
-				var.splitHGVSc( fields[int(codonColumn)] )
-				var.splitHGVSp( fields[int(peptideColumn)] )
+				chro = self.getCustom( fields , chrColumn )
+				var.chromosome = self.getChrNum( chro )
+				var.reference = self.getCustom( fields , refColumn )
+				var.start = self.getCustom( fields , startColumn )
+				var.stop = self.getCustom( fields , stopColumn )
+				var.sample = self.getCustom( fields , sampleColumn )
+				if codonColumn:
+					codon = self.getCustom( fields , codonColumn )
+					var.splitHGVSc( codon )
+				if peptideColumn:
+					peptide = self.getCustom( fields , peptideColumn )
+					var.splitHGVSp( peptide )
+				if alleleFrequencyColumn:
+					var.alleleFrequency = self.getCustom( fields , alleleFrequencyColumn )
+					if var.alleleFrequency:
+						print( "\t" + var.genomicVar() )
+					exacDone = True
 
 				if specific:
 					if tcga:
@@ -456,11 +440,24 @@ class charger(object):
 							var.disease = self.diseases[match.groups()[0]]
 				else:
 					var.disease = charger.allDiseases
+
 				self.userVariants.append( var )
 		except:
 			raise Exception( "CharGer Error: bad .tsv file" )
 			print "Hint: correct columns?"
 			print headerLine
+		return exacDone
+
+	@staticmethod
+	def getCustom( array , column ):
+		thing = None
+		try:
+			thing = array[int( column )]
+		except:
+			print( "CharGer Error: column " + str( column ) + \
+				   " not available in row from input .tsv" )
+			pass
+		return thing
 			
 	def readExpression( self , inputFile ): # expect sample(col)-gene(row) matrixes
 		try:
