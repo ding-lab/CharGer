@@ -28,7 +28,7 @@ def parseArgs( argv ):
 	helpText += "  -z pathogenic variants .vcf\n"
 	helpText += "  -e expression matrix file .tsv\n"
 	helpText += "  -g gene list file .txt\n"
-	helpText += "  -d diseases file (format: gene\\tdisease) .tsv\n"
+	helpText += "  -d diseases file (format: gene\\tdisease\\tmode_of_inheritance) .tsv\n"
 	helpText += "  -n de novo file .?\n"
 	helpText += "  -a assumed de novo file .?\n"
 	helpText += "  -c co-segregation file .?\n"
@@ -49,6 +49,7 @@ def parseArgs( argv ):
 	helpText += "  -M sample name\n"
 	helpText += "  -C codon\n"
 	helpText += "  -p peptide change\n"
+	helpText += "  -L variant classification\n"
 	helpText += "  -F allele frequency\n"
 	helpText += "\n"
 	helpText += "  -h this message\n"
@@ -75,6 +76,7 @@ def parseArgs( argv ):
 	strandColumn = None #11
 	codonColumn = None #14
 	peptideChangeColumn = None #15
+	variantClassificationColumn = None #15
 	sampleColumn = None #21
 	alleleFrequencyColumn = None #33
 	specific = True
@@ -89,7 +91,7 @@ def parseArgs( argv ):
 	pathogenicVariantsFile = ""
 	try:
 		#opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:" , \
-		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:" , \
+		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:L:" , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" , "alleleFrequency=" , "geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
@@ -145,6 +147,8 @@ def parseArgs( argv ):
 			codonColumn = arg
 		elif opt in ( "-p" , "--peptideChange" ):
 			peptideChangeColumn = arg
+		elif opt in ( "-L" , "--variantClassification" ):
+			variantClassificationColumn = arg
 		elif opt in ( "-F" , "--alleleFrequency" ):
 			alleleFrequencyColumn = arg
 		elif opt in ( "-g" , "--geneList" ):
@@ -173,7 +177,7 @@ def parseArgs( argv ):
 			asHTML = True
 		elif opt in ( "-O" , "--override" ):
 			override = True
-		elif opt in ( "-r" , "--recurrenc" ):
+		elif opt in ( "-r" , "--recurrence" ):
 			recurrenceThreshold = float( arg )
 		elif opt in ( "-H" , "--hotspot3d" ):
 			clustersFile = arg
@@ -192,8 +196,6 @@ def parseArgs( argv ):
 	"vepBatchSize" : vepBatchSize , \
 	"clinvarSummaryBatchSize" : clinvarSummaryBatchSize , \
 	"clinvarSearchBatchSize" : clinvarSearchBatchSize , \
-	"peptideChangeColumn" : peptideChangeColumn , \
-	"codonColumn" : codonColumn , \
 	"expression" : expressionFile , \
 	"deNovo" : deNovoFile , \
 	"assumedDeNovo" : assumedDeNovoFile , \
@@ -208,6 +210,9 @@ def parseArgs( argv ):
 	"altColumn" : altColumn, \
 	"geneColumn" : geneColumn, \
 	"sampleColumn" : sampleColumn, \
+	"codonColumn" : codonColumn , \
+	"peptideChangeColumn" : peptideChangeColumn , \
+	"variantClassificationColumn" : variantClassificationColumn, \
 	"alleleFrequencyColumn" : alleleFrequencyColumn, \
 	"recurrenceThreshold" : recurrenceThreshold , \
 	"clustersFile" : clustersFile , \
@@ -224,6 +229,11 @@ def main( argv ):
 	deNovoFile = values["deNovo"]
 	assumedDeNovoFile = values["assumedDeNovo"]
 	coSegregationFile = values["coSegregation"]
+	tsvFile = values["tsv"]
+	expressionFile = values["expression"]
+	deNovoFile = values["deNovo"]
+	assumedDeNovoFile = values["assumedDeNovo"]
+	coSegregationFile = values["coSegregation"]
 	geneListFile = values["geneList"]
 	diseasesFile = values["diseases"]
 	outputFile = values["output"]
@@ -235,8 +245,7 @@ def main( argv ):
 	vepBatchSize = values["vepBatchSize"]
 	clinvarSummaryBatchSize = values["clinvarSummaryBatchSize"]
 	clinvarSearchBatchSize = values["clinvarSearchBatchSize"]
-	peptideChangeColumn = values["peptideChangeColumn"]
-	codonColumn = values["codonColumn"]
+	geneColumn = values["geneColumn"]
 	chrColumn = values["chrColumn"]
 	strandColumn = values["strandColumn"]
 	startColumn = values["startColumn"]
@@ -244,6 +253,9 @@ def main( argv ):
 	refColumn = values["refColumn"]
 	altColumn = values["altColumn"]
 	sampleColumn = values["sampleColumn"]
+	codonColumn = values["codonColumn"]
+	peptideChangeColumn = values["peptideChangeColumn"]
+	variantClassificationColumn = values["variantClassificationColumn"]
 	alleleFrequencyColumn = values["alleleFrequencyColumn"]
 	asHTML = values["html"]
 	override = values["override"]
@@ -267,8 +279,7 @@ def main( argv ):
 	assumedDeNovo=assumedDeNovoFile , \
 	coSegregation=coSegregationFile , \
 	diseases=diseasesFile , \
-	peptideChange=peptideChangeColumn , \
-	codon=codonColumn , \
+	gene=geneColumn , \
 	chromosome=chrColumn , \
 	strand=strandColumn , \
 	start=startColumn , \
@@ -276,6 +287,9 @@ def main( argv ):
 	ref=refColumn , \
 	alt=altColumn , \
 	sample=sampleColumn , \
+	codon=codonColumn , \
+	peptideChange=peptideChangeColumn , \
+	variantClassification=variantClassificationColumn , \
 	alleleFrequency=alleleFrequencyColumn \
 	)
 

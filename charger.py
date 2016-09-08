@@ -246,6 +246,10 @@ class charger(object):
 								polyPhenStuff.append( None )
 							else:
 								polyPhenStuff[1] = polyPhenStuff[1].rstrip( ")" )
+						consequence_terms = self.getVCFKeyIndex( values , "Consequence" )
+						csq_terms = []
+						if consequence_terms:
+							csq_terms = self.getVCFKeyIndex( values , "Consequence" ).split( "&" )
 						vcv = vepconsequencevariant( \
 							#parentVariant=var
 							chromosome = chrom , \
@@ -259,7 +263,7 @@ class charger(object):
 							#2 => Feature
 							transcriptCodon=self.getVCFKeyIndex( values , "Feature" ) , \
 							#4 => Consequence
-							consequence_terms=self.getVCFKeyIndex( values , "Consequence" ).split( "&" ) , \
+							consequence_terms=csq_terms , \
 							#5 => cDNA_position
 							positionCodon=self.getVCFKeyIndex( values , "cDNA_position" ) , \
 							#7 => Protein_position
@@ -382,7 +386,7 @@ class charger(object):
 						var.vepVariant.mostSevereConsequence = mostSevereCons
 						var.variantClass = mostSevereCons
 				except:
-					print( "CharGer::readVCF Warning: no consequences" )
+					print( "CharGer::readVCF Warning: no consequences" + var.genomicVar() )
 					pass
 				#print var.proteogenomicVar()
 
@@ -403,8 +407,9 @@ class charger(object):
 		altColumn = kwargs.get( 'alt' , 4 )
 		geneColumn = kwargs.get( 'gene' , None )
 		strandColumn = kwargs.get( 'strand' , None )
-		peptideColumn = kwargs.get( 'peptideChange' , None )
 		codonColumn = kwargs.get( 'codon' , None )
+		peptideColumn = kwargs.get( 'peptideChange' , None )
+		variantClassificationColumn = kwargs.get( 'variantClassification' , None )
 		sampleColumn = kwargs.get( 'sample' , None )
 		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		tcga = kwargs.get( 'tcga' , True )
@@ -421,18 +426,20 @@ class charger(object):
 				var.alternate = self.getCustom( fields , altColumn , desc="alternate" )
 				var.start = self.getCustom( fields , startColumn , desc="start" )
 				var.stop = self.getCustom( fields , stopColumn , desc="stop" )
-				if sampleColumn:
+				if geneColumn is not None:
+					var.gene = self.getCustom( fields , geneColumn , desc="gene" )
+				if sampleColumn is not None:
 					var.sample = self.getCustom( fields , sampleColumn , desc="sample" )
-				if codonColumn:
+				if codonColumn is not None:
 					codon = self.getCustom( fields , codonColumn , desc="codonChange" )
 					var.splitHGVSc( codon )
-				if peptideColumn:
+				if peptideColumn is not None:
 					peptide = self.getCustom( fields , peptideColumn , desc="peptideChange" )
 					var.splitHGVSp( peptide )
-				if alleleFrequencyColumn:
+				if variantClassificationColumn is not None:
+					var.variantClass = self.getCustom( fields , variantClassificationColumn , desc="variantClassification" )
+				if alleleFrequencyColumn is not None:
 					var.alleleFrequency = self.getCustom( fields , alleleFrequencyColumn , desc="alleleFrequency" )
-					#if var.alleleFrequency:
-						#print( "\t" + var.genomicVar() )
 					exacDone = True
 
 				if specific:
@@ -502,7 +509,7 @@ class charger(object):
 					disease = charger.allDiseases
 				mode_inheritance = fields[2].rstrip()
 				self.userGeneList[gene][disease] = mode_inheritance
-				print '__'.join( [ gene , disease , mode_inheritance ] )
+				#print '__'.join( [ gene , disease , mode_inheritance ] )
 		except:
 			print "CharGer::readGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
@@ -621,6 +628,46 @@ class charger(object):
 
 	def getVEPviaCMD( self , **kwargs ):
 		NotImplemented
+		#defaultVEPDir = "./"
+		#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
+		#defaultVEPOutputDir = '/'.join( [ vepDir , ".vep" ] ) + "/"
+		#defaultVEPCache = '/'.join( [ vepDir , ".vep" ] ) + "/"
+		#defaultEnsemblVersion = "75"
+		#defaultVEPVersion = "80"
+		#defaultAssembly = "GRCh37"
+		#defaultFasta = '/'.join( [ vepDir , \
+		#	".vep" , \
+		#	"homo_sapiens" , \
+		#	"*" + assembly , \
+		#	"Homo_sapiens." + assembly + "." + vepVersion + ".dna.primary_assembly.fa" \
+		#] )
+		#assembly = kwargs.get( 'vepAssembly' , defaultAssembly )
+		#fasta = kwargs.get( 'vepFasta' , defaultFasta )
+		#vcfFile = kwargs.get( 'vcf' , "" )
+		#outputFile = kwargs.get( 'outputVCF' , "" )
+		#if vcfFile:
+		#	vep_command = ' '.join( [ "perl" , vepDir + , \
+		#		"--everything" , \
+		#		"--species homo_sapiens" , \
+		#		"--assembly" , assembly , \
+		#		"--fasta" , fasta , \
+		#		"--input_file" , vcfFile , \
+		#		"--output_file" , vcfTemp , \
+		#		"--dir" , vepDir + "/.vep" , \
+		#		"--dir_cache" , vepDir + "/.vep" , \
+		#		"--cache" , \
+		#		"--no_progress" , \
+		#		"--quiet" , \
+		#		"--total_length" , \
+		#		"--no_escape" , \
+		#		"--xref_refseq" , \
+		#		"--force_overwrite" , \
+		#		"--format vcf" , \
+		#		"--vcf" , \
+		#		"--no_stats" , \
+		#		"--fork 4" , \
+		#	] )
+		#	os.system(vep_command)
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
@@ -712,7 +759,7 @@ class charger(object):
 		functional domain (e.g., active site of an enzyme) without benign variation"
 		clustersFile = kwargs.get( 'hotspot3d' , "" )
 		if clustersFile:
-			print clustersFile
+			print "Reading HotSpot3D clusters file: " + clustersFile
 			with open( clustersFile , 'r' ) as clustersFH:
 				clustersFH.next()
 				for line in clustersFH:
@@ -779,13 +826,14 @@ class charger(object):
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = var.variantClass
-				varVEPClass = ""
+				varVEPClass = "blahblah"
 				if var.vepVariant:
 					varVEPClass = var.vepVariant.mostSevereConsequence
-				if (varClass == "missense") or \
-					(varVEPClass == "missense_variant"):
+				if ( "missense" in varClass.lower() ) or \
+					( "missense" in varVEPClass.lower() ):
 					if varGene in self.userGeneList: # check if in gene list
 						var.PP2 = True # if call is true then check expression effect
+						var.addSummary( "PP2(Missense variant in gene from gene list)" )
 		else: 
 			print "CharGer::PP2 Error: Cannot evaluate PP2: No gene list supplied."
 #		print "- "
@@ -885,10 +933,12 @@ class charger(object):
 		vep_inframe = [	"inframe_insertion" , "inframe_deletion" , \
 						"stop_lost" ]
 
+		if not self.userGeneList:
+			print "CharGer::runIndelModules Error: Cannot evaluate PVS1 or PM4: No gene list supplied."
 		for var in self.userVariants:
 			varClass = var.variantClass
 			varGene = var.gene
-			print varClass
+			#print varClass
 			varVEPClass = ""
 			if var.vepVariant:
 				varVEPClass = var.vepVariant.mostSevereConsequence
@@ -901,8 +951,8 @@ class charger(object):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
-							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
+						if ( "dominant" in self.userGeneList[varGene][varDisease].lower() or \
+							"dominant" in self.userGeneList[varGene][charger.allDiseases].lower() ):
 							var.PVS1 = True # if call is true then check expression effect
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
 								varSample = var.sample
@@ -910,24 +960,21 @@ class charger(object):
 									var.PVS1 = False
 					else:
 						var.PSC1 = True 
+						var.addSummary( "PSC1(truncation)" )
 				else: 
-					print "CharGer::runIndelModules Error: Cannot evaluate PVS1: No gene list supplied."
 					# in case of no gene list, make all truncations PSC1
 					var.PSC1 = True
-
-
 			elif (varClass in lenShift \
 				or varClass in vep_inframe):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if ( "dominant" in self.userGeneList[varGene][varDisease] or \
-							"dominant" in self.userGeneList[varGene][charger.allDiseases]):
+						if ( "dominant" in self.userGeneList[varGene][varDisease].lower() or \
+							"dominant" in self.userGeneList[varGene][charger.allDiseases].lower() ):
 							var.PM4 = True
 					else: 
 						var.PPC1 = True
 				else: 
-					print "CharGer::runIndelModules Error: Cannot evaluate PM4: No gene list supplied."
 					# in case of no gene list, make all inframes PSC1
 					var.PPC1 = True
 
@@ -943,9 +990,6 @@ class charger(object):
 	def peptideChange( self , mod , **kwargs ):
 		called = 0
 		for var in self.userVariants:
-			uniVar = var.uniqueVar()
-			ps1Call = False
-			pm5Call = False
 			call = False
 			if mod == "PS1":
 				call = var.PS1
@@ -963,6 +1007,11 @@ class charger(object):
 								PVchecked = self.checkPathogenicVariants( var , mod , consequence )
 								if CVchecked or PVchecked:
 									called += 1
+					else:
+						CVchecked = self.checkClinVarPC( var , mode , consequence )
+						PVchecked = self.checkPathogenicVariants( var , mod , consequence )
+						if CVchecked or PVchecked:
+							called += 1
 			if var.PS1 and mod == "PS1":
 				var.addSummary( "PS1(Peptide change is known pathogenic)" )
 			if var.PM5 and mod == "PM5":
@@ -1316,7 +1365,7 @@ class charger(object):
 		try:
 			array.append( str( value ) )
 		except:
-			print "failed to append a value\n"
+			print "CharGer Warning: failed to append a value\n"
 			array.append( "NA" )
 			pass
 
