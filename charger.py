@@ -67,6 +67,10 @@ class charger(object):
 		preVEP = []
 		vepDone = False
 		exacDone = False
+		if geneListFile:
+			self.readGeneList( geneListFile , specific=specific )
+		else:
+			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
@@ -80,10 +84,6 @@ class charger(object):
 			self.readExpression( expressionFile )
 		else: 
 			print "No expression file uploaded. CharGer will allow all passed truncations without expression data in PVS1."
-		if geneListFile:
-			self.readGeneList( geneListFile , specific=specific )
-		else:
-			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 		for var in self.userVariants:
 			if str(var.reference) == "0" or not var.reference:
 				var.reference = "-"
@@ -196,7 +196,6 @@ class charger(object):
 				csq = info.get( 'CSQ' , "noCSQ" )
 				if not csq == "noCSQ":
 					vepDone = True
-					#exacDone = True
 					var.vepVariant = vepvariant()
 					for thisCSQ in csq:
 						values = thisCSQ.split( "|" )
@@ -208,8 +207,6 @@ class charger(object):
 								aas[0] = mafvariant().convertAA( aas[0] )
 								aas[1] = mafvariant().convertAA( aas[1] )
 							else:
-								#28 => HGVSc
-								#29 => HGVSp
 								hgvsp = self.getVCFKeyIndex( values , "HGVSp" ).split( ":" )
 								changep = None
 								if len( hgvsp ) > 1:
@@ -509,7 +506,7 @@ class charger(object):
 					disease = charger.allDiseases
 				mode_inheritance = fields[2].rstrip()
 				self.userGeneList[gene][disease] = mode_inheritance
-				#print '__'.join( [ gene , disease , mode_inheritance ] )
+				print '\t'.join( [ gene , disease , mode_inheritance ] )
 		except:
 			print "CharGer::readGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
@@ -544,7 +541,7 @@ class charger(object):
 		self.fillMissingVariantInfo()
 	def fillMissingVariantInfo( self ):
 		for var in self.userVariants:
-			var.fillMissingInfo()
+			var.fillMissingInfo( var )
 	def getClinVar( self , **kwargs ):
 		doClinVar = kwargs.get( 'clinvar' , True )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
@@ -627,47 +624,56 @@ class charger(object):
 		print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
 
 	def getVEPviaCMD( self , **kwargs ):
-		NotImplemented
-		#defaultVEPDir = "./"
-		#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
-		#defaultVEPOutputDir = '/'.join( [ vepDir , ".vep" ] ) + "/"
-		#defaultVEPCache = '/'.join( [ vepDir , ".vep" ] ) + "/"
-		#defaultEnsemblVersion = "75"
-		#defaultVEPVersion = "80"
-		#defaultAssembly = "GRCh37"
-		#defaultFasta = '/'.join( [ vepDir , \
-		#	".vep" , \
-		#	"homo_sapiens" , \
-		#	"*" + assembly , \
-		#	"Homo_sapiens." + assembly + "." + vepVersion + ".dna.primary_assembly.fa" \
-		#] )
-		#assembly = kwargs.get( 'vepAssembly' , defaultAssembly )
-		#fasta = kwargs.get( 'vepFasta' , defaultFasta )
-		#vcfFile = kwargs.get( 'vcf' , "" )
-		#outputFile = kwargs.get( 'outputVCF' , "" )
-		#if vcfFile:
-		#	vep_command = ' '.join( [ "perl" , vepDir + , \
-		#		"--everything" , \
-		#		"--species homo_sapiens" , \
-		#		"--assembly" , assembly , \
-		#		"--fasta" , fasta , \
-		#		"--input_file" , vcfFile , \
-		#		"--output_file" , vcfTemp , \
-		#		"--dir" , vepDir + "/.vep" , \
-		#		"--dir_cache" , vepDir + "/.vep" , \
-		#		"--cache" , \
-		#		"--no_progress" , \
-		#		"--quiet" , \
-		#		"--total_length" , \
-		#		"--no_escape" , \
-		#		"--xref_refseq" , \
-		#		"--force_overwrite" , \
-		#		"--format vcf" , \
-		#		"--vcf" , \
-		#		"--no_stats" , \
-		#		"--fork 4" , \
-		#	] )
-		#	os.system(vep_command)
+		temp = open( "temp.charger.vep.txt" , "w" )
+		variants = {}
+		for var in self.userVariants:
+			variants[var.ensembl()] = 1
+		for var in variants:
+			temp.write( var.ensembl() )
+		temp.close()
+		defaultVEPDir = "./"
+		vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
+		defaultVEPCache = '/'.join( [ vepDir , ".vep" ] ) + "/"
+		vepCacheDir = kwargs.get( 'vepCache' , defaultVEPCache )
+		defaultVEPOutput = vepCacheDir + "charger.vep.vcf"
+		defaultVEPVersion = "80"
+		defaultVEPScript = vepDir + "vep" + defaultVEPVersion + "/vep/variant_effect_predictor.pl"
+		defaultAssembly = "GRCh37"
+		defaultFasta = '/'.join( [ vepDir , \
+			".vep" , \
+			"homo_sapiens" , \
+			"*" + assembly , \
+			"Homo_sapiens." + assembly + "." + vepVersion + ".dna.primary_assembly.fa" \
+		] )
+		defaultEnsemblVersion = "75"
+		assembly = kwargs.get( 'vepAssembly' , defaultAssembly )
+		fasta = kwargs.get( 'vepFasta' , defaultFasta )
+		outputFile = kwargs.get( 'outputVCF' , defaultVEPOutput )
+		vepScript = kwargs.get( 'vepScript' , defaultVEPScript )
+		if vcfFile:
+			vep_command = [ "perl" , vepScript , \
+				"--everything" , \
+				"--species homo_sapiens" , \
+				"--assembly" , assembly , \
+				"--fasta" , fasta , \
+				"--input_file" , vcfFile , \
+				"--output_file" , outputFile , \
+				"--dir" , vepCacheDir , \
+				"--dir_cache" , vepCacheDir , \
+				"--cache" , \
+				"--no_progress" , \
+				"--quiet" , \
+				"--total_length" , \
+				"--no_escape" , \
+				"--xref_refseq" , \
+				"--force_overwrite" , \
+				"--format vcf" , \
+				"--vcf" , \
+				"--no_stats" , \
+				"--fork 4" , \
+			]
+			import subprocess
+			subprocess.check_call( vep_command , shell=True )
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
@@ -685,10 +691,11 @@ class charger(object):
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
 			if var.sameGenomicVariant( vepVar ):
+				var.fillMissingInfo( vepVar )
 				var.vepVariant = vepVar
 				var.copyMostSevereConsequence()
-			if var.vepVariant:
-				var.vepAnnotations = var.vepVariant.printVariant( delim="|" , minimal=True )
+			#if var.vepVariant:
+			#	var.vepAnnotations = var.vepVariant.printVariant( delim="|" , minimal=True )
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -825,10 +832,13 @@ class charger(object):
 				varGene = var.gene
 				varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
-				varClass = var.variantClass
-				varVEPClass = "blahblah"
+				varClass = "asdfasdf"
+				if var.variantClass:
+					varClass = var.variantClass
+				varVEPClass = "asdfasdf"
 				if var.vepVariant:
 					varVEPClass = var.vepVariant.mostSevereConsequence
+				print str( varGene ) + "\t" + str( varClass ) + "\t" + str( varVEPClass )
 				if ( "missense" in varClass.lower() ) or \
 					( "missense" in varVEPClass.lower() ):
 					if varGene in self.userGeneList: # check if in gene list
@@ -938,12 +948,10 @@ class charger(object):
 		for var in self.userVariants:
 			varClass = var.variantClass
 			varGene = var.gene
-			#print varClass
 			varVEPClass = ""
 			if var.vepVariant:
 				varVEPClass = var.vepVariant.mostSevereConsequence
 			altPeptide = var.alternatePeptide
-
 			if (varClass in maf_truncations) or \
 					(varVEPClass in vep_truncations) or \
 					altPeptide == "*" or \
@@ -960,7 +968,6 @@ class charger(object):
 									var.PVS1 = False
 					else:
 						var.PSC1 = True 
-						var.addSummary( "PSC1(truncation)" )
 				else: 
 					# in case of no gene list, make all truncations PSC1
 					var.PSC1 = True
@@ -1002,14 +1009,14 @@ class charger(object):
 					if var.vepVariant:
 						if var.vepVariant.consequences:
 							for consequence in var.vepVariant.consequences:
-								CVchecked = self.checkClinVarPC( var , mod , consequence )
+								CVchecked = self.checkClinVarPC( var , mod , consequence=consequence )
 								#for pathVar in self.pathogenicVariants:
-								PVchecked = self.checkPathogenicVariants( var , mod , consequence )
+								PVchecked = self.checkPathogenicVariants( var , mod , consequence=consequence )
 								if CVchecked or PVchecked:
 									called += 1
 					else:
-						CVchecked = self.checkClinVarPC( var , mode , consequence )
-						PVchecked = self.checkPathogenicVariants( var , mod , consequence )
+						CVchecked = self.checkClinVarPC( var , mod )
+						PVchecked = self.checkPathogenicVariants( var , mod )
 						if CVchecked or PVchecked:
 							called += 1
 			if var.PS1 and mod == "PS1":
@@ -1017,8 +1024,9 @@ class charger(object):
 			if var.PM5 and mod == "PM5":
 				var.addSummary( "PM5(Peptide change at the same location of a known pathogenic change)" )
 		print mod + " found " + str(called) + " pathogenic variants"
-	def checkClinVarPC( self , var , mod , consequence ):
+	def checkClinVarPC( self , var , mod , **kwargs ):
 		called = 0
+		consequence = kwargs.get( 'consequence' , var )
 		if var.clinvarVariant:
 			clinvarVar = var.clinvarVariant
 			clin = clinvarVar.clinical
