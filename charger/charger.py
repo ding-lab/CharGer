@@ -68,6 +68,7 @@ class charger(object):
 		preVEP = []
 		vepDone = False
 		exacDone = False
+		clinvarDone = False
 		if geneListFile:
 			self.readGeneList( geneListFile , specific=specific )
 		else:
@@ -75,7 +76,7 @@ class charger(object):
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			[ vepDone , preVEP , exacDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
+			[ vepDone , preVEP , exacDone , clinvarDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
 			#exacDone=False # currently only has 1000G
 		if tsvFile:
 			exacDone = self.readTSV( tsvFile , **kwargs )
@@ -90,7 +91,7 @@ class charger(object):
 				var.reference = "-"
 			if str(var.alternate) == "0" or not var.alternate:
 				var.alternate = "-"
-		return [ vepDone , preVEP , exacDone ]
+		return [ vepDone , preVEP , exacDone , clinvarDone ]
 	def readMAF( self , inputFile , **kwargs ):
 		inFile = self.safeOpen( inputFile , 'r' )
 		codonColumn = kwargs.get( 'codon' , 48 )
@@ -183,12 +184,18 @@ class charger(object):
 #				var.clinvarVariant.clinical["description"] = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				var.clinvarVariant.uid = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				if ClinVarElsewhere != 0:
-				self.getVEPConsequences( info , var , preVEP , appendTo )
+				self.getVEPConsequences( info , var , preVEP , hasAF )
 				self.appendToList( appendTo , var )
-				sys.exit()
+				#print( var )
+				#var.printVariant( '\n\t' )
+			#sys.exit()
+		print( vepDone )
+		print( len( preVEP ) )
+		print( exacDone )
+		print( clinvarDone )
 		return [ vepDone , preVEP , exacDone , clinvarDone ]
 
-	def getVEPConsequences( self , info , var , preVEP , appendTo ):
+	def getVEPConsequences( self , info , var , preVEP , hasAF ):
 		csq = info.get( 'CSQ' , "noCSQ" )
 		if not csq == "noCSQ":
 			vepDone = True
@@ -196,19 +203,19 @@ class charger(object):
 			for thisCSQ in csq:
 				values = thisCSQ.split( "|" )
 				var.vcfInfo = values
-				aas = self.getRefAltAminoAcids( values , preVEP )
+				aas = self.getRefAltAminoAcids( values , var , preVEP )
 				exons = self.getExons( values )
 				introns = self.getIntrons( values )
 				siftStuff = self.getSIFT( values )
 				polyPhenStuff = self.getPolyPhen( values )
-				csq_terms = self.getConsequence( values , var )
+				csq_terms = self.getConsequence( values )
 				vcv = vepconsequencevariant( \
-					chromosome = chrom , \
-					start = start , \
-					stop = stop , \
-					dbsnp = record.ID , \
-					reference = reference , \
-					alternate = alt , \
+					chromosome = var.chromosome , \
+					start = var.start , \
+					stop = var.stop , \
+					dbsnp = var.dbsnp , \
+					reference = var.reference , \
+					alternate = var.alternate , \
 					gene_id = self.getVCFKeyIndex( values , "Gene" ) , \
 					transcriptCodon = self.getVCFKeyIndex( values , "Feature" ) , \
 					consequence_terms = csq_terms , \
@@ -238,7 +245,7 @@ class charger(object):
 				self.getGMAF( values , var , hasAF )
 				self.getCLIN_SIG( values , var )
 
-	def getRefAltAminoAcids( self , values , preVEP ):
+	def getRefAltAminoAcids( self , values , var , preVEP ):
 		aas = [None , None] 
 		if self.getVCFKeyIndex( values , "Amino_acids" ): #8 => Amino_acids
 			aas = self.getVCFKeyIndex( values , "Amino_acids" ).split("/") 
@@ -341,7 +348,6 @@ class charger(object):
 
 	def getCLIN_SIG( self , values , var ):
 		clinical = self.getVCFKeyIndex( values , "CLIN_SIG" )
-		print( clinical )
 		description = ""
 		if clinical:
 			clinvarDone = True
@@ -606,6 +612,8 @@ class charger(object):
 		self.getClinVar( **kwargs )
 		self.printRunTime( "ClinVar" , self.runTime( t ) )
 		t = time.time()
+		de = kwargs.get( 'exac' , "ASDF" )
+		print( de )
 		self.getExAC( **kwargs )
 		self.printRunTime( "exac" , self.runTime( t ) )
 		t = time.time()
@@ -618,7 +626,7 @@ class charger(object):
 	def getClinVar( self , **kwargs ):
 		macClinVarTSV = kwargs.get( 'macClinVarTSV' , None )
 		macClinVarVCF = kwargs.get( 'macClinVarVCF' , None )
-		doClinVar = kwargs.get( 'clinvar' , True )
+		doClinVar = kwargs.get( 'clinvar' , False )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
 		if doClinVar:
@@ -649,12 +657,12 @@ class charger(object):
 		sys.exit()
 	def getExAC( self , **kwargs ):
 		exacVCF = kwargs.get( 'exacVCF' , None )
-		doExAC = kwargs.get( 'exac' , True )
+		doExAC = kwargs.get( 'exac' , False )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'threshold' , 0 )
 		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
-		if doExAC and not alleleFrequencyColumn:
-			sys.stdout.write( "charger::getExAC" )
+		if doExAC: # and not alleleFrequencyColumn:
+			sys.stdout.write( "charger::getExAC " )
 			if exacVCF:
 				print( "from local file - " + exacVCF )
 				exac = exacparser( )
@@ -683,7 +691,7 @@ class charger(object):
 			elen = len(entries.keys())
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
-		doVEP = kwargs.get( 'vep' , True )
+		doVEP = kwargs.get( 'vep' , False )
 		preVEP = kwargs.get( 'prevep' , [] )
 		doREST = kwargs.get( 'rest' , False )
 		vepDir = kwargs.get( 'vepDir' , "" )

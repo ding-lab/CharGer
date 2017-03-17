@@ -20,13 +20,14 @@ def parseArgs( argv ):
 	helpText += "  -w output as HTML (flag)\n"
 	helpText += "  -k annotate input (flag)\n"
 	helpText += "  --skip-url-test skip url testing when creating links\n"
-	helpText += "Suppress accession of data:\n"
-	helpText += "  -l suppress ClinVar (flag)\n"
-	helpText += "  -x suppress ExAC (flag)\n"
-	helpText += "  -E suppress VEP (flag)\n"
-	helpText += "  -t suppress TCGA cancer types (flag)\n"
+	helpText += "Access data:\n"
+	helpText += "  -l ClinVar (flag)\n"
+	helpText += "  -x ExAC (flag)\n"
+	helpText += "  -E VEP (flag)\n"
+	helpText += "  -t TCGA cancer types (flag)\n"
+	helpText += "Suppress data or overrides:\n"
 	helpText += "  -O override with ClinVar description (flag)\n"
-	helpText += "  -D disease specific (flag)\n"
+	helpText += "  -D suppress needing disease specific (flag)\n"
 	helpText += "Cross-reference data files:\n"
 	helpText += "  -z pathogenic variants .vcf\n"
 	helpText += "  -e expression matrix file .tsv\n"
@@ -96,10 +97,10 @@ def parseArgs( argv ):
 	sampleColumn = None #21
 	alleleFrequencyColumn = None #33
 	specific = True
-	tcga = True
-	clinvar = True
-	exac = True
-	vep = True
+	tcga = False
+	clinvar = False
+	exac = False
+	vep = False
 	asHTML = False
 	override = False
 	recurrenceThreshold = 2
@@ -117,11 +118,16 @@ def parseArgs( argv ):
 		#haven't used ijquy
 		charCommands = "DEtlxhwOkX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:L:" 
 		opts, args = getopt.getopt( argv , charCommands , \
-		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
-		"peptideChange=" , "codon=" , "alleleFrequency=" , "geneList=" , "diseases=" , \
-		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
-		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" , "vep-dir=" , "vep-cache" , \
-		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , "skip-url-test" ] )
+		["maf=" , "vcf=" , "tsv=" , "output=" , "use-tcga" , \
+		"run-vep" , "run-clinvar" , "run-exac" , \
+		"vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
+		"peptideChange=" , "codon=" , "alleleFrequency=" , \
+		"geneList=" , "diseases=" , "expression=" , \
+		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
+		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" , \
+		"vep-dir=" , "vep-cache" , "exac-vcf=" , \
+		"mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
+		"skip-url-test" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -191,14 +197,14 @@ def parseArgs( argv ):
 			diseasesFile = arg
 		elif opt in ( "-D" , "--diseaseSpecific" ):
 			specific = False
-		elif opt in ( "-t" , "--notcga" ):
-			tcga = False
-		elif opt in ( "-l" , "--noclinvar" ):
-			clinvar = False
-		elif opt in ( "-E" , "--noVEP" ):
-			vep = False
-		elif opt in ( "-x" , "--noexac" ):
-			exac = False
+		elif opt in ( "-t" , "--use-tcga" ):
+			tcga = True
+		elif opt in ( "-l" , "--run-clinvar" ):
+			clinvar = True
+		elif opt in ( "-E" , "--run-VEP" ):
+			vep = True
+		elif opt in ( "-x" , "--run-exac" ):
+			exac = True
 		elif opt in ( "-w" , "--html" ):
 			asHTML = True
 		elif opt in ( "-O" , "--override" ):
@@ -360,7 +366,7 @@ def main( argv ):
 			doVEP = False
 	if doExAC:
 		if exacDone:
-			doExac = False
+			doExAC = False
 
 	if doClinVar:
 		if clinvarDone:
