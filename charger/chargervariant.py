@@ -71,6 +71,94 @@ class chargervariant(mafvariant):
 		self.clinvarVariant = kwargs.get( 'clinvarvariant' , clinvarvariant() )
 		self.transvarVariant = kwargs.get( 'transvarvariant' , None )
 
+	def annotations( self , delim = "\t" ):
+		line = delim.join( [ self.gene , \
+							 self.chromosome , \
+							 self.start , \
+							 self.stop , \
+							 self.reference , \
+							 self.alternate , \
+							 self.variantClass , \
+							 self.HGVSg() , \
+							 self.HGVSc() , \
+							 self.HGVSp() , \
+							 self.alleleFrequency , \
+							 self.mostSevereConsequence() , \
+							 self.positiveEvidence() , \
+							 self.negativeEvidence() , \
+							 self.pathogenicScore , \
+							 self.benignScore , \
+							 self.chargerScore , \
+							 self.clinicalDescription() , \
+							 self.pathogenicity( system = "ACMG" ) , \
+							 self.pathogenicity( system = "CharGer" ) , \
+							 self.linkPubMed() , \
+							 self.traits( delim = '|' ) , \
+							 self.callSummary( delim = ' -- ' ) ] )
+		return line
+
+	def callSummary( self , delim = " -- " ):
+		return delim.join( self.callSummary )
+
+	def pathogenicity( self , system = "ACMG" ):
+		try:
+			return self.pathogenicity[system]
+		except:
+			return "NA" 
+
+	def clinicalDescription( self ):
+		try:
+			return self.clinical["description"]
+		except:
+			return "NA"
+
+	def traits( self , delim = '|' ):
+		try:
+			return self.clinvarVariant.getTraits( delim )
+		except:
+			return "NA"
+
+	def linkPubMed( self ):
+		try:
+			return self.clinvarVariant.linkPubMed()
+		except:
+			return "NA"
+
+	def mostSevereConsequence( self ):
+		try:
+			return self.vepVariant.mostSevereConsequence
+		except:
+			return "NA"
+		
+	@classmethod
+	def annotationsHeader( cls , delim = "\t" ):
+		delim = "\tCharGer_"
+		line = "CharGer_"
+		line += delim.join( [ "gene" , \
+							  "chromosome" , \
+							  "start" , \
+							  "stop" , \
+							  "reference" , \
+							  "alternate" , \
+							  "variant_class" , \
+							  "HGVSg" , \
+							  "HGVSc" , \
+							  "HGVSp" , \
+							  "allele_frequency" , \
+							  "VEP_most_severe_consequence" , \
+							  "positive_evidence" , \
+							  "negative_evidence" , \
+							  "pathogenic_score" , \
+							  "benign_score" , \
+							  "cumulative_score" , \
+							  "ClinVar_clinical_description" , \
+							  "pathogenicity_call_ACMG" , \
+							  "pathogenicity_call_CharGer" , \
+							  "PubMed_Link" , \
+							  "ClinVar_traits" , \
+							  "call_summary" ] )
+		return line
+
 	def copyInfo( self , other ):
 		self.vepAnnotations = other.vepAnnotations
 		self.vcfHeaders = other.vcfHeaders
