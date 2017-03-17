@@ -1,22 +1,25 @@
-#!/usr/bin/python
+#!/bin/python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.0 - 2015*12
+# version: v0.1.0 - 2015*12
 
 import sys
 import getopt
-import charger
+from charger import charger
 import time
 
 def parseArgs( argv ):
-	helpText = "python main.py" + " "
+	helpText = "Usage: "
+	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"
 	helpText += "  -m Standard .maf\n"
 	helpText += "  -f Standard .vcf\n"
-	helpText += "  -T Custom .tsv\n\n"
+	helpText += "  -T Custom .tsv\n"
 	helpText += "Output:\n"
 	helpText += "  -o output file\n"
 	helpText += "  -w output as HTML (flag)\n"
+	helpText += "  -k annotate input (flag)\n"
+	helpText += "  --skip-url-test skip url testing when creating links\n"
 	helpText += "Suppress accession of data:\n"
 	helpText += "  -l suppress ClinVar (flag)\n"
 	helpText += "  -x suppress ExAC (flag)\n"
@@ -33,6 +36,18 @@ def parseArgs( argv ):
 	helpText += "  -a assumed de novo file .?\n"
 	helpText += "  -c co-segregation file .?\n"
 	helpText += "  -H HotSpot3D clusters file .clusters\n"
+	helpText += "Local tools (suppresses ReST too):\n"
+	helpText += "  --vep-dir Path to VEP directory\n"
+	helpText += "  --vep-cache Path to VEP cache directory\n"
+	helpText += "  --vep-release Ensembl release version (default = 74)\n"
+	helpText += "  --grch GRCh verion (default = 37)\n"
+	helpText += "  --reference-fasta VEP reference fasta\n"
+	helpText += "Local databases (suppresses ReST too):\n"
+	helpText += "  --exac-vcf ExAC vcf.gz\n"
+	#helpText += "  --clinvar-tsv ClinVar (.tsv.gz download)\n"
+	#helpText += "  --clinvar-vcf ClinVar (.vcf.gz download)\n"
+	#helpText += "  --mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)\n"
+	helpText += "  --mac-clinvar-vcf ClinVar from MacArthur lab (clinvar_alleles.vcf.gz)\n"
 	helpText += "ReST batch sizes:\n"
 	helpText += "  -v VEP\n"
 	helpText += "  -b ClinVar summary\n"
@@ -53,6 +68,7 @@ def parseArgs( argv ):
 	helpText += "  -F allele frequency\n"
 	helpText += "\n"
 	helpText += "  -h this message\n"
+	helpText += "\n"
 
 	mafFile = ""
 	vcfFile = ""
@@ -89,13 +105,23 @@ def parseArgs( argv ):
 	recurrenceThreshold = 2
 	clustersFile = ""
 	pathogenicVariantsFile = ""
+	annotateInput = ""
+	vepDir = ""
+	vepCache = ""
+	exacVCF = ""
+	macClinVarVCF = ""
+	macClinVarTSV = ""
+	skipURLTest = False
+
 	try:
-		#opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:" , \
-		opts, args = getopt.getopt( argv , "DEtlxhwOX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:L:" , \
+		#haven't used ijquy
+		charCommands = "DEtlxhwOkX:s:A:R:S:P:M:G:m:f:T:o:v:b:B:p:C:F:g:d:e:n:a:c:r:H:z:L:" 
+		opts, args = getopt.getopt( argv , charCommands , \
 		["maf=" , "vcf=" , "tsv=" , "output=" , "vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" , "alleleFrequency=" , "geneList=" , "diseases=" , \
 		"expression=" , "deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
-		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" ] )
+		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" , "vep-dir=" , "vep-cache" , \
+		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , "skip-url-test" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -181,6 +207,28 @@ def parseArgs( argv ):
 			recurrenceThreshold = float( arg )
 		elif opt in ( "-H" , "--hotspot3d" ):
 			clustersFile = arg
+		elif opt in ( "-k" , "--annotate" ):
+			annotateInput = True
+		elif opt in ( "--vep-dir" ):
+			vepDir = arg
+		elif opt in ( "--vep-cache" ):
+			vepCache = arg
+		elif opt in ( "--exac-vcf" ):
+			exacVCF = arg
+		elif opt in ( "--max-clinvar-vcf" ):
+			macClinVarVCF = arg
+		elif opt in ( "--max-clinvar-tsv" ):
+			macClinVarTSV = arg
+		elif opt in ( "--skip-url-test" ):
+			skipURLTest = True
+	if not mafFile and not vcfFile and not tsvFile:
+		print( "\nCharGer ERROR: must provide an input file\n" )
+		print( helpText )
+		sys.exit( )
+	if annotateInput and asHTML:
+		print( "\nCharGer ERROR: cannot output as .html and annotate input file at the same time\n" )
+		print( helpText )
+		sys.exit( )
 	return { "maf" : mafFile , \
 	"vcf" : vcfFile , \
 	"tsv" : tsvFile , \
@@ -216,6 +264,13 @@ def parseArgs( argv ):
 	"alleleFrequencyColumn" : alleleFrequencyColumn, \
 	"recurrenceThreshold" : recurrenceThreshold , \
 	"clustersFile" : clustersFile , \
+	"annotate" : annotateInput , \
+	"vepDir" : vepDir , \
+	"vepCache" : vepCache , \
+	"exacVCF" : exacVCF , \
+	"macClinVarTSV" : macClinVarTSV , \
+	"macClinVarVCF" : macClinVarVCF , \
+	"skipURLTest" : skipURLTest , \
 	}
 
 ### main ### 
@@ -262,12 +317,19 @@ def main( argv ):
 	recurrenceThreshold = values["recurrenceThreshold"]
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
+	annotateInput = values["annotate"]
+	vepDir = values["vepDir"]
+	vepCache = values["vepCache"]
+	exacVCF = values["exacVCF"]
+	macClinVarTSV = values["macClinVarTSV"]
+	macClinVarVCF = values["macClinVarVCF"]
+	skipURLTest = values["skipURLTest"]
 	
 	t1 = time.time()
 
 	CharGer = charger.charger()
 
-	[ vepDone , preVEP , exacDone ] = CharGer.getInputData( maf=mafFile , \
+	[ vepDone , preVEP , exacDone , clinvarDone ] = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
 	tsv=tsvFile , \
 	pathogenicVariants=pathogenicVariantsFile , \
@@ -300,6 +362,10 @@ def main( argv ):
 		if exacDone:
 			doExac = False
 
+	if doClinVar:
+		if clinvarDone:
+			doClinVar = False
+
 	t2 = time.time() 
 
 	CharGer.getExternalData( clinvar=doClinVar , \
@@ -310,6 +376,11 @@ def main( argv ):
 	searchBatchSize=clinvarSearchBatchSize , \
 	allOptions=False , \
 	maxPost=vepBatchSize , \
+	vepDir=vepDir , \
+	vepCache=vepCache , \
+	exacVCF=exacVCF , \
+	macClinVarTSV=macClinVarTSV , \
+	macClinVarVCF=macClinVarVCF , \
 	#timeout=(20,20) , \
 	)
 
@@ -359,7 +430,10 @@ def main( argv ):
 
 	CharGer.printClassifications( )
 
-	CharGer.writeSummary( outputFile , delim='\t' , html=asHTML )
+	CharGer.writeSummary( outputFile , delim='\t' , \
+						  html=asHTML , annotate = annotateInput , \
+						  maf = mafFile , vcf = vcfFile , tsv = tsvFile , \
+						  skipURLTest = skipURLTest )
 
 
 	#CharGer.pdfSummary( outputFile )
