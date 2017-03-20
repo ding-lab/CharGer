@@ -19,7 +19,7 @@ def parseArgs( argv ):
 	helpText += "  -o output file\n"
 	helpText += "  -w output as HTML (flag)\n"
 	helpText += "  -k annotate input (flag)\n"
-	helpText += "  --skip-url-test skip url testing when creating links\n"
+	helpText += "  --run-url-test skip url testing when creating links\n"
 	helpText += "Access data:\n"
 	helpText += "  -l ClinVar (flag)\n"
 	helpText += "  -x ExAC (flag)\n"
@@ -49,6 +49,9 @@ def parseArgs( argv ):
 	#helpText += "  --clinvar-vcf ClinVar (.vcf.gz download)\n"
 	#helpText += "  --mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)\n"
 	helpText += "  --mac-clinvar-vcf ClinVar from MacArthur lab (clinvar_alleles.vcf.gz)\n"
+	helpText += "Filters:\n"
+	helpText += "  --rare Allele frequency threshold for rare/common (default = 1, process variant with any frequency):\n"
+	helpText += "  --vcf-any-filter Allow variants that do not pass all filters in .vcf input (flag)\n"
 	helpText += "ReST batch sizes:\n"
 	helpText += "  -v VEP\n"
 	helpText += "  -b ClinVar summary\n"
@@ -112,7 +115,9 @@ def parseArgs( argv ):
 	exacVCF = ""
 	macClinVarVCF = ""
 	macClinVarTSV = ""
-	skipURLTest = False
+	doURLTest = True
+	thresholdAF = 1
+	anyFilter = False
 
 	try:
 		#haven't used ijquy
@@ -124,10 +129,11 @@ def parseArgs( argv ):
 		"peptideChange=" , "codon=" , "alleleFrequency=" , \
 		"geneList=" , "diseases=" , "expression=" , \
 		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
-		"recurrence=" , "hotspot3d=" , "pathogenicVariants=" , \
+		"recurrence=" , "rare=" , "vcf-any-filter" , \
+		"hotspot3d=" , "pathogenicVariants=" , \
 		"vep-dir=" , "vep-cache" , "exac-vcf=" , \
 		"mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
-		"skip-url-test" ] )
+		"run-url-test" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -211,6 +217,10 @@ def parseArgs( argv ):
 			override = True
 		elif opt in ( "-r" , "--recurrence" ):
 			recurrenceThreshold = float( arg )
+		elif opt in ( "--rare" ):
+			thresholdAF = float( arg )
+		elif opt in ( "--vcf-any-filter" ):
+			anyFilter = True
 		elif opt in ( "-H" , "--hotspot3d" ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
@@ -225,8 +235,8 @@ def parseArgs( argv ):
 			macClinVarVCF = arg
 		elif opt in ( "--max-clinvar-tsv" ):
 			macClinVarTSV = arg
-		elif opt in ( "--skip-url-test" ):
-			skipURLTest = True
+		elif opt in ( "--run-url-test" ):
+			doURLTest = False
 	if not mafFile and not vcfFile and not tsvFile:
 		print( "\nCharGer ERROR: must provide an input file\n" )
 		print( helpText )
@@ -269,6 +279,8 @@ def parseArgs( argv ):
 	"variantClassificationColumn" : variantClassificationColumn, \
 	"alleleFrequencyColumn" : alleleFrequencyColumn, \
 	"recurrenceThreshold" : recurrenceThreshold , \
+	"thresholdAF" : thresholdAF , \
+	"anyFilter" : anyFilter , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
 	"vepDir" : vepDir , \
@@ -276,7 +288,7 @@ def parseArgs( argv ):
 	"exacVCF" : exacVCF , \
 	"macClinVarTSV" : macClinVarTSV , \
 	"macClinVarVCF" : macClinVarVCF , \
-	"skipURLTest" : skipURLTest , \
+	"doURLTest" : doURLTest , \
 	}
 
 ### main ### 
@@ -321,6 +333,8 @@ def main( argv ):
 	asHTML = values["html"]
 	override = values["override"]
 	recurrenceThreshold = values["recurrenceThreshold"]
+	thresholdAF = values["thresholdAF"]
+	anyFilter = values["anyFilter"]
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
@@ -329,7 +343,7 @@ def main( argv ):
 	exacVCF = values["exacVCF"]
 	macClinVarTSV = values["macClinVarTSV"]
 	macClinVarVCF = values["macClinVarVCF"]
-	skipURLTest = values["skipURLTest"]
+	doURLTest = values["doURLTest"]
 	
 	t1 = time.time()
 
@@ -358,7 +372,9 @@ def main( argv ):
 	codon=codonColumn , \
 	peptideChange=peptideChangeColumn , \
 	variantClassification=variantClassificationColumn , \
-	alleleFrequency=alleleFrequencyColumn \
+	alleleFrequency=alleleFrequencyColumn , \
+	thresholdAF = thresholdAF , \
+	anyFilter = anyFilter , \
 	)
 
 	if doVEP:
@@ -387,13 +403,14 @@ def main( argv ):
 	exacVCF=exacVCF , \
 	macClinVarTSV=macClinVarTSV , \
 	macClinVarVCF=macClinVarVCF , \
+	thresholdAF = thresholdAF , \
 	#timeout=(20,20) , \
 	)
 
 	t3 = time.time() 
 
-	rareThreshold = 0.0005
-	commonThreshold = 0.05
+	rareThreshold = 0.0005 #from germline studies
+	commonThreshold = 0.05 #from ACMG suggestion
 	minimumEvidence = 2
 
 	CharGer.PVS1( )
@@ -434,12 +451,12 @@ def main( argv ):
 
 	t5 = time.time() 
 
-	CharGer.printClassifications( )
+	#CharGer.printClassifications( )
 
 	CharGer.writeSummary( outputFile , delim='\t' , \
 						  html=asHTML , annotate = annotateInput , \
 						  maf = mafFile , vcf = vcfFile , tsv = tsvFile , \
-						  skipURLTest = skipURLTest )
+						  doURLTest = doURLTest )
 
 
 	#CharGer.pdfSummary( outputFile )

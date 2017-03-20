@@ -128,6 +128,8 @@ class charger(object):
 		else:
 			inFile = vcf.Reader( open( inputFile , 'r' ) )
 		appendTo = kwargs.get( "appendTo" , "user" )
+		thresholdAF = kwargs.get( "thresholdAF" , 1 )
+		anyFilter = kwargs.get( "anyFilter" , False )
 		preVEP = []
 		vepDone = False
 		exacDone = False
@@ -136,11 +138,16 @@ class charger(object):
 		self.vcfHeaderInfo = []
 		metadata = inFile.metadata
 		#print( str( metadata ) )
+		failedFilter = 0
+		failedAF = 0
 		[ vepDone , exacDone , clinvarDone ] = self.readMetaData( metadata , inFile.infos , vepInfo )
 		for record in inFile:
 			chrom = record.CHROM
 			reference = record.REF
 			alternates = record.ALT
+			if anyFilter and record.FILTER != "PASS":
+				failedFilter += 1
+				continue
 			start = record.start + 1 #1-base beginning of ref
 			stop = record.end #0-base ending of ref
 			info = record.INFO
@@ -173,27 +180,45 @@ class charger(object):
 					parentVariant=parentVar
 				)
 
-				hasAF = False
-				var.alleleFrequency = info.get( 'AF' , "noAF" )
-				if ( not var.alleleFrequency == "noAF" ):
-					afs = var.alleleFrequency[alti]
-					var.alleleFrequency = afs
-					hasAF = True
+				#hasAF = False
+				#[ hasAF , skip ] = self.getAF( info , var , thresholdAF , alti )
+				#print( str( var.alleleFrequency ) )
+				#if skip:
+				#	continue
 #				hasClinVar = False
 #				ClinVarElsewhere = info.get( 'clinvar_measureset_id' , 0 )
 #				var.clinvarVariant.clinical["description"] = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				var.clinvarVariant.uid = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				if ClinVarElsewhere != 0:
+				hasAF = False
 				self.getVEPConsequences( info , var , preVEP , hasAF )
+				if self.skipIfHighAF( var , thresholdAF ):
+					failedAF += 1
+					continue
+					
 				self.appendToList( appendTo , var )
-				#print( var )
-				#var.printVariant( '\n\t' )
-			#sys.exit()
-		print( vepDone )
-		print( len( preVEP ) )
-		print( exacDone )
-		print( clinvarDone )
+		totalVars = len( self.userVariants ) + failedFilter + failedAF
+		print(  "Skipping: " + str( failedFilter ) + \
+				" for filters and " + str( failedAF ) + " for AF of " + \
+				str( totalVars ) )
 		return [ vepDone , preVEP , exacDone , clinvarDone ]
+
+	def getAF( self , info , var , thresholdAF , alti ):
+		hasAF = False
+		skip = False
+		var.alleleFrequency = info.get( 'AF' , "noAF" )
+		if ( not var.alleleFrequency == "noAF" ):
+			afs = var.alleleFrequency[alti]
+			var.alleleFrequency = afs
+			hasAF = True
+		return [ hasAF , skip ]
+
+	def skipIfHighAF( self , var , thresholdAF ):
+		if var.alleleFrequency != None:
+			if var.isFrequentAllele( thresholdAF ):
+				return True
+		return False
+		
 
 	def getVEPConsequences( self , info , var , preVEP , hasAF ):
 		csq = info.get( 'CSQ' , "noCSQ" )
@@ -242,7 +267,10 @@ class charger(object):
 				)
 				var.vepVariant.consequences.append( vcv )
 				self.getMostSevereConsequence( var )
+				hasAF = self.getExAC_MAF( values , var , hasAF )
 				self.getGMAF( values , var , hasAF )
+				if not var.alleleFrequency:
+					var.alleleFrequency = 0
 				self.getCLIN_SIG( values , var )
 
 	def getRefAltAminoAcids( self , values , var , preVEP ):
@@ -310,9 +338,35 @@ class charger(object):
 			csq_terms = self.getVCFKeyIndex( values , "Consequence" ).split( "&" )
 		return csq_terms
 
+	def getExAC_MAF( self , values , var , hasAF ):
+		if ( not hasAF ):
+			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
+			if emaf:
+				parts = emaf.split( ":" )
+				if len( parts ) > 1:
+					if parts[0] == var.alternate:
+						af = parts[1].split( "&" )
+						var.alleleFrequency = af[0]
+						return True
+			else:
+				var.alleleFrequency = 0
+				return True
+		return False
+
 	def getGMAF( self , values , var , hasAF ):
 		if ( not hasAF ):
-			var.alleleFrequency = self.getVCFKeyIndex( values , "GMAF" )
+			gmaf = self.getVCFKeyIndex( values , "GMAF" )
+			if gmaf:
+				parts = gmaf.split( ":" )
+				if len( parts ) > 1:
+					if parts[0] == var.alternate:
+						af = parts[1].split( "&" )
+						var.alleleFrequency = af[0]
+						return True
+			else:
+				var.alleleFrequency = 0
+				return True
+		return False
 
 	def readMetaData( self , metadata , infos , vepInfo ):
 		vepDone = False
@@ -573,6 +627,7 @@ class charger(object):
 			print "CharGer::readExpression Error: bad expression file"
 
 	def readGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
+		print( "CharGer::readGeneList" )
 		specific = kwargs.get( 'specific', True )
 		try:
 			inFile = self.safeOpen( inputFile , 'r' , warning=True )
@@ -585,7 +640,7 @@ class charger(object):
 					disease = charger.allDiseases
 				mode_inheritance = fields[2].rstrip()
 				self.userGeneList[gene][disease] = mode_inheritance
-				print '\t'.join( [ gene , disease , mode_inheritance ] )
+				#print '\t'.join( [ gene , disease , mode_inheritance ] )
 		except:
 			print "CharGer::readGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
@@ -613,7 +668,7 @@ class charger(object):
 		self.printRunTime( "ClinVar" , self.runTime( t ) )
 		t = time.time()
 		de = kwargs.get( 'exac' , "ASDF" )
-		print( de )
+		#print( de )
 		self.getExAC( **kwargs )
 		self.printRunTime( "exac" , self.runTime( t ) )
 		t = time.time()
@@ -648,18 +703,20 @@ class charger(object):
 					self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
 					#self.clinvarVariants.update( varsBoth["clinvarVariants"] )
 					#self.userVariants[varsStart:varsEnd] = self.matchClinVar( varsSet , clinvarsSet )
+
 	def getMacClinVarTSV( self , tsvfile ):
 		print( "TODO: add macClinVarTSV read in" )
-		
 		sys.exit()
+
 	def getMacClinVarVCF( self , vcffile ):
 		print( "TODO: add macClinVarVCF read in" )
 		sys.exit()
+
 	def getExAC( self , **kwargs ):
 		exacVCF = kwargs.get( 'exacVCF' , None )
 		doExAC = kwargs.get( 'exac' , False )
 		useHarvard = kwargs.get( 'harvard' , True )
-		threshold = kwargs.get( 'threshold' , 0 )
+		threshold = kwargs.get( 'threshold' , 0.0005 )
 		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		if doExAC: # and not alleleFrequencyColumn:
 			sys.stdout.write( "charger::getExAC " )
@@ -669,7 +726,7 @@ class charger(object):
 				exacQueries = self.getUniqueGenomicVariantList( self.userVariants )
 				entries = exac.searchVCF( vcf = exacVCF , queries = exacQueries )
 			else:
-				print( "through BioMine" )
+				print( "through BioMine ReST" )
 				common = 0
 				rare = 0
 				totalVars = len( self.userVariants )
@@ -697,9 +754,9 @@ class charger(object):
 		vepDir = kwargs.get( 'vepDir' , "" )
 		vepCache = kwargs.get( 'vepCache' , "" )
 		if doVEP:
-			sys.stdout.write( "charger::getVEP" )
+			sys.stdout.write( "charger::getVEP " )
 			if doREST or ( not doREST and not vepDir and not vepCache ):
-				print( "through BioMine" )
+				print( "through BioMine ReST" )
 				self.getVEPviaREST( **kwargs )
 			if vepDir and vepCache:
 				print( "from local tool" )
@@ -946,7 +1003,7 @@ class charger(object):
 				varVEPClass = "asdfasdf"
 				if var.vepVariant:
 					varVEPClass = var.vepVariant.mostSevereConsequence
-				print str( varGene ) + "\t" + str( varClass ) + "\t" + str( varVEPClass )
+				#print str( varGene ) + "\t" + str( varClass ) + "\t" + str( varVEPClass )
 				if ( "missense" in varClass.lower() ) or \
 					( "missense" in varVEPClass.lower() ):
 					if varGene in self.userGeneList: # check if in gene list
@@ -1067,9 +1124,12 @@ class charger(object):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if ( "dominant" in self.userGeneList[varGene][varDisease].lower() or \
-							"dominant" in self.userGeneList[varGene][charger.allDiseases].lower() ):
-							var.PVS1 = True # if call is true then check expression effect
+						if varDisease in self.userGeneList[varGene]:
+							if "dominant" in self.userGeneList[varGene][varDisease].lower():
+								var.PVS1 = True # if call is true then check expression effect
+						if charger.allDiseases in self.userGeneList[varGene]:
+							if "dominant" in self.userGeneList[varGene][charger.allDiseases].lower():
+								var.PVS1 = True # if call is true then check expression effect
 							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
 								varSample = var.sample
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
@@ -1084,9 +1144,12 @@ class charger(object):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if ( "dominant" in self.userGeneList[varGene][varDisease].lower() or \
-							"dominant" in self.userGeneList[varGene][charger.allDiseases].lower() ):
-							var.PM4 = True
+						if varDisease in self.userGeneList[varGene]:
+							if "dominant" in self.userGeneList[varGene][varDisease].lower():
+								var.PM4 = True
+						if charger.allDiseases in self.userGeneList[varGene]:
+							if "dominant" in self.userGeneList[varGene][charger.allDiseases].lower():
+								var.PM4 = True
 					else: 
 						var.PPC1 = True
 				else: 
@@ -1352,7 +1415,7 @@ class charger(object):
 		asHTML = kwargs.get( 'html' , False )
 		print( "write to " + outFile )
 		annotateInput = kwargs.get( 'annotate' , False )
-		skipURLTest = kwargs.get( 'skipURLTest' , False )
+		skipURLTest = kwargs.get( 'skipURLTest' , True )
 		if skipURLTest:
 			print( "charger::writeSummary Warning: skipping pubmed link tests" )
 		else:
@@ -1515,13 +1578,17 @@ class charger(object):
 
 	def getVCFKeyIndex( self , values , field ):
 		if field in self.vcfKeyIndex:
-			return values[self.vcfKeyIndex[field]]
+			if self.vcfKeyIndex[field] < len( values ):
+				return values[self.vcfKeyIndex[field]]
 		return None
 
 	@staticmethod
 	def appendStr( array, value ):
 		try:
-			array.append( str( value ) )
+			if value == None or value == "":
+				array.append( "NA" )
+			else:
+				array.append( str( value ) )
 		except:
 			print "CharGer Warning: failed to append a value\n"
 			array.append( "NA" )

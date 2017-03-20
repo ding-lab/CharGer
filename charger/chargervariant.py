@@ -176,21 +176,21 @@ class chargervariant(mafvariant):
 			if self.clinvarVariant:
 				self.clinvarVariant.printVariant( delim , **kwargs )
 	def fillMissingInfo( self , copy ):
-		print( "FMI: before" )
-		self.printVariant( ", " )
+		#print( "FMI: before" )
+		#self.printVariant( ", " )
 		super( mafvariant , self ).fillMissingInfo( copy )
-		self.printVariant( ", " )
+		#self.printVariant( ", " )
 		if self.vepVariant or copy.vepVariant:
 			if not self.vepVariant:
 				self.vepVariant = copy.vepVariant
 			self.vepVariant.fillMissingInfo( copy )
-		self.printVariant( ", " )
+		#self.printVariant( ", " )
 		if self.clinvarVariant or copy.clinvarVariant:
 			if not self.clinvarVariant:
 				self.clinvarVariant = copy.clinvarVariant
 			self.clinvarVariant.fillMissingInfo( copy )
-		print( "FMI: after clinvar" )
-		self.printVariant( ", " )
+		#print( "FMI: after clinvar" )
+		#self.printVariant( ", " )
 	def copyMostSevereConsequence( self ):
 		for consequence in self.vepVariant.consequences:
 			if self.vepVariant.mostSevereConsequence in consequence.terms:
@@ -214,10 +214,10 @@ class chargervariant(mafvariant):
 				if consequence.transcriptCodon:
 					self.vepVariant.transcriptCodon = consequence.transcriptCodon
 					self.transcriptCodon = consequence.transcriptCodon
-				print self.proteogenomicVar()
-				print self.vepVariant.proteogenomicVar()
-				print consequence.proteogenomicVar()
-				print ""
+				#print self.proteogenomicVar()
+				#print self.vepVariant.proteogenomicVar()
+				#print consequence.proteogenomicVar()
+				#print ""
 				if consequence.canonical:
 					return
 	def check( self , mod ):
@@ -469,8 +469,6 @@ class chargervariant(mafvariant):
 		self.benignScore += 6*self.countBenignStrong()
 		self.benignScore += 8 if self.BA1 else 0
 		self.chargerScore = self.pathogenicScore - self.benignScore
-		if self.chargerScore < 0:
-			self.chargerScore = 0
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		self.compositeScore( **kwargs )
 	def compositeScore( self , **kwargs ):
