@@ -878,14 +878,14 @@ class charger(object):
 
 ### Evidence levels ### 
 
-# any level ending with C (ex. PSC1, PPC1) are CharGer-invented modules #
+# any level ending with C (ex. PMC1, PPC1) are CharGer-invented modules #
 
 ##### Very Strong #####
 	def PVS1( self , expressionThreshold = 0.2 ):
 		print "CharGer module PVS1"
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
-		print "- run concurrently with PSC1, PM4, and PPC1 - "
+		print "- run concurrently with PMC1, PM4, and PPC1 - "
 		self.runIndelModules()
 		
 
@@ -921,8 +921,8 @@ class charger(object):
 						var.PS4 = True
 						var.addSummary( "PS4(Prevalence significantly greater than controls)" )
 
-	def PSC1( self ):
-		print "CharGer module PSC1"
+	def PMC1( self ):
+		print "CharGer module PMC1"
 		print "Truncations of other, not-specificied genes"
 
 ##### Moderate #####
@@ -939,11 +939,11 @@ class charger(object):
 					fields = line.split('\t')
 					recurrence = fields[6]
 					if recurrence >= recurrenceThreshold:
-						chromosome = fields[9]
-						start = fields[10]
-						stop = fields[11]
-						reference = fields[12]
-						alternate = fields[13]
+						chromosome = fields[7]
+						start = fields[8]
+						stop = fields[9]
+						reference = fields[10]
+						alternate = fields[11]
 						hotspot3dVar = mafvariant( 
 							chromosome = chromosome , 
 							start = start , 
@@ -1135,10 +1135,10 @@ class charger(object):
 								if self.userExpression[varSample][varGene] >= expressionThreshold:
 									var.PVS1 = False
 					else:
-						var.PSC1 = True 
+						var.PMC1 = True 
 				else: 
-					# in case of no gene list, make all truncations PSC1
-					var.PSC1 = True
+					# in case of no gene list, make all truncations PMC1
+					var.PMC1 = True
 			elif (varClass in lenShift \
 				or varClass in vep_inframe):
 				if self.userGeneList:
@@ -1153,13 +1153,13 @@ class charger(object):
 					else: 
 						var.PPC1 = True
 				else: 
-					# in case of no gene list, make all inframes PSC1
+					# in case of no gene list, make all inframes PMC1
 					var.PPC1 = True
 
 			if var.PVS1:
 				var.addSummary( "PVS1(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
-			if var.PSC1:
-				var.addSummary( "PSC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
+			if var.PMC1:
+				var.addSummary( "PMC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
 			if var.PM4:
 				var.addSummary( "PM4(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PPC1:

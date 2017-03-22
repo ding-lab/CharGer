@@ -46,7 +46,7 @@ class chargervariant(mafvariant):
 		self.BP6 = kwargs.get( 'BP6' , False )
 		self.BP7 = kwargs.get( 'BP7' , False )
 
-		self.PSC1 = kwargs.get( 'PSC1' , False )
+		self.PMC1 = kwargs.get( 'PMC1' , False )
 		self.PPC1 = kwargs.get( 'PPC1' , False )
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
@@ -246,7 +246,7 @@ class chargervariant(mafvariant):
 			checks[mods[14]] = self.PP4
 			checks[mods[15]] = self.PP5
 
-			checks[mods[28]] = self.PSC1
+			checks[mods[28]] = self.PMC1
 			checks[mods[29]] = self.PPC1
 		if doNegative:
 			checks[mods[16]] = self.BA1
@@ -270,7 +270,7 @@ class chargervariant(mafvariant):
 		'BA1' , \
 		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
 		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7', \
-		'PSC1', 'PPC1']
+		'PMC1', 'PPC1']
 	def readVCFInfo( self , **kwargs ):
 		for info in self.vcfInfo:
 			print info
@@ -298,8 +298,8 @@ class chargervariant(mafvariant):
 			count += 1
 		if self.PS4:
 			count += 1
-		if self.PSC1:
-			count += 1
+#		if self.PSC1:
+#			count += 1
 		return count
 	def countPathogenicModerate( self ):
 		count = 0
@@ -314,6 +314,8 @@ class chargervariant(mafvariant):
 		if self.PM5:
 			count += 1
 		if self.PM6:
+			count += 1
+		if self.PMC1:
 			count += 1
 		return count
 	def countPathogenicSupport( self ):
