@@ -19,7 +19,7 @@ def parseArgs( argv ):
 	helpText += "  -o output file\n"
 	helpText += "  -w output as HTML (flag)\n"
 	helpText += "  -k annotate input (flag)\n"
-	helpText += "  --run-url-test skip url testing when creating links\n"
+	helpText += "  --run-url-test test url when creating links\n"
 	helpText += "Access data:\n"
 	helpText += "  -l ClinVar (flag)\n"
 	helpText += "  -x ExAC (flag)\n"
@@ -37,26 +37,30 @@ def parseArgs( argv ):
 	helpText += "  -a assumed de novo file .?\n"
 	helpText += "  -c co-segregation file .?\n"
 	helpText += "  -H HotSpot3D clusters file .clusters\n"
-	helpText += "Local tools (suppresses ReST too):\n"
+	helpText += "  -r recurrence threshold (default = )\n"
+	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
+	helpText += "  --vep-script Path to VEP\n"
 	helpText += "  --vep-dir Path to VEP directory\n"
 	helpText += "  --vep-cache Path to VEP cache directory\n"
-	helpText += "  --vep-release Ensembl release version (default = 74)\n"
-	helpText += "  --grch GRCh verion (default = 37)\n"
+	helpText += "  --vep-version VEP version (default = 87)\n"
+	helpText += "  --vep-output VEP output file (default = charger.vep.vcf)\n"
+	helpText += "  --grch assembly GRCh verion (default = 37)\n"
+	helpText += "  --ensembl-release Ensembl release version (default = 74)\n"
 	helpText += "  --reference-fasta VEP reference fasta\n"
+	helpText += "  --fork Number of forked processes used in VEP (default = 0) \n"
 	helpText += "Local databases (suppresses ReST too):\n"
 	helpText += "  --exac-vcf ExAC vcf.gz\n"
 	#helpText += "  --clinvar-tsv ClinVar (.tsv.gz download)\n"
 	#helpText += "  --clinvar-vcf ClinVar (.vcf.gz download)\n"
-	#helpText += "  --mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)\n"
+	helpText += "  --mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)\n"
 	helpText += "  --mac-clinvar-vcf ClinVar from MacArthur lab (clinvar_alleles.vcf.gz)\n"
 	helpText += "Filters:\n"
 	helpText += "  --rare Allele frequency threshold for rare/common (default = 1, process variant with any frequency):\n"
 	helpText += "  --vcf-any-filter Allow variants that do not pass all filters in .vcf input (flag)\n"
 	helpText += "ReST batch sizes:\n"
-	helpText += "  -v VEP\n"
-	helpText += "  -b ClinVar summary\n"
-	helpText += "  -B ClinVar searchsize\n"
-	helpText += "  -r recurrence threshold\n"
+	helpText += "  -v VEP (#variants, default/max allowed = )\n"
+	helpText += "  -b ClinVar summary (#variants, default/max allowed = 500)\n"
+	helpText += "  -B ClinVar searchsize (#variants, default/max allowed = 50)\n"
 	helpText += "Custom columns (0-based)\n"
 	helpText += "  -G HUGO gene symbol\n"
 	helpText += "  -X chromosome\n"
@@ -107,14 +111,21 @@ def parseArgs( argv ):
 	asHTML = False
 	override = False
 	recurrenceThreshold = 2
-	clustersFile = ""
-	pathogenicVariantsFile = ""
+	clustersFile = None
+	pathogenicVariantsFile = None
 	annotateInput = ""
-	vepDir = ""
-	vepCache = ""
-	exacVCF = ""
-	macClinVarVCF = ""
-	macClinVarTSV = ""
+	vepScript = ""
+	vepDir = None
+	vepCache = None
+	vepOutput = None
+	ensemblRelease = ""
+	vepVersion = ""
+	grch = ""
+	fork = ""
+	referenceFasta = None
+	exacVCF = None
+	macClinVarVCF = None
+	macClinVarTSV = None
 	doURLTest = True
 	thresholdAF = 1
 	anyFilter = False
@@ -131,8 +142,10 @@ def parseArgs( argv ):
 		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
 		"recurrence=" , "rare=" , "vcf-any-filter" , \
 		"hotspot3d=" , "pathogenicVariants=" , \
-		"vep-dir=" , "vep-cache" , "exac-vcf=" , \
-		"mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
+		"vep-script=" , "vep-dir=" , "vep-cache=" , "vep-output=" , \
+		"ensembl-release=" , "vep-version=" , \
+		"grch=" , "reference-fasta=" , "fork=" , \
+		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
 		"run-url-test" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
@@ -225,15 +238,29 @@ def parseArgs( argv ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
+		elif opt in ( "--vep-script" ):
+			vepScript = arg
 		elif opt in ( "--vep-dir" ):
 			vepDir = arg
 		elif opt in ( "--vep-cache" ):
 			vepCache = arg
+		elif opt in ( "--vep-output" ):
+			vepOutput = arg
+		elif opt in ( "--ensembl-release" ):
+			ensemblRelease = arg
+		elif opt in ( "--vep-version" ):
+			vepVersion = arg
+		elif opt in ( "--grch" ):
+			grch = arg
+		elif opt in ( "--fork" ):
+			fork = arg
+		elif opt in ( "--reference-fasta" ):
+			referenceFasta = arg
 		elif opt in ( "--exac-vcf" ):
 			exacVCF = arg
-		elif opt in ( "--max-clinvar-vcf" ):
+		elif opt in ( "--mac-clinvar-vcf" ):
 			macClinVarVCF = arg
-		elif opt in ( "--max-clinvar-tsv" ):
+		elif opt in ( "--mac-clinvar-tsv" ):
 			macClinVarTSV = arg
 		elif opt in ( "--run-url-test" ):
 			doURLTest = False
@@ -283,8 +310,15 @@ def parseArgs( argv ):
 	"anyFilter" : anyFilter , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
+	"vepScript" : vepScript , \
 	"vepDir" : vepDir , \
 	"vepCache" : vepCache , \
+	"vepOutput" : vepOutput , \
+	"ensemblRelease" : ensemblRelease , \
+	"vepVersion" : vepVersion , \
+	"grch" : grch , \
+	"fork" : fork , \
+	"referenceFasta" : referenceFasta , \
 	"exacVCF" : exacVCF , \
 	"macClinVarTSV" : macClinVarTSV , \
 	"macClinVarVCF" : macClinVarVCF , \
@@ -338,8 +372,15 @@ def main( argv ):
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
+	vepScript = values["vepScript"]
 	vepDir = values["vepDir"]
 	vepCache = values["vepCache"]
+	vepOutput = values["vepOutput"]
+	ensemblRelease = values["ensemblRelease"]
+	vepVersion = values["vepVersion"]
+	grch = values["grch"]
+	fork = values["fork"]
+	referenceFasta = values["referenceFasta"]
 	exacVCF = values["exacVCF"]
 	macClinVarTSV = values["macClinVarTSV"]
 	macClinVarVCF = values["macClinVarVCF"]
@@ -348,6 +389,30 @@ def main( argv ):
 	t1 = time.time()
 
 	CharGer = charger.charger()
+
+	CharGer.testLocalInputs( maf = mafFile , \
+							 vcf = vcfFile , \
+							 tsv = tsvFile , \
+							 pathogenicVariants = pathogenicVariantsFile , \
+							 geneList = geneListFile , \
+							 expression = expressionFile , \
+							 deNovo = deNovoFile , \
+							 assumedDeNovo = assumedDeNovoFile , \
+							 coSegregation = coSegregationFile , \
+							 diseases = diseasesFile , \
+							 vepScript = vepScript , \
+							 vepDir = vepDir , \
+							 vepCache = vepCache , \
+							 vepOutput = vepOutput , \
+							 ensemblRelease = ensemblRelease , \
+							 vepVersion = vepVersion , \
+							 grch = grch , \
+							 referenceFasta = referenceFasta , \
+							 exacVCF = exacVCF , \
+							 macClinVarTSV = macClinVarTSV , \
+							 macClinVarVCF = macClinVarVCF , \
+							 output = outputFile , \
+						)
 
 	[ vepDone , preVEP , exacDone , clinvarDone ] = CharGer.getInputData( maf=mafFile , \
 	vcf=vcfFile , \
@@ -388,6 +453,9 @@ def main( argv ):
 		if clinvarDone:
 			doClinVar = False
 
+	if macClinVarTSV or macClinVarVCF:
+		doClinVar = True
+
 	t2 = time.time() 
 
 	CharGer.getExternalData( clinvar=doClinVar , \
@@ -398,8 +466,16 @@ def main( argv ):
 	searchBatchSize=clinvarSearchBatchSize , \
 	allOptions=False , \
 	maxPost=vepBatchSize , \
+	vepScript=vepScript , \
 	vepDir=vepDir , \
 	vepCache=vepCache , \
+	vepOutput=vepOutput , \
+	ensemblRelease=ensemblRelease , \
+	vepVersion=vepVersion , \
+	grch=grch , \
+	fork=fork , \
+	referenceFasta=referenceFasta , \
+	vcf=vcfFile , \
 	exacVCF=exacVCF , \
 	macClinVarTSV=macClinVarTSV , \
 	macClinVarVCF=macClinVarVCF , \

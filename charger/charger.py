@@ -3,7 +3,9 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
 
+import os
 import sys
+import subprocess
 import time
 import math
 import re
@@ -17,10 +19,12 @@ from biomine.variant.vepvariant import vepvariant
 from biomine.variant.vepconsequencevariant import vepconsequencevariant
 from biomine.variant.mafvariant import mafvariant
 from biomine.variant.variant import variant
+from biomine.parsers.exacparser import exacparser
 from chargervariant import chargervariant
 from autovivification import autovivification as AV
 import vcf
 from collections import OrderedDict as OD
+import gzip
 
 class charger(object):
 	''' Example usage:
@@ -50,6 +54,48 @@ class charger(object):
 
 		#### ADD key index here to access vcf info for individual variant
 
+	def testLocalInputs( self , **kwargs ):
+		mafFile = kwargs.get( 'maf' , "" )
+		vcfFile = kwargs.get( 'vcf' , "" )
+		tsvFile = kwargs.get( 'tsv' , "" )
+		if not os.path.exists( mafFile ) and \
+		   not os.path.exists( vcfFile ) and \
+		   not os.path.exists( tsvFile ):
+			sys.exit()
+
+		self.checkInputExistence( 'pathogenicVariants' , **kwargs )
+		self.checkInputExistence( 'expression' , **kwargs )
+		self.checkInputExistence( 'geneList' , **kwargs )
+		self.checkInputExistence( 'deNovo' , **kwargs )
+		self.checkInputExistence( 'assumedDeNovo' , **kwargs )
+		self.checkInputExistence( 'coSegregate' , **kwargs )
+		self.checkInputExistence( 'diseases' , **kwargs )
+
+		self.checkInputExistence( 'macClinVarTSV' , **kwargs )
+		self.checkInputExistence( 'macClinVarVCF' , **kwargs )
+		self.checkInputExistence( 'exacVCF' , **kwargs )
+
+		self.checkInputExistence( 'vepScript' , **kwargs )
+		self.checkInputExistence( 'vepDir' , **kwargs )
+		self.checkInputExistence( 'vepCache' , **kwargs )
+		self.checkInputExistence( 'referenceFasta' , **kwargs )
+		vepOutputFile = kwargs.get( 'vepOutput' , "" )
+		vepOutHandle = self.safeOpen( vepOutputFile , "w" )
+		self.checkInputExistence( 'vepOutput' , **kwargs )
+		vepOutHandle.close()
+
+		outputFile = kwargs.get( 'output' , "" )
+		outHandle = self.safeOpen( outputFile , "w" )
+		self.checkInputExistence( 'output' , **kwargs )
+		outHandle.close()
+
+	def checkInputExistence( self , key , **kwargs ):
+		keyFile = kwargs.get( key , "" )
+		if keyFile :
+			if not os.path.exists( keyFile ):
+				print( "CharGer files error: this file does not exist: " + keyFile )
+				sys.exit()
+
 ### Retrieve input data from user ###
 	def getInputData( self  , **kwargs ):
 		mafFile = kwargs.get( 'maf' , "" )
@@ -76,7 +122,8 @@ class charger(object):
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
-			[ vepDone , preVEP , exacDone , clinvarDone ] = self.readVCF( vcfFile , appendTo="user" , **kwargs )
+			[ vepDone , preVEP , exacDone , clinvarDone , _ ] = self.readVCF( \
+				vcfFile , appendTo="user" , **kwargs )
 			#exacDone=False # currently only has 1000G
 		if tsvFile:
 			exacDone = self.readTSV( tsvFile , **kwargs )
@@ -127,6 +174,7 @@ class charger(object):
 			inFile = vcf.Reader( open( inputFile , 'r' ) , compressed=True )    
 		else:
 			inFile = vcf.Reader( open( inputFile , 'r' ) )
+		variantDict = {}
 		appendTo = kwargs.get( "appendTo" , "user" )
 		thresholdAF = kwargs.get( "thresholdAF" , 1 )
 		anyFilter = kwargs.get( "anyFilter" , False )
@@ -196,12 +244,13 @@ class charger(object):
 					failedAF += 1
 					continue
 					
-				self.appendToList( appendTo , var )
+				variantDict = self.appendToList( appendTo , var , \
+												 variantDict = variantDict )
 		totalVars = len( self.userVariants ) + failedFilter + failedAF
 		print(  "Skipping: " + str( failedFilter ) + \
 				" for filters and " + str( failedAF ) + " for AF of " + \
 				str( totalVars ) )
-		return [ vepDone , preVEP , exacDone , clinvarDone ]
+		return [ vepDone , preVEP , exacDone , clinvarDone , variantDict ]
 
 	def getAF( self , info , var , thresholdAF , alti ):
 		hasAF = False
@@ -520,12 +569,18 @@ class charger(object):
 			print( "CharGer::getMostSevereConsequence Warning: no consequences" + var.genomicVar() )
 			pass
 						
-	def appendToList( self , appendTo , var ):
+	def appendToList( self , appendTo , var , variantDict = {} ):
 		if appendTo == "user":
 			self.userVariants.append( var )
 		elif appendTo == "pathogenic":
 			pathKey = self.pathogenicKey( var )
 			self.pathogenicVariants[pathKey] = var
+		elif appendTo == "vepDict":
+			genVar = var.vcf( )
+			vepVariant = vepvariant( )
+			vepVariant.fillMissingInfo( var )
+			variantDict[genVar] = vepVariant
+			return variantDict
 
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"
@@ -664,6 +719,9 @@ class charger(object):
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
 		t = time.time()
+		self.getVEP( **kwargs )
+		self.printRunTime( "VEP" , self.runTime( t ) )
+		t = time.time()
 		self.getClinVar( **kwargs )
 		self.printRunTime( "ClinVar" , self.runTime( t ) )
 		t = time.time()
@@ -671,22 +729,22 @@ class charger(object):
 		#print( de )
 		self.getExAC( **kwargs )
 		self.printRunTime( "exac" , self.runTime( t ) )
-		t = time.time()
-		self.getVEP( **kwargs )
-		self.printRunTime( "VEP" , self.runTime( t ) )
 		self.fillMissingVariantInfo()
 	def fillMissingVariantInfo( self ):
 		for var in self.userVariants:
 			var.fillMissingInfo( var )
 	def getClinVar( self , **kwargs ):
+		print( "charger::getClinVar" )
 		macClinVarTSV = kwargs.get( 'macClinVarTSV' , None )
 		macClinVarVCF = kwargs.get( 'macClinVarVCF' , None )
 		doClinVar = kwargs.get( 'clinvar' , False )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
+		print( '  '.join( [ str( doClinVar ) , str( macClinVarTSV ) , str( macClinVarVCF ) ] ) ) 
 		if doClinVar:
 			if macClinVarTSV:
-				self.getMacClinVarTSV( macClinVarTSV )
+				clinvarSet = self.getMacClinVarTSV( macClinVarTSV )
+				self.userVariants = self.matchClinVar( self.userVariants , clinvarSet )
 			elif macClinVarVCF:
 				self.getMacClinVarVCF( macClinVarTSV )
 			else:
@@ -699,14 +757,62 @@ class charger(object):
 					ent.subset = entrezapi.esearch
 					ent.database = entrezapi.clinvar
 					clinvarsSet = ent.doBatch( summaryBatchSize )
-					varsBoth = self.matchClinVar( varsSet , clinvarsSet )
-					self.userVariants[varsStart:varsEnd] = varsBoth["userVariants"]
+					varsSet = self.matchClinVar( varsSet , clinvarsSet )
+					self.userVariants[varsStart:varsEnd] = varSet
 					#self.clinvarVariants.update( varsBoth["clinvarVariants"] )
 					#self.userVariants[varsStart:varsEnd] = self.matchClinVar( varsSet , clinvarsSet )
 
 	def getMacClinVarTSV( self , tsvfile ):
-		print( "TODO: add macClinVarTSV read in" )
-		sys.exit()
+		"""
+		chrom	pos	ref	alt	measureset_type	measureset_id	rcv	allele_id
+		symbol	hgvs_c	hgvs_p	molecular_consequence	clinical_significance
+		pathogenic	benign	conflicted	review_status	gold_stars
+		all_submitters	all_traits	all_pmids	inheritance_modes
+		age_of_onset	prevalence	disease_mechanism	origin	xrefs
+		"""
+		clinvarSet = {}
+		with gzip.open( tsvfile , "rb" ) as macFile:
+			for line in macFile:
+				fields = ( line.rstrip( ) ).split( "\t" )
+				[ description , status ] = self.parseMacPathogenicity( fields[12:17] )
+				var = clinvarvariant( chromosome = fields[0] , \
+									  start = fields[1] , \
+									  reference = fields[2] , \
+									  alternate = fields[3] , \
+									  uid = fields[5] , \
+									  gene = fields[8] , \
+									  clinical = { "description" : description , "review_status" : status } , \
+									  trait = { fields[-1] : fields[19] } , \
+				)
+				clinvarSet[var.uid] = var
+		print( "Have " + str( len( clinvarSet ) ) + " uid's from MacArthur ClinVar .tsv file: " + tsvfile )
+		return clinvarSet
+
+	@staticmethod
+	def parseMacPathogenicity( fields ):
+		named = fields[0]
+		isPathogenic = fields[1]
+		isBenign = fields[2]
+		isConflicted = fields[3]
+		status = fields[4]
+		desc = chargervariant.uncertain
+		if isConflicted:
+			return [ desc , status ]
+		if isBenign:
+			for desc in named.split( ";" ):
+				if re.match( desc.tolower( ) , "ikely" ) and desc != chargervariant.benign:
+					desc = chargervariant.likelyBenign
+				elif re.match( desc.tolower( ) , "benign" ):
+					desc = chargervariant.benign
+					break
+		if isPathogenic:
+			for desc in named.split( ";" ):
+				if re.match( desc.tolower( ) , "ikely" ) and desc != chargervariant.pathogenic:
+					desc = chargervariant.likelyPanic
+				elif re.match( desc.tolower( ) , "athog" ):
+					desc = chargervariant.pathogenic
+					break
+		return [ desc , status ]
 
 	def getMacClinVarVCF( self , vcffile ):
 		print( "TODO: add macClinVarVCF read in" )
@@ -735,17 +841,22 @@ class charger(object):
 				exacIn = self.getUniqueGenomicVariantList( self.userVariants )
 				#entries = exac.getAlleleFrequencies( self.userVariants )
 				entries = exac.getAlleleFrequencies( exacIn )
-			for var in self.userVariants:
-				if var.genomicVar() in entries:
-					alleleFrequency = entries[var.genomicVar()]
-				else:
-					alleleFrequency = None
-				var.alleleFrequency = alleleFrequency
-				if var.isFrequentAllele( threshold ):
-					common += 1
-				else:
-					rare += 1
-			elen = len(entries.keys())
+			elen = 0
+			common = 0
+			rare = 0
+			totalVars = len( self.userVariants )
+			if entries:
+				for var in self.userVariants:
+					if var.genomicVar() in entries:
+						alleleFrequency = entries[var.genomicVar()]
+					else:
+						alleleFrequency = None
+					var.alleleFrequency = alleleFrequency
+					if var.isFrequentAllele( threshold ):
+						common += 1
+					else:
+						rare += 1
+				elen = len(entries.keys())
 			print "ExAC found " + str(common) + "common & " + str(rare) + "rare variants out of " + str(totalVars) + "total variants and " + str(elen) + "unique variants"
 	def getVEP( self , **kwargs ):
 		doVEP = kwargs.get( 'vep' , False )
@@ -755,11 +866,13 @@ class charger(object):
 		vepCache = kwargs.get( 'vepCache' , "" )
 		if doVEP:
 			sys.stdout.write( "charger::getVEP " )
-			if doREST or ( not doREST and not vepDir and not vepCache ):
+			if not vepDir and not vepCache:
 				print( "through BioMine ReST" )
+				#sys.exit( )
 				self.getVEPviaREST( **kwargs )
-			if vepDir and vepCache:
+			else:
 				print( "from local tool" )
+				#sys.exit( )
 				self.getVEPviaCMD( **kwargs )
 		else:
 			print( "charger::getVEP Warning: skipping VEP" )
@@ -790,65 +903,94 @@ class charger(object):
 		print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
 
 	def getVEPviaCMD( self , **kwargs ):
-#		temp = open( "temp.charger.vep.txt" , "w" )
-#		variants = {}
-#		for var in self.userVariants:
-#			variants[var.ensembl()] = 1
-#		for var in variants:
-#			temp.write( var.ensembl() )
-#		temp.close()
+#TODO add config file handling, would make this much more flexible and simple
+#TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
+		print( kwargs )
 		defaultVEPDir = "./"
 		vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
 		vepCacheDir = kwargs.get( 'vepCache' , defaultVEPDir )
-		vepRelease = kwargs.get( 'vepRelease' , 82 )
+		ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
+		vepVersion = kwargs.get( 'vepVersion' , 87 )
 		grch = kwargs.get( 'grch' , 37 )
-		defaultVEPOutput = vepCacheDir + "charger.vep.vcf"
-		defaultVEPScript = vepDir + "vep" + vepRelease + "/vep/variant_effect_predictor.pl"
+		defaultVEPOutput = "./charger.vep.vcf"
+		defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
 		assembly = "GRCh" + str( grch )
-		defaultFasta = '/'.join( [ vepDir , \
-			".vep" , \
-			"homo_sapiens" , \
-			"*" + assembly , \
-			"Homo_sapiens." + assembly + "." + vepVersion + ".dna.primary_assembly.fa" \
-		] )
+		hdir = vepVersion + "_" + assembly
+		fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
+			 ".dna.primary_assembly.fa.gz" 
+		defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
+		defaultFasta = '/'.join( defaultFastaArray )
 		fasta = kwargs.get( 'referenceFasta' , defaultFasta )
-		outputFile = kwargs.get( 'outputVCF' , defaultVEPOutput )
+		outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
 		vepScript = kwargs.get( 'vepScript' , defaultVEPScript )
 		vcfFile = kwargs.get( 'vcf' , "" )
+		forks = kwargs.get( 'fork' , 0 )
+		print( defaultFasta )
+		print( fasta )
 		if vcfFile:
-			vep_command = [ "perl" , vepScript , \
-				"--everything" , \
-				"--species homo_sapiens" , \
+			vep_command = [ "/bin/perl" , vepScript , \
+				"--species" , "homo_sapiens" , \
 				"--assembly" , assembly , \
-				"--fasta" , fasta , \
 				"--input_file" , vcfFile , \
 				"--output_file" , outputFile , \
-				"--dir" , vepCacheDir , \
-				"--dir_cache" , vepCacheDir , \
+				"--format" , "vcf" , \
+				"--fork" , forks , \
+				"--fasta" , defaultFasta , \
+				"--everything" , \
+				"--vcf" , \
 				"--cache" , \
+				"--offline" , \
 				"--no_progress" , \
-				"--quiet" , \
 				"--total_length" , \
 				"--no_escape" , \
 				"--xref_refseq" , \
 				"--force_overwrite" , \
-				"--format vcf" , \
-				"--vcf" , \
 				"--no_stats" , \
-				"--fork 4" , \
+				"--dir" , vepCacheDir , \
+				"--dir_cache" , vepCacheDir , \
+				"--verbose" , \
+				#"--quiet" , \
+				#"--help" \
 			]
-			import subprocess
-			subprocess.check_call( vep_command , shell=True )
+			#print( vep_command )
+			try:
+				#returnCode = subprocess.call( ' '.join( vep_command ) )
+				returnCode = subprocess.call( vep_command )
+				#print( str( returnCode ) )
+				if os.path.getsize( outputFile ) == 0:
+					print( "CharGer ERROR: VEP did not produce output: " + outputFile )
+					sys.exit( )
+			except subprocess.CalledProcessError:
+				print( "CharGer ERROR: VEP messed up" )
+				sys.exit( )
+				#pass # handle errors in the called executable
+			except OSError:
+				print( "CharGer ERROR: VEP not found" )
+				sys.exit( )
+				#pass # executable not found
+			print( "local VEP done" )
+			[ vepDone , preVEP , exacDone , clinvarDone , vepVariants \
+			] = self.readVCF( outputFile , appendTo = "vepDict" , **kwargs )
+			print( "finished reading in VEP .vcf" + outputFile )
+			print( "now matching VEP annotated variants" )
+			self.matchVEP( vepVariants )
 
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
+		matched = 0
 		for var in userVariants:
+			#var.printVariant( ', ' )
 			for uid in clinvarVariants:
+				#print( str( uid ) )
 				cvar = clinvarVariants[uid]
+				#cvar.printVariant( "; " )
 				if var.sameGenomicVariant( cvar ):
+					matched += 1
 					var.clinical = cvar.clinical
 					var.clinvarVariant = cvar
-		return { "userVariants" : userVariants , "clinvarVariants" : clinvarVariants }
+					break
+		print( "Matched " + str( matched ) + " ClinVar entries to user variants" )
+		return userVariants
 	def matchVEP( self , vepVariants ):
 		for var in self.userVariants:
 			genVar = var.vcf()
@@ -894,6 +1036,7 @@ class charger(object):
 		print "CharGer module PS1"
 		print "- same peptide change as a previously established pathogenic variant"
 		self.peptideChange( "PS1" )
+
 	def PS2( self ):
 		print "CharGer module PS2"
 		print "- de novo with maternity and paternity confirmation and no family history"
@@ -1601,9 +1744,9 @@ class charger(object):
 			return open( inputFile , rw )
 		except:
 			if errwar:
-				print "CharGer Warning: could not open " + inputFile
+				print( "CharGer Warning: could not open " + str( inputFile ) )
 			else:
-				print "CharGer Error: could not open " + inputFile
+				print( "CharGer Error: could not open " + str( inputFile ) )
 			pass
 
 	@staticmethod
