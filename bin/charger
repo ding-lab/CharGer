@@ -57,6 +57,7 @@ def parseArgs( argv ):
 	helpText += "Filters:\n"
 	helpText += "  --rare Allele frequency threshold for rare/common (default = 1, process variant with any frequency):\n"
 	helpText += "  --vcf-any-filter Allow variants that do not pass all filters in .vcf input (flag)\n"
+	helpText += "  --mutation-types Comma delimited list of types to allow\n"
 	helpText += "ReST batch sizes:\n"
 	helpText += "  -v VEP (#variants, default/max allowed = )\n"
 	helpText += "  -b ClinVar summary (#variants, default/max allowed = 500)\n"
@@ -129,6 +130,7 @@ def parseArgs( argv ):
 	doURLTest = True
 	thresholdAF = 1
 	anyFilter = False
+	mutationTypes = []
 
 	try:
 		#haven't used ijquy
@@ -140,7 +142,7 @@ def parseArgs( argv ):
 		"peptideChange=" , "codon=" , "alleleFrequency=" , \
 		"geneList=" , "diseases=" , "expression=" , \
 		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
-		"recurrence=" , "rare=" , "vcf-any-filter" , \
+		"recurrence=" , "rare=" , "vcf-any-filter" , "mutation-types=" , \
 		"hotspot3d=" , "pathogenicVariants=" , \
 		"vep-script=" , "vep-dir=" , "vep-cache=" , "vep-output=" , \
 		"ensembl-release=" , "vep-version=" , \
@@ -232,6 +234,8 @@ def parseArgs( argv ):
 			recurrenceThreshold = float( arg )
 		elif opt in ( "--rare" ):
 			thresholdAF = float( arg )
+		elif opt in ( "--mutation-types" ):
+			mutationTypes = arg.split( "," )
 		elif opt in ( "--vcf-any-filter" ):
 			anyFilter = True
 		elif opt in ( "-H" , "--hotspot3d" ):
@@ -308,6 +312,7 @@ def parseArgs( argv ):
 	"recurrenceThreshold" : recurrenceThreshold , \
 	"thresholdAF" : thresholdAF , \
 	"anyFilter" : anyFilter , \
+	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
 	"vepScript" : vepScript , \
@@ -369,6 +374,7 @@ def main( argv ):
 	recurrenceThreshold = values["recurrenceThreshold"]
 	thresholdAF = values["thresholdAF"]
 	anyFilter = values["anyFilter"]
+	mutationTypes = values["mutationTypes"]
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
@@ -440,6 +446,7 @@ def main( argv ):
 	alleleFrequency=alleleFrequencyColumn , \
 	thresholdAF = thresholdAF , \
 	anyFilter = anyFilter , \
+	mutationTypes = mutationTypes , \
 	)
 
 	if doVEP:
@@ -480,6 +487,8 @@ def main( argv ):
 	macClinVarTSV=macClinVarTSV , \
 	macClinVarVCF=macClinVarVCF , \
 	thresholdAF = thresholdAF , \
+	anyFilter = anyFilter , \
+	mutationTypes = mutationTypes , \
 	#timeout=(20,20) , \
 	)
 

@@ -83,7 +83,7 @@ class chargervariant(mafvariant):
 							 self.HGVSc() , \
 							 self.HGVSp() , \
 							 self.alleleFrequency , \
-							 self.mostSevereConsequence() , \
+							 self.returnMostSevereConsequence() , \
 							 self.positiveEvidence() , \
 							 self.negativeEvidence() , \
 							 self.pathogenicScore , \
@@ -124,7 +124,7 @@ class chargervariant(mafvariant):
 		except:
 			return "NA"
 
-	def mostSevereConsequence( self ):
+	def returnMostSevereConsequence( self ):
 		try:
 			return self.vepVariant.mostSevereConsequence
 		except:
@@ -169,26 +169,28 @@ class chargervariant(mafvariant):
 		self.alleleFrequency = other.alleleFrequency
 	def printVariant( self , delim , **kwargs ):
 		onlyThisVariant = kwargs.get( 'minimal' , False )
+		print( "chargervariant { " )
 		if not onlyThisVariant:
 			super( mafvariant , self ).printVariant( delim , **kwargs )
 			if self.vepVariant:
 				self.vepVariant.printVariant( delim , **kwargs )
 			if self.clinvarVariant:
 				self.clinvarVariant.printVariant( delim , **kwargs )
+		print( "}" )
 	def fillMissingInfo( self , copy ):
 		#print( "FMI: before" )
 		#self.printVariant( ", " )
-		super( mafvariant , self ).fillMissingInfo( copy )
+		super( chargervariant , self ).fillMissingInfo( copy )
 		#self.printVariant( ", " )
 		if self.vepVariant or copy.vepVariant:
 			if not self.vepVariant:
 				self.vepVariant = copy.vepVariant
-			self.vepVariant.fillMissingInfo( copy )
+			self.vepVariant.fillMissingInfo( copy.vepVariant )
 		#self.printVariant( ", " )
 		if self.clinvarVariant or copy.clinvarVariant:
 			if not self.clinvarVariant:
 				self.clinvarVariant = copy.clinvarVariant
-			self.clinvarVariant.fillMissingInfo( copy )
+			self.clinvarVariant.fillMissingInfo( copy.clinvarVariant )
 		#print( "FMI: after clinvar" )
 		#self.printVariant( ", " )
 	def copyMostSevereConsequence( self ):

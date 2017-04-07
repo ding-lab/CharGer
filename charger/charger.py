@@ -178,6 +178,7 @@ class charger(object):
 		appendTo = kwargs.get( "appendTo" , "user" )
 		thresholdAF = kwargs.get( "thresholdAF" , 1 )
 		anyFilter = kwargs.get( "anyFilter" , False )
+		mutationTypes = kwargs.get( "mutationTypes" , [] )
 		preVEP = []
 		vepDone = False
 		exacDone = False
@@ -188,6 +189,7 @@ class charger(object):
 		#print( str( metadata ) )
 		failedFilter = 0
 		failedAF = 0
+		failedMT = 0
 		[ vepDone , exacDone , clinvarDone ] = self.readMetaData( metadata , inFile.infos , vepInfo )
 		for record in inFile:
 			chrom = record.CHROM
@@ -228,36 +230,41 @@ class charger(object):
 					parentVariant=parentVar
 				)
 
-				#hasAF = False
-				#[ hasAF , skip ] = self.getAF( info , var , thresholdAF , alti )
-				#print( str( var.alleleFrequency ) )
-				#if skip:
-				#	continue
+				hasAF = False
+				[ hasAF , skip ] = self.getAF( info , var , thresholdAF , alti )
+#				#print( str( var.alleleFrequency ) )
 #				hasClinVar = False
 #				ClinVarElsewhere = info.get( 'clinvar_measureset_id' , 0 )
 #				var.clinvarVariant.clinical["description"] = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				var.clinvarVariant.uid = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				if ClinVarElsewhere != 0:
-				hasAF = False
 				self.getVEPConsequences( info , var , preVEP , hasAF )
 				if self.skipIfHighAF( var , thresholdAF ):
 					failedAF += 1
 					continue
+				if self.skipIfNotInMutationTypes( var , mutationTypes ):
+					failedMT += 1
+					continue
 					
 				variantDict = self.appendToList( appendTo , var , \
 												 variantDict = variantDict )
-		totalVars = len( self.userVariants ) + failedFilter + failedAF
-		print(  "Skipping: " + str( failedFilter ) + \
-				" for filters and " + str( failedAF ) + " for AF of " + \
+		totalVars = len( self.userVariants ) + failedFilter + failedAF + failedMT
+		print(  "Skipping: " + str( failedFilter ) + " for filters and " + \
+				str( failedAF ) + " for AF and " + \
+				str( failedMT ) + " for mutation types out of " + \
 				str( totalVars ) )
+		if totalVars == ( failedFilter + failedAF + failedMT ) and appendTo != "pathogenic":
+			print( "All variants failed to pass filters. Stopping CharGer." )
+			sys.exit( )
 		return [ vepDone , preVEP , exacDone , clinvarDone , variantDict ]
 
 	def getAF( self , info , var , thresholdAF , alti ):
 		hasAF = False
 		skip = False
-		var.alleleFrequency = info.get( 'AF' , "noAF" )
-		if ( not var.alleleFrequency == "noAF" ):
-			afs = var.alleleFrequency[alti]
+		var.alleleFrequency = 0
+		withAF = info.get( 'AF' , "noAF" )
+		if ( withAF != "noAF" ):
+			afs = withAF[alti]
 			var.alleleFrequency = afs
 			hasAF = True
 		return [ hasAF , skip ]
@@ -268,6 +275,13 @@ class charger(object):
 				return True
 		return False
 		
+	def skipIfNotInMutationTypes( self , var , mutationTypes ):
+		if var.variantClass is None:
+			return False
+		if var.variantClass not in mutationTypes:
+			print( str( var.variantClass ) + " is not in " + str( mutationTypes ) )
+			return True
+		return False
 
 	def getVEPConsequences( self , info , var , preVEP , hasAF ):
 		csq = info.get( 'CSQ' , "noCSQ" )
@@ -278,6 +292,8 @@ class charger(object):
 				values = thisCSQ.split( "|" )
 				var.vcfInfo = values
 				aas = self.getRefAltAminoAcids( values , var , preVEP )
+				positionPeptide = self.getCodingPosition( values , var , preVEP , "Protein_position" )
+				positionCodon = self.getCodingPosition( values , var , preVEP , "cDNA_position" )
 				exons = self.getExons( values )
 				introns = self.getIntrons( values )
 				siftStuff = self.getSIFT( values )
@@ -293,8 +309,8 @@ class charger(object):
 					gene_id = self.getVCFKeyIndex( values , "Gene" ) , \
 					transcriptCodon = self.getVCFKeyIndex( values , "Feature" ) , \
 					consequence_terms = csq_terms , \
-					positionCodon = self.getVCFKeyIndex( values , "cDNA_position" ) , \
-					positionPeptide = self.getVCFKeyIndex( values , "Protein_position" ) , \
+					positionCodon = positionCodon , \
+					positionPeptide =  positionPeptide , \
 					referencePeptide = aas[0] , \
 					alternatePeptide = aas[1] , \
 					strand = self.getVCFKeyIndex( values , "STRAND" ) , \
@@ -315,17 +331,29 @@ class charger(object):
 					totalIntrons = introns[1] , \
 				)
 				var.vepVariant.consequences.append( vcv )
-				self.getMostSevereConsequence( var )
-				hasAF = self.getExAC_MAF( values , var , hasAF )
-				self.getGMAF( values , var , hasAF )
-				if not var.alleleFrequency:
-					var.alleleFrequency = 0
-				self.getCLIN_SIG( values , var )
+			self.getMostSevereConsequence( var )
+			hasAF = self.getExAC_MAF( values , var , hasAF )
+			self.getGMAF( values , var , hasAF )
+			if not var.alleleFrequency:
+				var.alleleFrequency = 0
+			self.getCLIN_SIG( values , var )
+
+	def getCodingPosition( self , values , var , preVEP , key ):
+		pos = None
+		if self.getVCFKeyIndex( values , key ):
+			position = self.getVCFKeyIndex( values , key )
+			poss = position.split( "/" )
+			if len( poss ) > 1:
+				pos = poss[0]
+			else:
+				pos = poss[0]
+		return pos
 
 	def getRefAltAminoAcids( self , values , var , preVEP ):
 		aas = [None , None] 
 		if self.getVCFKeyIndex( values , "Amino_acids" ): #8 => Amino_acids
-			aas = self.getVCFKeyIndex( values , "Amino_acids" ).split("/") 
+			AAs = self.getVCFKeyIndex( values , "Amino_acids" )
+			aas = AAs.split( "/" ) 
 			if len( aas ) > 1:
 				aas[0] = mafvariant().convertAA( aas[0] )
 				aas[1] = mafvariant().convertAA( aas[1] )
@@ -541,12 +569,16 @@ class charger(object):
 		mostSevere = None
 		rankMostSevere = 10000
 		mostSevereCons = severeRank[-1]
+		#print( "setting most severe consequence" )
+		#print( str( len( var.vepVariant.consequences ) ) + " consequences to parse" )
 		try:
 			for cons in var.vepVariant.consequences:
+				#cons.printVariant( "~" )
 				for term in cons.terms:
 					if term in severeRank:
 						rank = severeRank.index( term )
 					else:
+						print( "CharGer Warning: Unrecognized consequence term: " + str( term ) )
 						rank = 10000
 					if rank < rankMostSevere:
 						mostSevere = cons
@@ -556,6 +588,7 @@ class charger(object):
 						if cons.canonical:
 							mostSevere = cons
 			if mostSevere:
+				#print( "setting MOST SEVERE CONSEQUENCE" )
 				var.gene = mostSevere.gene
 				var.referencePeptide = mostSevere.referencePeptide
 				var.positionPeptide = mostSevere.positionPeptide
@@ -577,9 +610,7 @@ class charger(object):
 			self.pathogenicVariants[pathKey] = var
 		elif appendTo == "vepDict":
 			genVar = var.vcf( )
-			vepVariant = vepvariant( )
-			vepVariant.fillMissingInfo( var )
-			variantDict[genVar] = vepVariant
+			variantDict[genVar] = var
 			return variantDict
 
 	def readTSV( self , inputFile , **kwargs ):
@@ -784,6 +815,8 @@ class charger(object):
 									  clinical = { "description" : description , "review_status" : status } , \
 									  trait = { fields[-1] : fields[19] } , \
 				)
+				var.splitHGVSc( fields[9] , override = True )
+				var.splitHGVSp( fields[10] , override = True )
 				clinvarSet[var.uid] = var
 		print( "Have " + str( len( clinvarSet ) ) + " uid's from MacArthur ClinVar .tsv file: " + tsvfile )
 		return clinvarSet
@@ -905,7 +938,7 @@ class charger(object):
 	def getVEPviaCMD( self , **kwargs ):
 #TODO add config file handling, would make this much more flexible and simple
 #TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
-		print( kwargs )
+		#print( kwargs )
 		defaultVEPDir = "./"
 		vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
 		vepCacheDir = kwargs.get( 'vepCache' , defaultVEPDir )
@@ -971,38 +1004,54 @@ class charger(object):
 			print( "local VEP done" )
 			[ vepDone , preVEP , exacDone , clinvarDone , vepVariants \
 			] = self.readVCF( outputFile , appendTo = "vepDict" , **kwargs )
-			print( "finished reading in VEP .vcf" + outputFile )
+			print( "finished reading in VEP .vcf: " + outputFile )
 			print( "now matching VEP annotated variants" )
 			self.matchVEP( vepVariants )
 
+			#self.printVariants( self.userVariants )
+			#sys.exit( )
+
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
+		print( "matchClinVar!" )
 		matched = 0
 		for var in userVariants:
-			#var.printVariant( ', ' )
+			print( "user: " + var.proteogenomicVar( ) )
 			for uid in clinvarVariants:
 				#print( str( uid ) )
 				cvar = clinvarVariants[uid]
-				#cvar.printVariant( "; " )
+				print( "ClinVar: " + cvar.proteogenomicVar( ) )
 				if var.sameGenomicVariant( cvar ):
 					matched += 1
 					var.clinical = cvar.clinical
 					var.clinvarVariant = cvar
+					print( "MATCHED" )
 					break
 		print( "Matched " + str( matched ) + " ClinVar entries to user variants" )
 		return userVariants
 	def matchVEP( self , vepVariants ):
+		currentVars = str( len( self.userVariants ) )
+		removedVars = 0
 		for var in self.userVariants:
 			genVar = var.vcf()
-			vepVar = vepvariant()
 			if genVar in vepVariants:
 				vepVar = vepVariants[genVar]
-			if var.sameGenomicVariant( vepVar ):
-				var.fillMissingInfo( vepVar )
-				var.vepVariant = vepVar
-				var.copyMostSevereConsequence()
-			#if var.vepVariant:
-			#	var.vepAnnotations = var.vepVariant.printVariant( delim="|" , minimal=True )
+			else:
+				print( "Filtering out " + genVar + ", because it is not in VEP annotations." )
+				i = self.userVariants.index( var )
+				del self.userVariants[i]
+				removedVars += 1
+				continue
+			#print( var.proteogenomicVar() )
+			#var.printVariant( "<" )
+			#print( vepVar.proteogenomicVar() )
+			vepVar.printVariant( "|" )
+			vepVar.fillMissingInfo( var )
+			var.copyMostSevereConsequence()
+			var.fillMissingInfo( vepVar )
+			#print( var.proteogenomicVar() )
+			#var.printVariant( ">" )
+		print( "Removed " + str( removedVars ) + " from initial user set of " + currentVars + ", now have " + str( len( self.userVariants ) ) + " user variants left." )
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -1635,7 +1684,8 @@ class charger(object):
 				self.appendStr( fields, var.HGVSp() ) # need to be corrected too
 				self.appendStr( fields,var.alleleFrequency)
 				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
-				self.appendStr( fields,var.mostSevereConsequence() )
+				mSC = var.returnMostSevereConsequence()
+				self.appendStr( fields , mSC )
 				#self.appendStr( fields,var.clinvarVariant.trait)
 				self.appendStr( fields,var.positiveEvidence())
 				self.appendStr( fields,var.negativeEvidence())
