@@ -1,7 +1,7 @@
 #!/bin/python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.1.0 - 2015*12
+# version: v0.1.0 - 2016*04
 
 import sys
 import getopt
@@ -9,7 +9,8 @@ from charger import charger
 import time
 
 def parseArgs( argv ):
-	helpText = "Usage: "
+	helpText = "\nCharGer - v0.1.0\n\n"
+	helpText += "Usage: "
 	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"
 	helpText += "  -m Standard .maf\n"
@@ -29,15 +30,15 @@ def parseArgs( argv ):
 	helpText += "  -O override with ClinVar description (flag)\n"
 	helpText += "  -D suppress needing disease specific (flag)\n"
 	helpText += "Cross-reference data files:\n"
-	helpText += "  -z pathogenic variants .vcf\n"
-	helpText += "  -e expression matrix file .tsv\n"
-	helpText += "  -g gene list file .txt\n"
-	helpText += "  -d diseases file (format: gene\\tdisease\\tmode_of_inheritance) .tsv\n"
-	helpText += "  -n de novo file .?\n"
-	helpText += "  -a assumed de novo file .?\n"
-	helpText += "  -c co-segregation file .?\n"
-	helpText += "  -H HotSpot3D clusters file .clusters\n"
-	helpText += "  -r recurrence threshold (default = )\n"
+	helpText += "  -z pathogenic variants, .vcf\n"
+	helpText += "  -e expression matrix file, .tsv\n"
+	helpText += "  -g gene list file, (format: gene\\tdisease\\tmode_of_inheritance) .txt\n"
+	helpText += "  -d diseases file, (format: gene\\tdisease\\tmode_of_inheritance) .tsv\n"
+	helpText += "  -n de novo file, standard .maf\n"
+	helpText += "  -a assumed de novo file, standard .maf\n"
+	helpText += "  -c co-segregation file, standard .maf\n"
+	helpText += "  -H HotSpot3D clusters file, .clusters\n"
+	helpText += "  -r recurrence threshold (default = 2)\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --vep-script Path to VEP\n"
 	helpText += "  --vep-dir Path to VEP directory\n"
@@ -45,7 +46,7 @@ def parseArgs( argv ):
 	helpText += "  --vep-version VEP version (default = 87)\n"
 	helpText += "  --vep-output VEP output file (default = charger.vep.vcf)\n"
 	helpText += "  --grch assembly GRCh verion (default = 37)\n"
-	helpText += "  --ensembl-release Ensembl release version (default = 74)\n"
+	helpText += "  --ensembl-release Ensembl release version (default = 75)\n"
 	helpText += "  --reference-fasta VEP reference fasta\n"
 	helpText += "  --fork Number of forked processes used in VEP (default = 0) \n"
 	helpText += "Local databases (suppresses ReST too):\n"
@@ -53,13 +54,13 @@ def parseArgs( argv ):
 	#helpText += "  --clinvar-tsv ClinVar (.tsv.gz download)\n"
 	#helpText += "  --clinvar-vcf ClinVar (.vcf.gz download)\n"
 	helpText += "  --mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)\n"
-	helpText += "  --mac-clinvar-vcf ClinVar from MacArthur lab (clinvar_alleles.vcf.gz)\n"
+	#helpText += "  --mac-clinvar-vcf ClinVar from MacArthur lab (clinvar_alleles.vcf.gz)\n"
 	helpText += "Filters:\n"
 	helpText += "  --rare Allele frequency threshold for rare/common (default = 1, process variant with any frequency):\n"
 	helpText += "  --vcf-any-filter Allow variants that do not pass all filters in .vcf input (flag)\n"
-	helpText += "  --mutation-types Comma delimited list of types to allow\n"
+	helpText += "  --mutation-types Comma delimited list (no spaces) of types to allow\n"
 	helpText += "ReST batch sizes:\n"
-	helpText += "  -v VEP (#variants, default/max allowed = )\n"
+	helpText += "  -v VEP (#variants, default/max allowed = 150)\n"
 	helpText += "  -b ClinVar summary (#variants, default/max allowed = 500)\n"
 	helpText += "  -B ClinVar searchsize (#variants, default/max allowed = 50)\n"
 	helpText += "Custom columns (0-based)\n"

@@ -109,7 +109,6 @@ class charger(object):
 		deNovoFile = kwargs.get( 'deNovo' , "" )
 		assumedDeNovoFile = kwargs.get( 'assumedDeNovo' , "" )
 		coSegregateFile = kwargs.get( 'coSegregate' , "" )
-		tcga = kwargs.get( 'tcga' , True )
 		diseaseFile = kwargs.get( 'diseases' , "" )
 		specific = kwargs.get( 'specific' , False )
 		self.getDiseases( diseaseFile , **kwargs )
@@ -131,6 +130,12 @@ class charger(object):
 			exacDone = self.readTSV( tsvFile , **kwargs )
 		if pathogenicVariantsFile:
 			self.readVCF( pathogenicVariantsFile , appendTo="pathogenic" , **kwargs )
+		if deNovoFile:
+			self.readDeNovo( deNovoFile )
+		if assumedDeNovoFile:
+			self.readAssumedDeNovo( assumedDeNovoFile )
+		if coSegregateFile:
+			self.readCoSegregate( coSegregateFile )
 		if expressionFile:
 			self.readExpression( expressionFile )
 		else: 
@@ -733,10 +738,10 @@ class charger(object):
 			print "CharGer::readGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
 		self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
-	def readCoSegregate( self , inputFile ):
-		self.readOtherMAF( inputFile , varDict = self.coSegregateVariants )
 	def readAssumedDeNovo( self , inputFile ):
 		self.readOtherMAF( inputFile , varDict = self.assumedDeNovoVariants )
+	def readCoSegregate( self , inputFile ):
+		self.readOtherMAF( inputFile , varDict = self.coSegregateVariants )
 	def readOtherMAF( self , inputFile, varDict ):
 		try:
 			inFile = self.safeOpen( inputFile , 'r' , warning=True )
@@ -772,7 +777,15 @@ class charger(object):
 		macClinVarVCF = kwargs.get( 'macClinVarVCF' , None )
 		doClinVar = kwargs.get( 'clinvar' , False )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
-		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
+		maxSearchBatchSize = 50
+		searchBatchSize = kwargs.get( 'searchBatchSize' , maxSearchBatchSize )
+		if searchBatchSize > maxSearchBatchSize:
+			message = "warning: ClinVar ReST search batch size given is "
+			message += "greater than max allowed ("
+			message += str( maxSearchBatchSize ) + ")"
+			message += ". Overriding to max search batch size."
+			print( message )
+			searchBatchSize = maxSearchBatchSize
 		#print( '  '.join( [ str( doClinVar ) , str( macClinVarTSV ) , str( macClinVarVCF ) ] ) ) 
 		if doClinVar:
 			if macClinVarTSV:
@@ -1421,7 +1434,7 @@ class charger(object):
 			#if genomic change is the same, then PS1
 				if clin["description"] == clinvarvariant.pathogenic:
 					if mod == "PS1":
-						print( "also PS1 via samGenomicVariant" )
+						#print( "also PS1 via samGenomicVariant" )
 						var.PS1 = True # already pathogenic still suffices to be PS1
 						called = 1
 			elif consequence.sameGenomicReference( clinvarVar ):
@@ -1429,7 +1442,7 @@ class charger(object):
 				if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
 					if clin["description"] == clinvarvariant.pathogenic:
 						if mod == "PS1":
-							print( "also PS1 via sameGenomicReference" )
+							#print( "also PS1 via sameGenomicReference" )
 							var.PS1 = True
 							called = 1
 			if consequence.samePeptideReference( clinvarVar ):
@@ -1438,7 +1451,7 @@ class charger(object):
 					if consequence.plausibleCodonFrame( clinvarVar ):
 						if clin["description"] == clinvarvariant.pathogenic:
 							if mod == "PM5":
-								print( "also PS5 via plausibleCodonFrame" )
+								#print( "also PS5 via plausibleCodonFrame" )
 								var.PM5 = True # already pathogenic still suffices to be PS1
 								called = 1
 		return called

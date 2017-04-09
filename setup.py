@@ -15,11 +15,13 @@ setup( \
 		classification, CharGer cross-checks user variants against \
 		several public databases for information. CharGer then \
 		provides a pathogenicity score according to ACMG or \
-		CharGers custom scale.' ,
+		CharGer\'s custom scale.' ,
 	download_url = 'https://github.com/ding-lab/CharGer/archive/v' + \
 		version + '.tar.gz' ,
 	scripts = ['bin/charger'] ,
-	keywords = ["bioinformatics" , "genomics"] ,
+	keywords = [ "bioinformatics" , "genomics" , "pathogenic" , "benign" , \
+				"ClinVar" , "ExAC" , "VEP" , "BioMine" , "germline" , \
+				"variant" , "classifier" ] ,
 	classifiers = [ \
 		"License :: OSI Approved :: MIT License " , 
 		"Programming Language :: Python" , 
