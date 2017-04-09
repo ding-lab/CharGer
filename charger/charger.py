@@ -80,14 +80,16 @@ class charger(object):
 		self.checkInputExistence( 'vepCache' , **kwargs )
 		self.checkInputExistence( 'referenceFasta' , **kwargs )
 		vepOutputFile = kwargs.get( 'vepOutput' , "" )
-		vepOutHandle = self.safeOpen( vepOutputFile , "w" )
-		self.checkInputExistence( 'vepOutput' , **kwargs )
-		vepOutHandle.close()
+		if vepOutputFile:
+			vepOutHandle = self.safeOpen( vepOutputFile , "w" )
+			self.checkInputExistence( 'vepOutput' , **kwargs )
+			vepOutHandle.close()
 
 		outputFile = kwargs.get( 'output' , "" )
-		outHandle = self.safeOpen( outputFile , "w" )
-		self.checkInputExistence( 'output' , **kwargs )
-		outHandle.close()
+		if outputFile:
+			outHandle = self.safeOpen( outputFile , "w" )
+			self.checkInputExistence( 'output' , **kwargs )
+			outHandle.close()
 
 	def checkInputExistence( self , key , **kwargs ):
 		keyFile = kwargs.get( key , "" )
@@ -276,11 +278,11 @@ class charger(object):
 		return False
 		
 	def skipIfNotInMutationTypes( self , var , mutationTypes ):
-		if var.variantClass is None:
-			return False
-		if var.variantClass not in mutationTypes:
-			print( str( var.variantClass ) + " is not in " + str( mutationTypes ) )
-			return True
+		if mutationTypes:
+			if var.variantClass is None:
+				return False
+			if var.variantClass not in mutationTypes:
+				return True
 		return False
 
 	def getVEPConsequences( self , info , var , preVEP , hasAF ):
@@ -771,7 +773,7 @@ class charger(object):
 		doClinVar = kwargs.get( 'clinvar' , False )
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
 		searchBatchSize = kwargs.get( 'searchBatchSize' , 50 )
-		print( '  '.join( [ str( doClinVar ) , str( macClinVarTSV ) , str( macClinVarVCF ) ] ) ) 
+		#print( '  '.join( [ str( doClinVar ) , str( macClinVarTSV ) , str( macClinVarVCF ) ] ) ) 
 		if doClinVar:
 			if macClinVarTSV:
 				clinvarSet = self.getMacClinVarTSV( macClinVarTSV )
@@ -803,6 +805,7 @@ class charger(object):
 		"""
 		clinvarSet = {}
 		with gzip.open( tsvfile , "rb" ) as macFile:
+			next( macFile )
 			for line in macFile:
 				fields = ( line.rstrip( ) ).split( "\t" )
 				[ description , status ] = self.parseMacPathogenicity( fields[12:17] )
@@ -815,8 +818,12 @@ class charger(object):
 									  clinical = { "description" : description , "review_status" : status } , \
 									  trait = { fields[-1] : fields[19] } , \
 				)
+				var.setStopFromReferenceAndAlternate( )
 				var.splitHGVSc( fields[9] , override = True )
-				var.splitHGVSp( fields[10] , override = True )
+				var.splitHGVSp( fields[10] )
+				#var.printVariant( "," )
+				#print( var.proteogenomicVar( ) )
+				#sys.exit() 
 				clinvarSet[var.uid] = var
 		print( "Have " + str( len( clinvarSet ) ) + " uid's from MacArthur ClinVar .tsv file: " + tsvfile )
 		return clinvarSet
@@ -825,24 +832,36 @@ class charger(object):
 	def parseMacPathogenicity( fields ):
 		named = fields[0]
 		isPathogenic = fields[1]
+		if isPathogenic == "1;0":
+			isPathogenic = 1
+		else:
+			isPathogenic = int( isPathogenic )
 		isBenign = fields[2]
+		if isBenign == "1;0":
+			isBenign = 1
+		else:
+			isBenign = int( isBenign )
 		isConflicted = fields[3]
+		if isConflicted == "1;0":
+			isConflicted = 1
+		else:
+			isConflicted = int( isConflicted )
 		status = fields[4]
 		desc = chargervariant.uncertain
-		if isConflicted:
+		if isConflicted == 1:
 			return [ desc , status ]
-		if isBenign:
+		if isBenign == 1:
 			for desc in named.split( ";" ):
-				if re.match( desc.tolower( ) , "ikely" ) and desc != chargervariant.benign:
+				if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
 					desc = chargervariant.likelyBenign
-				elif re.match( desc.tolower( ) , "benign" ):
+				elif re.match( desc.lower( ) , "benign" ):
 					desc = chargervariant.benign
 					break
-		if isPathogenic:
+		if isPathogenic == 1:
 			for desc in named.split( ";" ):
-				if re.match( desc.tolower( ) , "ikely" ) and desc != chargervariant.pathogenic:
+				if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
 					desc = chargervariant.likelyPanic
-				elif re.match( desc.tolower( ) , "athog" ):
+				elif re.match( desc.lower( ) , "athog" ):
 					desc = chargervariant.pathogenic
 					break
 		return [ desc , status ]
@@ -948,7 +967,8 @@ class charger(object):
 		defaultVEPOutput = "./charger.vep.vcf"
 		defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
 		assembly = "GRCh" + str( grch )
-		hdir = vepVersion + "_" + assembly
+		#hdir = vepVersion + "_" + assembly
+		hdir = ensemblRelease + "_" + assembly
 		fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
 			 ".dna.primary_assembly.fa.gz" 
 		defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
@@ -1016,16 +1036,19 @@ class charger(object):
 		print( "matchClinVar!" )
 		matched = 0
 		for var in userVariants:
-			print( "user: " + var.proteogenomicVar( ) )
 			for uid in clinvarVariants:
 				#print( str( uid ) )
 				cvar = clinvarVariants[uid]
-				print( "ClinVar: " + cvar.proteogenomicVar( ) )
 				if var.sameGenomicVariant( cvar ):
 					matched += 1
 					var.clinical = cvar.clinical
+					cvar.fillMissingInfo( var )
+					var.fillMissingInfo( cvar )
 					var.clinvarVariant = cvar
 					print( "MATCHED" )
+					print( "user: " + var.proteogenomicVar( ) )
+					print( "ClinVar: " + cvar.proteogenomicVar( ) )
+					#sys.exit( )
 					break
 		print( "Matched " + str( matched ) + " ClinVar entries to user variants" )
 		return userVariants
@@ -1035,7 +1058,7 @@ class charger(object):
 		for var in self.userVariants:
 			genVar = var.vcf()
 			if genVar in vepVariants:
-				vepVar = vepVariants[genVar]
+				charVEPVar = vepVariants[genVar]
 			else:
 				print( "Filtering out " + genVar + ", because it is not in VEP annotations." )
 				i = self.userVariants.index( var )
@@ -1044,11 +1067,12 @@ class charger(object):
 				continue
 			#print( var.proteogenomicVar() )
 			#var.printVariant( "<" )
-			#print( vepVar.proteogenomicVar() )
-			vepVar.printVariant( "|" )
-			vepVar.fillMissingInfo( var )
+			#print( charVEPVar.proteogenomicVar() )
+			#charVEPVar.printVariant( "|" )
+			charVEPVar.fillMissingInfo( var )
 			var.copyMostSevereConsequence()
-			var.fillMissingInfo( vepVar )
+			var.fillMissingInfo( charVEPVar )
+			var.vepVariant = charVEPVar.vepVariant
 			#print( var.proteogenomicVar() )
 			#var.printVariant( ">" )
 		print( "Removed " + str( removedVars ) + " from initial user set of " + currentVars + ", now have " + str( len( self.userVariants ) ) + " user variants left." )
@@ -1373,13 +1397,12 @@ class charger(object):
 						if var.vepVariant.consequences:
 							for consequence in var.vepVariant.consequences:
 								CVchecked = self.checkClinVarPC( var , mod , consequence=consequence )
-								#for pathVar in self.pathogenicVariants:
 								PVchecked = self.checkPathogenicVariants( var , mod , consequence=consequence )
 								if CVchecked or PVchecked:
 									called += 1
 					else:
 						CVchecked = self.checkClinVarPC( var , mod )
-						PVchecked = self.checkPathogenicVariants( var , mod )
+						PVchecked = self.checkPathogenicVariants( var , mod , var )
 						if CVchecked or PVchecked:
 							called += 1
 			if var.PS1 and mod == "PS1":
@@ -1387,6 +1410,7 @@ class charger(object):
 			if var.PM5 and mod == "PM5":
 				var.addSummary( "PM5(Peptide change at the same location of a known pathogenic change)" )
 		print mod + " found " + str(called) + " pathogenic variants"
+		
 	def checkClinVarPC( self , var , mod , **kwargs ):
 		called = 0
 		consequence = kwargs.get( 'consequence' , var )
@@ -1397,6 +1421,7 @@ class charger(object):
 			#if genomic change is the same, then PS1
 				if clin["description"] == clinvarvariant.pathogenic:
 					if mod == "PS1":
+						print( "also PS1 via samGenomicVariant" )
 						var.PS1 = True # already pathogenic still suffices to be PS1
 						called = 1
 			elif consequence.sameGenomicReference( clinvarVar ):
@@ -1404,6 +1429,7 @@ class charger(object):
 				if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
 					if clin["description"] == clinvarvariant.pathogenic:
 						if mod == "PS1":
+							print( "also PS1 via sameGenomicReference" )
 							var.PS1 = True
 							called = 1
 			if consequence.samePeptideReference( clinvarVar ):
@@ -1412,9 +1438,11 @@ class charger(object):
 					if consequence.plausibleCodonFrame( clinvarVar ):
 						if clin["description"] == clinvarvariant.pathogenic:
 							if mod == "PM5":
+								print( "also PS5 via plausibleCodonFrame" )
 								var.PM5 = True # already pathogenic still suffices to be PS1
 								called = 1
 		return called
+
 	def checkPathogenicVariants( self , var , mod , consequence ):
 		called = 0
 		if self.pathogenicVariants:
@@ -1482,20 +1510,27 @@ class charger(object):
 #### Strong ####
 	def BS1( self ):
 		print "CharGer module BS1: not yet implemented"
+		#Allele frequency is greater than expected for disorder
 	def BS2( self ):
 		print "CharGer module BS2: not yet implemented"
+		# Observed in a healthy adult individual for a recessive (homozygous), dominant (heterozygous), or X-linked (hemizygous) disorder, with full penetrance expected at an early age
 	def BS3( self ):
 		print "CharGer module BS3: not yet implemented"
 		#print " - in vitro or in vivo functional studies with no damaging effect on protein function or splicing"
 	def BS4( self ):
 		print "CharGer module BS4: not yet implemented"
+		# Lack of segregation in affected members of a family
+		#Caveat: The presence of phenocopies for common phenotypes (i.e., cancer, epilepsy) can mimic lack of segregation among affected individuals. Also, families may have more than one pathogenic variant contributing to an autosomal dominant disorder, further confounding an apparent lack of segregation.
 #### Supporting ####
 	def BP1( self ):
 		print "CharGer module BP1: not yet implemented"
+		#Missense variant in a gene for which primarily truncating variants are known to cause disease
 	def BP2( self ):
 		print "CharGer module BP2: not yet implemented"
+		#Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern
 	def BP3( self ):
 		print "CharGer module BP3: not yet implemented"
+		#In-frame deletions/insertions in a repetitive region without a known function
 	def BP4( self , minimumEvidence ):
 		print "CharGer module BP4"
 		print " - in silico evidence of no damage"
@@ -1577,8 +1612,10 @@ class charger(object):
 		#print" - multiple lines of computational evidence suggesting no impact on gene or product"
 	def BP6( self ):
 		print "CharGer module BP6: not yet implemented"
+		#Reputable source recently reports variant as benign, but the evidence is not available to the laboratory to perform an independent evaluation
 	def BP7( self ):
 		print "CharGer module BP7: not yet implemented"
+		#A synonymous (silent) variant for which splicing prediction algorithms predict no impact to the splice consensus sequence nor the creation of a new splice site AND the nucleotide is not highly conserved
 
 ### Classifier ###
 	def classify( self , **kwargs ):
@@ -1605,7 +1642,8 @@ class charger(object):
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
 		asHTML = kwargs.get( 'html' , False )
-		print( "write to " + outFile )
+		print( "write " + str( len( self.userVariants ) ) + \
+			   " charged user variants to " + outFile )
 		annotateInput = kwargs.get( 'annotate' , False )
 		skipURLTest = kwargs.get( 'skipURLTest' , True )
 		if skipURLTest:
@@ -1645,6 +1683,7 @@ class charger(object):
 			else:
 				outFH.write( "\n" )
 			for var in self.userVariants:
+				var.printVariant( ", " )
 				fields = []
 
 				self.appendStr( fields,var.gene)

@@ -182,17 +182,26 @@ class chargervariant(mafvariant):
 		#self.printVariant( ", " )
 		super( chargervariant , self ).fillMissingInfo( copy )
 		#self.printVariant( ", " )
-		if self.vepVariant or copy.vepVariant:
+		if isinstance( copy , chargervariant ):
 			if not self.vepVariant:
 				self.vepVariant = copy.vepVariant
-			self.vepVariant.fillMissingInfo( copy.vepVariant )
-		#self.printVariant( ", " )
-		if self.clinvarVariant or copy.clinvarVariant:
+				self.vepVariant.fillMissingInfo( copy.vepVariant )
+			#self.printVariant( ", " )
 			if not self.clinvarVariant:
 				self.clinvarVariant = copy.clinvarVariant
-			self.clinvarVariant.fillMissingInfo( copy.clinvarVariant )
-		#print( "FMI: after clinvar" )
-		#self.printVariant( ", " )
+				self.clinvarVariant.fillMissingInfo( copy.clinvarVariant )
+			#self.printVariant( ", " )
+		elif isinstance( copy , vepvariant ):
+			if not self.vepVariant:
+				self.vepVariant = copy.vepVariant
+				self.vepVariant.fillMissingInfo( copy.vepVariant )
+			#self.printVariant( ", " )
+		elif isinstance( copy , clinvarvariant ):
+			if not self.clinvarVariant:
+				self.clinvarVariant = copy.clinvarVariant
+				self.clinvarVariant.fillMissingInfo( copy.clinvarVariant )
+			#self.printVariant( ", " )
+
 	def copyMostSevereConsequence( self ):
 		for consequence in self.vepVariant.consequences:
 			if self.vepVariant.mostSevereConsequence in consequence.terms:
