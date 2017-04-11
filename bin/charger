@@ -451,10 +451,10 @@ def main( argv ):
 	)
 
 	if doVEP:
-		if vepDone:
+		if vepDone and not vepScript:
 			doVEP = False
 	if doExAC:
-		if exacDone:
+		if exacDone and not exacVCF:
 			doExAC = False
 
 	if doClinVar:
@@ -528,6 +528,9 @@ def main( argv ):
 	CharGer.BP5( )
 	CharGer.BP6( )
 	CharGer.BP7( )
+
+	CharGer.BSC1( )
+	CharGer.BMC1( )
 
 	print( str( rareThreshold ) + " < " + str( commonThreshold ) )
 	t4 = time.time() 

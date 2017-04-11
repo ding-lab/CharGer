@@ -1,6 +1,6 @@
 #https://docs.python.org/2/distutils/examples.html
 from distutils.core import setup
-version = "0.1.0"
+version = "0.2.0"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
@@ -41,7 +41,7 @@ setup( \
 		'charger' ,
 	] , #each of the directories with modules (aka packages)
 	install_requires = [ \
-		'BioMine' ,
+		'BioMine < 0.9.1' ,
 		'AdvancedHTMLParser' , 
 		'requests' ,
 		'pysam' , 

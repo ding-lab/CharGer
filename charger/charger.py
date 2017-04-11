@@ -51,6 +51,9 @@ class charger(object):
 		self.diseases = kwargs.get( 'diseases' , {} )
 		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
 		self.vcfKeyIndex = kwargs.get( 'vcfKeyIndex' , {} )
+		self.mutationTypesFilter = kwargs.get( 'mutationTypes' , [] )
+		self.thresholdAF = kwargs.get( 'thresholdAF' , 1 )
+		#self.filtered = []
 
 		#### ADD key index here to access vcf info for individual variant
 
@@ -182,10 +185,10 @@ class charger(object):
 		else:
 			inFile = vcf.Reader( open( inputFile , 'r' ) )
 		variantDict = {}
-		appendTo = kwargs.get( "appendTo" , "user" )
-		thresholdAF = kwargs.get( "thresholdAF" , 1 )
+		appendTo = kwargs.get( "appendTo" , "" )
+		self.thresholdAF = kwargs.get( "thresholdAF" , 1 )
 		anyFilter = kwargs.get( "anyFilter" , False )
-		mutationTypes = kwargs.get( "mutationTypes" , [] )
+		self.mutationTypes = kwargs.get( "mutationTypes" , [] )
 		preVEP = []
 		vepDone = False
 		exacDone = False
@@ -238,7 +241,7 @@ class charger(object):
 				)
 
 				hasAF = False
-				[ hasAF , skip ] = self.getAF( info , var , thresholdAF , alti )
+				hasAF = self.getAF( info , var , alti )
 #				#print( str( var.alleleFrequency ) )
 #				hasClinVar = False
 #				ClinVarElsewhere = info.get( 'clinvar_measureset_id' , 0 )
@@ -246,10 +249,12 @@ class charger(object):
 #				var.clinvarVariant.uid = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				if ClinVarElsewhere != 0:
 				self.getVEPConsequences( info , var , preVEP , hasAF )
-				if self.skipIfHighAF( var , thresholdAF ):
+				if self.skipIfHighAF( var ):
+					#self.filtered.append( var.vcf() )
 					failedAF += 1
 					continue
-				if self.skipIfNotInMutationTypes( var , mutationTypes ):
+				if self.skipIfNotInMutationTypes( var ):
+					#self.filtered.append( var.vcf() )
 					failedMT += 1
 					continue
 					
@@ -265,28 +270,27 @@ class charger(object):
 			sys.exit( )
 		return [ vepDone , preVEP , exacDone , clinvarDone , variantDict ]
 
-	def getAF( self , info , var , thresholdAF , alti ):
+	def getAF( self , info , var , alti ):
 		hasAF = False
-		skip = False
 		var.alleleFrequency = 0
 		withAF = info.get( 'AF' , "noAF" )
 		if ( withAF != "noAF" ):
 			afs = withAF[alti]
 			var.alleleFrequency = afs
 			hasAF = True
-		return [ hasAF , skip ]
+		return hasAF
 
-	def skipIfHighAF( self , var , thresholdAF ):
+	def skipIfHighAF( self , var ):
 		if var.alleleFrequency != None:
-			if var.isFrequentAllele( thresholdAF ):
+			if var.isFrequentAllele( self.thresholdAF ):
 				return True
 		return False
 		
-	def skipIfNotInMutationTypes( self , var , mutationTypes ):
-		if mutationTypes:
+	def skipIfNotInMutationTypes( self , var ):
+		if self.mutationTypes:
 			if var.variantClass is None:
 				return False
-			if var.variantClass not in mutationTypes:
+			if var.variantClass not in self.mutationTypes:
 				return True
 		return False
 
@@ -538,6 +542,7 @@ class charger(object):
 		var.clinvarVariant.clinical["review_status"] = ""
 
 	def getMostSevereConsequence( self , var ):
+#TODO parse "splice_region_variant&synonymous_variant" as possible consequence
 		severeRank = [ 	"transcript_ablation" , \
 						"splice_acceptor_variant" , \
 						"splice_donor_variant" , \
@@ -619,6 +624,8 @@ class charger(object):
 			genVar = var.vcf( )
 			variantDict[genVar] = var
 			return variantDict
+		else:
+			print( "CharGer warning: bad appendTo = " + str( appendTo ) )
 
 	def readTSV( self , inputFile , **kwargs ):
 		print "\tReading .tsv!"
@@ -768,24 +775,16 @@ class charger(object):
 		self.getExAC( **kwargs )
 		self.printRunTime( "exac" , self.runTime( t ) )
 		self.fillMissingVariantInfo()
+
 	def fillMissingVariantInfo( self ):
 		for var in self.userVariants:
 			var.fillMissingInfo( var )
+
 	def getClinVar( self , **kwargs ):
 		print( "charger::getClinVar" )
 		macClinVarTSV = kwargs.get( 'macClinVarTSV' , None )
 		macClinVarVCF = kwargs.get( 'macClinVarVCF' , None )
 		doClinVar = kwargs.get( 'clinvar' , False )
-		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
-		maxSearchBatchSize = 50
-		searchBatchSize = kwargs.get( 'searchBatchSize' , maxSearchBatchSize )
-		if searchBatchSize > maxSearchBatchSize:
-			message = "warning: ClinVar ReST search batch size given is "
-			message += "greater than max allowed ("
-			message += str( maxSearchBatchSize ) + ")"
-			message += ". Overriding to max search batch size."
-			print( message )
-			searchBatchSize = maxSearchBatchSize
 		#print( '  '.join( [ str( doClinVar ) , str( macClinVarTSV ) , str( macClinVarVCF ) ] ) ) 
 		if doClinVar:
 			if macClinVarTSV:
@@ -794,6 +793,16 @@ class charger(object):
 			elif macClinVarVCF:
 				self.getMacClinVarVCF( macClinVarTSV )
 			else:
+				summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
+				maxSearchBatchSize = 50
+				searchBatchSize = kwargs.get( 'searchBatchSize' , maxSearchBatchSize )
+				if searchBatchSize > maxSearchBatchSize:
+					message = "warning: ClinVar ReST search batch size given is "
+					message += "greater than max allowed ("
+					message += str( maxSearchBatchSize ) + ")"
+					message += ". Overriding to max search batch size."
+					print( message )
+					searchBatchSize = maxSearchBatchSize
 				ent = entrezapi()
 				i = 0
 				for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
@@ -1041,16 +1050,12 @@ class charger(object):
 			print( "now matching VEP annotated variants" )
 			self.matchVEP( vepVariants )
 
-			#self.printVariants( self.userVariants )
-			#sys.exit( )
-
 #### Helper methods for data retrieval ####
 	def matchClinVar( self , userVariants , clinvarVariants ):
 		print( "matchClinVar!" )
 		matched = 0
 		for var in userVariants:
 			for uid in clinvarVariants:
-				#print( str( uid ) )
 				cvar = clinvarVariants[uid]
 				if var.sameGenomicVariant( cvar ):
 					matched += 1
@@ -1058,37 +1063,28 @@ class charger(object):
 					cvar.fillMissingInfo( var )
 					var.fillMissingInfo( cvar )
 					var.clinvarVariant = cvar
-					print( "MATCHED" )
-					print( "user: " + var.proteogenomicVar( ) )
-					print( "ClinVar: " + cvar.proteogenomicVar( ) )
-					#sys.exit( )
 					break
 		print( "Matched " + str( matched ) + " ClinVar entries to user variants" )
 		return userVariants
+
 	def matchVEP( self , vepVariants ):
 		currentVars = str( len( self.userVariants ) )
 		removedVars = 0
+		self.userVariants = [x for x in self.userVariants if x.vcf() in vepVariants]
 		for var in self.userVariants:
 			genVar = var.vcf()
 			if genVar in vepVariants:
 				charVEPVar = vepVariants[genVar]
+				charVEPVar.fillMissingInfo( var )
+				var.copyMostSevereConsequence()
+				var.fillMissingInfo( charVEPVar )
+				var.vepVariant = charVEPVar.vepVariant
 			else:
-				print( "Filtering out " + genVar + ", because it is not in VEP annotations." )
-				i = self.userVariants.index( var )
-				del self.userVariants[i]
-				removedVars += 1
-				continue
-			#print( var.proteogenomicVar() )
-			#var.printVariant( "<" )
-			#print( charVEPVar.proteogenomicVar() )
-			#charVEPVar.printVariant( "|" )
-			charVEPVar.fillMissingInfo( var )
-			var.copyMostSevereConsequence()
-			var.fillMissingInfo( charVEPVar )
-			var.vepVariant = charVEPVar.vepVariant
-			#print( var.proteogenomicVar() )
-			#var.printVariant( ">" )
+				print( "CharGer warning: should have been filtered in VEP match: " + genVar + " -- " + var.proteogenomicVar() )
+		afterFilter = len( self.userVariants )
+		removedVars = int( currentVars ) - afterFilter
 		print( "Removed " + str( removedVars ) + " from initial user set of " + currentVars + ", now have " + str( len( self.userVariants ) ) + " user variants left." )
+
 	def getDiseases( self , diseasesFile , **kwargs ):
 		tcga = kwargs.get( 'tcga' , True )
 		try:
@@ -1203,6 +1199,7 @@ class charger(object):
 		print "CharGer module PM5"
 		print "- different peptide change of a pathogenic variant at the same reference peptide"
 		self.peptideChange( "PM5" )
+
 	def PM6( self ):
 		print "CharGer module PM6"
 		print "- assumed de novo without maternity and paternity confirmation"
@@ -1402,6 +1399,10 @@ class charger(object):
 				call = var.PS1
 			if mod == "PM5":
 				call = var.PM5
+			if mod == "BSC1":
+				call = var.BSC1
+			if mod == "BMC1":
+				call = var.BMC1
 			if not call: #is already true
 				CVchecked = 0
 				PVchecked = 0
@@ -1422,6 +1423,10 @@ class charger(object):
 				var.addSummary( "PS1(Peptide change is known pathogenic)" )
 			if var.PM5 and mod == "PM5":
 				var.addSummary( "PM5(Peptide change at the same location of a known pathogenic change)" )
+			if var.BSC1 and mod == "BSC1":
+				var.addSummary( "BSC1(Peptide change is known benign)" )
+			if var.BMC1 and mod == "BMC1":
+				var.addSummary( "BMC1(Peptide change at the same location of a known benign change)" )
 		print mod + " found " + str(called) + " pathogenic variants"
 		
 	def checkClinVarPC( self , var , mod , **kwargs ):
@@ -1432,6 +1437,11 @@ class charger(object):
 			clin = clinvarVar.clinical
 			if consequence.sameGenomicVariant( clinvarVar ):
 			#if genomic change is the same, then PS1
+				if clin["description"] == clinvarvariant.benign:
+					if mod == "BSC1":
+						#print( "also BSC1 via samGenomicVariant" )
+						var.BSC1 = True # already pathogenic still suffices to be BSC1
+						called = 1
 				if clin["description"] == clinvarvariant.pathogenic:
 					if mod == "PS1":
 						#print( "also PS1 via samGenomicVariant" )
@@ -1440,6 +1450,11 @@ class charger(object):
 			elif consequence.sameGenomicReference( clinvarVar ):
 			#if genomic change is different, but the peptide change is the same, then PS1
 				if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
+					if clin["description"] == clinvarvariant.benign:
+						if mod == "BSC1":
+							#print( "also BSC1 via sameGenomicReference" )
+							var.BSC1 = True
+							called = 1
 					if clin["description"] == clinvarvariant.pathogenic:
 						if mod == "PS1":
 							#print( "also PS1 via sameGenomicReference" )
@@ -1449,6 +1464,11 @@ class charger(object):
 				if not consequence.samePeptideChange( clinvarVar ):
 				#if peptide change is different, but the peptide reference is the same, then PM5
 					if consequence.plausibleCodonFrame( clinvarVar ):
+						if clin["description"] == clinvarvariant.benign:
+							if mod == "BMC1":
+								#print( "also PS5 via plausibleCodonFrame" )
+								var.BMC1 = True # already benign still suffices to be BSC1
+								called = 1
 						if clin["description"] == clinvarvariant.pathogenic:
 							if mod == "PM5":
 								#print( "also PS5 via plausibleCodonFrame" )
@@ -1466,6 +1486,9 @@ class charger(object):
 						for pathVar in self.pathogenicVariants[pathKey].vepVariant.consequences:
 							if consequence.sameGenomicVariant( pathVar ):
 							#if genomic change is the same, then PS1
+								if mod == "BSC1":
+									var.BSC1 = True # already benign still suffices to be BSC1
+									called = 1
 								if mod == "PS1":
 									var.PS1 = True # already pathogenic still suffices to be PS1
 									called = 1
@@ -1474,6 +1497,9 @@ class charger(object):
 							elif consequence.sameGenomicReference( pathVar ):
 							#if genomic change is different, but the peptide change is the same, then PS1
 								if pathVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
+									if mod == "BSC1":
+										var.BSC1 = True
+										called = 1
 									if mod == "PS1":
 										var.PS1 = True
 										called = 1
@@ -1483,12 +1509,16 @@ class charger(object):
 								if not consequence.samePeptideChange( pathVar ):
 								#if peptide change is different, but the peptide reference is the same, then PM5
 									if consequence.plausibleCodonFrame( pathVar ):
+										if mod == "BMC1":
+											var.BMC1 = True # already benign still suffices to be PS1
+											called = 1
 										if mod == "PM5":
 											var.PM5 = True # already pathogenic still suffices to be PS1
 											called = 1
 											#print var.genomicVar() ,
 											#print " matched a pathogenic Variant in PM5"
 		return called
+
 	def printResult( self ):
 		for var in self.userVariants:
 			for module in var.modules():
@@ -1534,6 +1564,16 @@ class charger(object):
 		print "CharGer module BS4: not yet implemented"
 		# Lack of segregation in affected members of a family
 		#Caveat: The presence of phenocopies for common phenotypes (i.e., cancer, epilepsy) can mimic lack of segregation among affected individuals. Also, families may have more than one pathogenic variant contributing to an autosomal dominant disorder, further confounding an apparent lack of segregation.
+	def BSC1( self ):
+		print "CharGer module BSC1"
+		print "- same peptide change as a previously established benign variant"
+		self.peptideChange( "BSC1" )
+
+	def BMC1( self ):
+		print "CharGer module BMC1"
+		print "- different peptide change of a benign variant at the same reference peptide"
+		self.peptideChange( "BMC1" )
+
 #### Supporting ####
 	def BP1( self ):
 		print "CharGer module BP1: not yet implemented"
@@ -1696,7 +1736,10 @@ class charger(object):
 			else:
 				outFH.write( "\n" )
 			for var in self.userVariants:
-				var.printVariant( ", " )
+				genVar = var.vcf()
+				#if genVar in self.filtered:
+				#	print( "skipping " + genVar + " -- " + var.proteogenomicVar() + " due to mutation-type or allele frequency filters." )
+				#	continue
 				fields = []
 
 				self.appendStr( fields,var.gene)
