@@ -1427,7 +1427,10 @@ class charger(object):
 				var.addSummary( "BSC1(Peptide change is known benign)" )
 			if var.BMC1 and mod == "BMC1":
 				var.addSummary( "BMC1(Peptide change at the same location of a known benign change)" )
-		print mod + " found " + str(called) + " pathogenic variants"
+		if mod == "PS1" or mod == "PM5":
+			print mod + " found " + str(called) + " pathogenic variants"
+		if mod == "BSC1" or mod == "BMC1":
+			print mod + " found " + str(called) + " benign variants"
 		
 	def checkClinVarPC( self , var , mod , **kwargs ):
 		called = 0

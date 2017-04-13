@@ -1,6 +1,6 @@
 #https://docs.python.org/2/distutils/examples.html
 from distutils.core import setup
-version = "0.2.0"
+version = "0.2.1"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
@@ -45,7 +45,8 @@ setup( \
 		'AdvancedHTMLParser' , 
 		'requests' ,
 		'pysam' , 
-		#'PyVCF' ,
+		'PyVCF' ,
+		'SciPy' ,
 		#'transvar' ,
 	] , #auto installs with pip install
 	#dependency_links = ['https://github.com/zwdzwd/transvar/archive/v2.1.23.20160321.tar.gz']
