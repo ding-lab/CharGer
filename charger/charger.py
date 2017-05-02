@@ -79,6 +79,7 @@ class charger(object):
 		self.checkInputExistence( 'exacVCF' , **kwargs )
 
 		self.checkInputExistence( 'vepScript' , **kwargs )
+		self.checkInputExistence( 'vepConfig' , **kwargs )
 		self.checkInputExistence( 'vepDir' , **kwargs )
 		self.checkInputExistence( 'vepCache' , **kwargs )
 		self.checkInputExistence( 'referenceFasta' , **kwargs )
@@ -1000,33 +1001,40 @@ class charger(object):
 		vepScript = kwargs.get( 'vepScript' , defaultVEPScript )
 		vcfFile = kwargs.get( 'vcf' , "" )
 		forks = kwargs.get( 'fork' , 0 )
+		vepConfig = kwargs.get( 'vepConfig', "" )
 		print( defaultFasta )
 		print( fasta )
 		if vcfFile:
-			vep_command = [ "/bin/perl" , vepScript , \
-				"--species" , "homo_sapiens" , \
-				"--assembly" , assembly , \
-				"--input_file" , vcfFile , \
-				"--output_file" , outputFile , \
-				"--format" , "vcf" , \
-				"--fork" , forks , \
-				"--fasta" , defaultFasta , \
-				"--everything" , \
-				"--vcf" , \
-				"--cache" , \
-				"--offline" , \
-				"--no_progress" , \
-				"--total_length" , \
-				"--no_escape" , \
-				"--xref_refseq" , \
-				"--force_overwrite" , \
-				"--no_stats" , \
-				"--dir" , vepCacheDir , \
-				"--dir_cache" , vepCacheDir , \
-				"--verbose" , \
-				#"--quiet" , \
-				#"--help" \
-			]
+			vep_command = []
+			if vepConfig:
+				vep_command = [ "/bin/perl" , vepScript , \
+					"--config", vepConfig ]
+				print( "AW:inside vep config loop" )
+			else:
+				vep_command = [ "/bin/perl" , vepScript , \
+					"--species" , "homo_sapiens" , \
+					"--assembly" , assembly , \
+					"--input_file" , vcfFile , \
+					"--output_file" , outputFile , \
+					"--format" , "vcf" , \
+					"--fork" , forks , \
+					"--fasta" , defaultFasta , \
+					"--everything" , \
+					"--vcf" , \
+					"--cache" , \
+					"--offline" , \
+					"--no_progress" , \
+					"--total_length" , \
+					"--no_escape" , \
+					"--xref_refseq" , \
+					"--force_overwrite" , \
+					"--no_stats" , \
+					"--dir" , vepCacheDir , \
+					"--dir_cache" , vepCacheDir , \
+					"--verbose" , \
+					#"--quiet" , \
+					#"--help" \
+				]
 			#print( vep_command )
 			try:
 				#returnCode = subprocess.call( ' '.join( vep_command ) )

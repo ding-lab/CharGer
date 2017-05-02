@@ -41,6 +41,7 @@ def parseArgs( argv ):
 	helpText += "  -r recurrence threshold (default = 2)\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --vep-script Path to VEP\n"
+	helpText += "  --vep-config config-file for VEP\n"
 	helpText += "  --vep-dir Path to VEP directory\n"
 	helpText += "  --vep-cache Path to VEP cache directory\n"
 	helpText += "  --vep-version VEP version (default = 87)\n"
@@ -117,6 +118,7 @@ def parseArgs( argv ):
 	pathogenicVariantsFile = None
 	annotateInput = ""
 	vepScript = ""
+	vepConfig = ""
 	vepDir = None
 	vepCache = None
 	vepOutput = None
@@ -145,7 +147,7 @@ def parseArgs( argv ):
 		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
 		"recurrence=" , "rare=" , "vcf-any-filter" , "mutation-types=" , \
 		"hotspot3d=" , "pathogenicVariants=" , \
-		"vep-script=" , "vep-dir=" , "vep-cache=" , "vep-output=" , \
+		"vep-script=" , "vep-config=", "vep-dir=" , "vep-cache=" , "vep-output=" , \
 		"ensembl-release=" , "vep-version=" , \
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
@@ -245,6 +247,8 @@ def parseArgs( argv ):
 			annotateInput = True
 		elif opt in ( "--vep-script" ):
 			vepScript = arg
+		elif opt in ( "--vep-config" ):
+			vepConfig = arg
 		elif opt in ( "--vep-dir" ):
 			vepDir = arg
 		elif opt in ( "--vep-cache" ):
@@ -317,6 +321,7 @@ def parseArgs( argv ):
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
 	"vepScript" : vepScript , \
+	"vepConfig" : vepConfig , \
 	"vepDir" : vepDir , \
 	"vepCache" : vepCache , \
 	"vepOutput" : vepOutput , \
@@ -380,6 +385,7 @@ def main( argv ):
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
 	vepScript = values["vepScript"]
+	vepConfig = values["vepConfig"]
 	vepDir = values["vepDir"]
 	vepCache = values["vepCache"]
 	vepOutput = values["vepOutput"]
@@ -408,6 +414,7 @@ def main( argv ):
 							 coSegregation = coSegregationFile , \
 							 diseases = diseasesFile , \
 							 vepScript = vepScript , \
+							 vepConfig = vepConfig , \
 							 vepDir = vepDir , \
 							 vepCache = vepCache , \
 							 vepOutput = vepOutput , \
@@ -475,6 +482,7 @@ def main( argv ):
 	allOptions=False , \
 	maxPost=vepBatchSize , \
 	vepScript=vepScript , \
+	vepConfig=vepConfig , \
 	vepDir=vepDir , \
 	vepCache=vepCache , \
 	vepOutput=vepOutput , \
