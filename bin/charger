@@ -42,7 +42,7 @@ def parseArgs( argv ):
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --vep-script Path to VEP\n"
 	helpText += "  --vep-config config-file for VEP\n"
-	helpText += "  --vep-dir Path to VEP directory\n"
+	#helpText += "  --vep-dir Path to VEP directory\n"
 	helpText += "  --vep-cache Path to VEP cache directory\n"
 	helpText += "  --vep-version VEP version (default = 87)\n"
 	helpText += "  --vep-output VEP output file (default = charger.vep.vcf)\n"
@@ -119,7 +119,7 @@ def parseArgs( argv ):
 	annotateInput = ""
 	vepScript = ""
 	vepConfig = ""
-	vepDir = None
+	#vepDir = None
 	vepCache = None
 	vepOutput = None
 	ensemblRelease = ""
@@ -249,8 +249,8 @@ def parseArgs( argv ):
 			vepScript = arg
 		elif opt in ( "--vep-config" ):
 			vepConfig = arg
-		elif opt in ( "--vep-dir" ):
-			vepDir = arg
+		#elif opt in ( "--vep-dir" ):
+		#	vepDir = arg
 		elif opt in ( "--vep-cache" ):
 			vepCache = arg
 		elif opt in ( "--vep-output" ):
@@ -322,7 +322,7 @@ def parseArgs( argv ):
 	"annotate" : annotateInput , \
 	"vepScript" : vepScript , \
 	"vepConfig" : vepConfig , \
-	"vepDir" : vepDir , \
+	#"vepDir" : vepDir , \
 	"vepCache" : vepCache , \
 	"vepOutput" : vepOutput , \
 	"ensemblRelease" : ensemblRelease , \
@@ -386,7 +386,7 @@ def main( argv ):
 	annotateInput = values["annotate"]
 	vepScript = values["vepScript"]
 	vepConfig = values["vepConfig"]
-	vepDir = values["vepDir"]
+	#vepDir = values["vepDir"]
 	vepCache = values["vepCache"]
 	vepOutput = values["vepOutput"]
 	ensemblRelease = values["ensemblRelease"]
@@ -415,7 +415,7 @@ def main( argv ):
 							 diseases = diseasesFile , \
 							 vepScript = vepScript , \
 							 vepConfig = vepConfig , \
-							 vepDir = vepDir , \
+							 #vepDir = vepDir , \
 							 vepCache = vepCache , \
 							 vepOutput = vepOutput , \
 							 ensemblRelease = ensemblRelease , \
@@ -483,7 +483,7 @@ def main( argv ):
 	maxPost=vepBatchSize , \
 	vepScript=vepScript , \
 	vepConfig=vepConfig , \
-	vepDir=vepDir , \
+	#vepDir=vepDir , \
 	vepCache=vepCache , \
 	vepOutput=vepOutput , \
 	ensemblRelease=ensemblRelease , \

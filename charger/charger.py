@@ -80,7 +80,7 @@ class charger(object):
 
 		self.checkInputExistence( 'vepScript' , **kwargs )
 		self.checkInputExistence( 'vepConfig' , **kwargs )
-		self.checkInputExistence( 'vepDir' , **kwargs )
+		#self.checkInputExistence( 'vepDir' , **kwargs )
 		self.checkInputExistence( 'vepCache' , **kwargs )
 		self.checkInputExistence( 'referenceFasta' , **kwargs )
 		vepOutputFile = kwargs.get( 'vepOutput' , "" )
@@ -376,6 +376,7 @@ class charger(object):
 					changep = re.match( "p\." , hgvsp[1] )
 				if changep:
 					aas = mafvariant().splitHGVSp( hgvsp[1] )
+					print( "AmilaW:aas = " + str(aas) )
 					aas[0] = mafvariant().convertAA( aas[0] )
 					aas[2] = mafvariant().convertAA( aas[2] )
 				else:
@@ -937,11 +938,11 @@ class charger(object):
 		doVEP = kwargs.get( 'vep' , False )
 		preVEP = kwargs.get( 'prevep' , [] )
 		doREST = kwargs.get( 'rest' , False )
-		vepDir = kwargs.get( 'vepDir' , "" )
-		vepCache = kwargs.get( 'vepCache' , "" )
+		vepScript = kwargs.get( 'vepScript' , "" )
+		print( "AmilaW:" + vepScript )
 		if doVEP:
 			sys.stdout.write( "charger::getVEP " )
-			if not vepDir and not vepCache:
+			if not vepScript:
 				print( "through BioMine ReST" )
 				#sys.exit( )
 				self.getVEPviaREST( **kwargs )
@@ -981,36 +982,64 @@ class charger(object):
 #TODO add config file handling, would make this much more flexible and simple
 #TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
 		#print( kwargs )
-		defaultVEPDir = "./"
-		vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
-		vepCacheDir = kwargs.get( 'vepCache' , defaultVEPDir )
-		ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
-		vepVersion = kwargs.get( 'vepVersion' , 87 )
-		grch = kwargs.get( 'grch' , 37 )
-		defaultVEPOutput = "./charger.vep.vcf"
-		defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
-		assembly = "GRCh" + str( grch )
-		#hdir = vepVersion + "_" + assembly
-		hdir = ensemblRelease + "_" + assembly
-		fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
-			 ".dna.primary_assembly.fa.gz" 
-		defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
-		defaultFasta = '/'.join( defaultFastaArray )
-		fasta = kwargs.get( 'referenceFasta' , defaultFasta )
+		#defaultVEPDir = "./"
+		#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
+		#vepCacheDir = kwargs.get( 'vepCache' , defaultVEPDir )
+		#ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
+		#vepVersion = kwargs.get( 'vepVersion' , 87 )
+		#grch = kwargs.get( 'grch' , 37 )
+		defaultVEPOutput = "./clinvar.pk.vep.vcf"
+		##defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
+		#assembly = "GRCh" + str( grch )
+		##hdir = vepVersion + "_" + assembly
+		#hdir = ensemblRelease + "_" + assembly
+		#fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
+		#	 ".dna.primary_assembly.fa.gz" 
+		#defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
+		#defaultFasta = '/'.join( defaultFastaArray )
+		#fasta = kwargs.get( 'referenceFasta' , defaultFasta )
 		outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
-		vepScript = kwargs.get( 'vepScript' , defaultVEPScript )
+		if not outputFile:
+			outputFile = defaultVEPOutput
+		vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
 		vcfFile = kwargs.get( 'vcf' , "" )
-		forks = kwargs.get( 'fork' , 0 )
+		#forks = kwargs.get( 'fork' , 0 )
 		vepConfig = kwargs.get( 'vepConfig', "" )
-		print( defaultFasta )
-		print( fasta )
+		#print( defaultFasta )
+		#print( fasta )
+		print("AmilaW:outputFile"+str(outputFile))
+
 		if vcfFile:
 			vep_command = []
+			print("AmilaW:outputFile"+str(outputFile))
 			if vepConfig:
 				vep_command = [ "/bin/perl" , vepScript , \
 					"--config", vepConfig ]
 				print( "AW:inside vep config loop" )
 			else:
+				#defaultVEPDir = "./"
+				#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
+				vepCacheDir = kwargs.get( 'vepCache', "./" ) #, defaultVEPDir )
+				ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
+				vepVersion = kwargs.get( 'vepVersion' , 87 )
+				grch = kwargs.get( 'grch' , 37 )
+				#defaultVEPOutput = "./charger.vep.vcf"
+				#defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
+				assembly = "GRCh" + str( grch )
+				#hdir = vepVersion + "_" + assembly
+				hdir = ensemblRelease + "_" + assembly
+				fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
+					".dna.primary_assembly.fa.gz"
+				defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ]
+				defaultFasta = '/'.join( defaultFastaArray )
+				fasta = kwargs.get( 'referenceFasta' , defaultFasta )
+				#outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
+				#vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
+				#vcfFile = kwargs.get( 'vcf' , "" )
+				forks = kwargs.get( 'fork' , 0 )
+				#vepConfig = kwargs.get( 'vepConfig', "" )
+				print( defaultFasta )
+				print( fasta )
 				vep_command = [ "/bin/perl" , vepScript , \
 					"--species" , "homo_sapiens" , \
 					"--assembly" , assembly , \
@@ -1035,11 +1064,14 @@ class charger(object):
 					#"--quiet" , \
 					#"--help" \
 				]
-			#print( vep_command )
+			print( "AW:VEP command")
+			print( vep_command )
+			print("AmilaW:outputFile"+str(outputFile))
 			try:
 				#returnCode = subprocess.call( ' '.join( vep_command ) )
 				returnCode = subprocess.call( vep_command )
 				#print( str( returnCode ) )
+				print("AmilaW:outputFile"+str(outputFile))
 				if os.path.getsize( outputFile ) == 0:
 					print( "CharGer ERROR: VEP did not produce output: " + outputFile )
 					sys.exit( )

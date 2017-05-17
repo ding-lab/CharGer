@@ -41,7 +41,7 @@ setup( \
 		'charger' ,
 	] , #each of the directories with modules (aka packages)
 	install_requires = [ \
-		'BioMine < 0.9.1' ,
+		'BioMine' ,
 		'AdvancedHTMLParser' , 
 		'requests' ,
 		'pysam' , 
