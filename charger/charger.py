@@ -376,7 +376,7 @@ class charger(object):
 					changep = re.match( "p\." , hgvsp[1] )
 				if changep:
 					aas = mafvariant().splitHGVSp( hgvsp[1] )
-					print( "AmilaW:aas = " + str(aas) )
+					#print( "AmilaW:aas = " + str(aas) )
 					aas[0] = mafvariant().convertAA( aas[0] )
 					aas[2] = mafvariant().convertAA( aas[2] )
 				else:
@@ -939,7 +939,7 @@ class charger(object):
 		preVEP = kwargs.get( 'prevep' , [] )
 		doREST = kwargs.get( 'rest' , False )
 		vepScript = kwargs.get( 'vepScript' , "" )
-		print( "AmilaW:" + vepScript )
+		#print( "AmilaW:" + vepScript )
 		if doVEP:
 			sys.stdout.write( "charger::getVEP " )
 			if not vepScript:
@@ -988,7 +988,6 @@ class charger(object):
 		#ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
 		#vepVersion = kwargs.get( 'vepVersion' , 87 )
 		#grch = kwargs.get( 'grch' , 37 )
-		defaultVEPOutput = "./clinvar.pk.vep.vcf"
 		##defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
 		#assembly = "GRCh" + str( grch )
 		##hdir = vepVersion + "_" + assembly
@@ -998,24 +997,34 @@ class charger(object):
 		#defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
 		#defaultFasta = '/'.join( defaultFastaArray )
 		#fasta = kwargs.get( 'referenceFasta' , defaultFasta )
-		outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
-		if not outputFile:
-			outputFile = defaultVEPOutput
 		vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
 		vcfFile = kwargs.get( 'vcf' , "" )
 		#forks = kwargs.get( 'fork' , 0 )
 		vepConfig = kwargs.get( 'vepConfig', "" )
 		#print( defaultFasta )
 		#print( fasta )
-		print("AmilaW:outputFile"+str(outputFile))
+		defaultVEPOutput = "./"
+		if vepConfig:
+			with open( vepConfig, 'r') as configFH:
+				configFH.next()
+				for line in configFH:
+					line.strip()
+					match = re.match( "output_file\s+(.*)", line )
+					if match:
+						defaultVEPOutput = match.group(1)
+						break
+		outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
+		if not outputFile: # this is necessary b/c vepOutput is initialized as "None"
+			outputFile = defaultVEPOutput
+		#print("AmilaW:outputFile"+str(outputFile))
 
 		if vcfFile:
 			vep_command = []
-			print("AmilaW:outputFile"+str(outputFile))
+			#print("AmilaW:outputFile"+str(outputFile))
 			if vepConfig:
 				vep_command = [ "/bin/perl" , vepScript , \
 					"--config", vepConfig ]
-				print( "AW:inside vep config loop" )
+				#print( "AW:inside vep config loop" )
 			else:
 				#defaultVEPDir = "./"
 				#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
@@ -1064,14 +1073,16 @@ class charger(object):
 					#"--quiet" , \
 					#"--help" \
 				]
-			print( "AW:VEP command")
+			#print( "AW:VEP command")
 			print( vep_command )
-			print("AmilaW:outputFile"+str(outputFile))
+			#print("AmilaW:outputFile"+str(outputFile))
 			try:
 				#returnCode = subprocess.call( ' '.join( vep_command ) )
 				returnCode = subprocess.call( vep_command )
 				#print( str( returnCode ) )
-				print("AmilaW:outputFile"+str(outputFile))
+				#print("AmilaW:outputFile")
+				#print(str(outputFile))
+				#print(str(os.path.getsize(outputFile)))
 				if os.path.getsize( outputFile ) == 0:
 					print( "CharGer ERROR: VEP did not produce output: " + outputFile )
 					sys.exit( )
