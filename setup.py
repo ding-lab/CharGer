@@ -1,11 +1,11 @@
 #https://docs.python.org/2/distutils/examples.html
 from distutils.core import setup
-version = "0.2.1"
+version = "0.3.0"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
-	author = 'Adam D Scott, Kuan-lin Huang' ,
-	author_email = 'adamscott@wustl.edu, kuan-lin.huang@wustl.edu' ,
+	author = 'Adam D Scott, Kuan-lin Huang, Amila Weerasinghe' ,
+	author_email = 'adamscott@wustl.edu, kuan-lin.huang@wustl.edu, amila@wustl.edu' ,
 	maintainer = 'Adam D Scott' ,
 	maintainer_email = 'adamscott@wustl.edu' ,
 	url = 'https://github.com/ding-lab/CharGer' ,

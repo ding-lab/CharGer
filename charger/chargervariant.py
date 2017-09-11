@@ -55,10 +55,14 @@ class chargervariant(mafvariant):
 		self.BP6 = kwargs.get( 'BP6' , False )
 		self.BP7 = kwargs.get( 'BP7' , False )
 
+		self.PSC1 = kwargs.get( 'PSC1' , False )
 		self.PMC1 = kwargs.get( 'PMC1' , False )
 		self.PPC1 = kwargs.get( 'PPC1' , False )
+		self.PPC2 = kwargs.get( 'PPC2' , False )
+
 		self.BSC1 = kwargs.get( 'BSC1' , False )
 		self.BMC1 = kwargs.get( 'BMC1' , False )
+
 		self.otherTranscripts = kwargs.get( 'otherTranscripts' , {} )
 		self.alleleFrequency = kwargs.get( 'alleleFrequency' , None )
 		self.vepAnnotations = kwargs.get( 'VEP' , None )
@@ -269,8 +273,10 @@ class chargervariant(mafvariant):
 			checks[mods[14]] = self.PP4
 			checks[mods[15]] = self.PP5
 
+			checks[mods[28]] = self.PMS1
 			checks[mods[28]] = self.PMC1
 			checks[mods[29]] = self.PPC1
+			checks[mods[29]] = self.PPC2
 		if doNegative:
 			checks[mods[16]] = self.BA1
 			checks[mods[17]] = self.BS1
@@ -296,7 +302,7 @@ class chargervariant(mafvariant):
 		'BA1' , \
 		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
 		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7', \
-		'PMC1' , 'PPC1' , \
+		'PSC1' , 'PMC1' , 'PPC1' , 'PPC2' , \
 		'BSC1' , 'BMC1' ]
 	def readVCFInfo( self , **kwargs ):
 		for info in self.vcfInfo:
@@ -330,8 +336,8 @@ class chargervariant(mafvariant):
 			count += 1
 		if self.PS4:
 			count += 1
-#		if self.PSC1:
-#			count += 1
+		if self.PSC1:
+			count += 1
 		return count
 	def countPathogenicModerate( self ):
 		count = 0
@@ -363,6 +369,8 @@ class chargervariant(mafvariant):
 		if self.PP5:
 			count += 1
 		if self.PPC1:
+			count += 1
+		if self.PPC2:
 			count += 1
 		return count
 	def isPathogenic( self , **kwargs ):
@@ -517,11 +525,13 @@ class chargervariant(mafvariant):
 		self.pathogenicScore += chargervariant.supportScore*self.countPathogenicSupport()
 		self.pathogenicScore += chargervariant.moderateScore*self.countPathogenicModerate()
 		self.pathogenicScore += chargervariant.strongScore*self.countPathogenicStrong()
+		self.pathogenicScore += 3 if self.PS1 else 0
 		self.pathogenicScore += chargervariant.strongScore*self.countPathogenicVeryStrong()
 		self.benignScore = 0
 		self.benignScore += chargervariant.supportScore*self.countBenignSupport()
 		self.benignScore += chargervariant.moderateScore*self.countBenignModerate()
 		self.benignScore += chargervariant.strongScore*self.countBenignStrong()
+		self.benignScore += 2 if self.BSC1 else 0
 		self.benignScore += chargervariant.standAloneScore*self.countBenignStandAlone()
 		self.chargerScore = self.pathogenicScore - self.benignScore
 		scoreSystem = kwargs.get( "system" , "CharGer" )
@@ -529,20 +539,6 @@ class chargervariant(mafvariant):
 	def compositeScore( self , **kwargs ):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		override = kwargs.get( 'override' , False )
-		# if self.pathogenicScore > 8:
-		# 	self.setAsPathogenic( **kwargs )
-		# elif self.pathogenicScore > 5:
-		# 	self.setAsLikelyPathogenic( **kwargs )
-		# elif self.benignScore >= 4:
-		# 	if self.pathogenicity[scoreSystem] == chargervariant.pathogenic \
-		# 	or self.pathogenicity[scoreSystem] == chargervariant.likelyPathogenic:
-		# 		self.setAsUncertainSignificance( **kwargs ) 
-		# 	else:
-		# 		if self.benignScore >= 8:
-		# 			self.setAsBenign( **kwargs )
-		# 		elif self.benignScore >= 4:
-		# 			self.setAsLikelyBenign( **kwargs )
-
 		if self.chargerScore > 8:
 			self.setAsPathogenic( **kwargs )
 		elif self.chargerScore >= 5:

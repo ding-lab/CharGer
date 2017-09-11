@@ -38,6 +38,7 @@ class charger(object):
 			CharGer.characterize( )
 	'''
 	allDiseases = "all"
+	DOMINANT = "dominant"
 	def __init__( self , **kwargs ):
 		self.userVariants = kwargs.get( 'variants' , [] )
 		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
@@ -52,7 +53,8 @@ class charger(object):
 		self.vcfHeaderInfo = kwargs.get( 'vcfHeaderInfo' , [] )
 		self.vcfKeyIndex = kwargs.get( 'vcfKeyIndex' , {} )
 		self.mutationTypesFilter = kwargs.get( 'mutationTypes' , [] )
-		self.thresholdAF = kwargs.get( 'thresholdAF' , 1 )
+		self.thresholdAF = kwargs.get( 'thresholdAF' , 0.0005 )
+		self.keepAF = kwargs.get( 'keepAF' , 1 )
 		#self.filtered = []
 
 		#### ADD key index here to access vcf info for individual variant
@@ -187,7 +189,6 @@ class charger(object):
 			inFile = vcf.Reader( open( inputFile , 'r' ) )
 		variantDict = {}
 		appendTo = kwargs.get( "appendTo" , "" )
-		self.thresholdAF = kwargs.get( "thresholdAF" , 1 )
 		anyFilter = kwargs.get( "anyFilter" , False )
 		self.mutationTypes = kwargs.get( "mutationTypes" , [] )
 		preVEP = []
@@ -283,7 +284,7 @@ class charger(object):
 
 	def skipIfHighAF( self , var ):
 		if var.alleleFrequency != None:
-			if var.isFrequentAllele( self.thresholdAF ):
+			if var.isFrequentAllele( self.keepAF ):
 				return True
 		return False
 		
@@ -765,6 +766,8 @@ class charger(object):
 
 ### Retrieve external reference data ###
 	def getExternalData( self , **kwargs ):
+		self.thresholdAF = kwargs.get( "thresholdAF" , 0.0005 )
+		self.keepAF = kwargs.get( "keepAF" , 1 )
 		t = time.time()
 		self.getVEP( **kwargs )
 		self.printRunTime( "VEP" , self.runTime( t ) )
@@ -898,7 +901,7 @@ class charger(object):
 		exacVCF = kwargs.get( 'exacVCF' , None )
 		doExAC = kwargs.get( 'exac' , False )
 		useHarvard = kwargs.get( 'harvard' , True )
-		threshold = kwargs.get( 'threshold' , 0.0005 )
+		threshold = kwargs.get( 'thresholdAF' , 0.0005 )
 		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
 		if doExAC: # and not alleleFrequencyColumn:
 			sys.stdout.write( "charger::getExAC " )
@@ -909,8 +912,6 @@ class charger(object):
 				entries = exac.searchVCF( vcf = exacVCF , queries = exacQueries )
 			else:
 				print( "through BioMine ReST" )
-				common = 0
-				rare = 0
 				totalVars = len( self.userVariants )
 				exac = exacapi(harvard=useHarvard)
 #entries by genomivVar
@@ -982,14 +983,17 @@ class charger(object):
 #TODO add config file handling, would make this much more flexible and simple
 #TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
 		#print( kwargs )
+		vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
+		vepConfig = kwargs.get( 'vepConfig', "" )
+		vcfFile = kwargs.get( 'vcf' , "" )
 		#defaultVEPDir = "./"
 		#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
 		#vepCacheDir = kwargs.get( 'vepCache' , defaultVEPDir )
-		#ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
-		#vepVersion = kwargs.get( 'vepVersion' , 87 )
-		#grch = kwargs.get( 'grch' , 37 )
+		defaultEnsemblRelease = str( 75 )
+		defaultVEPVersion = str( 87 )
+		defaultGRCh = str( 37 )
+		defaultForks = str( 1 )
 		##defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
-		#assembly = "GRCh" + str( grch )
 		##hdir = vepVersion + "_" + assembly
 		#hdir = ensemblRelease + "_" + assembly
 		#fa = "Homo_sapiens." + assembly + "." + ensemblRelease + \
@@ -997,10 +1001,7 @@ class charger(object):
 		#defaultFastaArray = [ vepCacheDir , "homo_sapiens" , hdir , fa ] 
 		#defaultFasta = '/'.join( defaultFastaArray )
 		#fasta = kwargs.get( 'referenceFasta' , defaultFasta )
-		vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
-		vcfFile = kwargs.get( 'vcf' , "" )
 		#forks = kwargs.get( 'fork' , 0 )
-		vepConfig = kwargs.get( 'vepConfig', "" )
 		#print( defaultFasta )
 		#print( fasta )
 		defaultVEPOutput = "./"
@@ -1029,9 +1030,9 @@ class charger(object):
 				#defaultVEPDir = "./"
 				#vepDir = kwargs.get( 'vepDir' , defaultVEPDir )
 				vepCacheDir = kwargs.get( 'vepCache', "./" ) #, defaultVEPDir )
-				ensemblRelease = kwargs.get( 'ensemblRelease' , 75 )
-				vepVersion = kwargs.get( 'vepVersion' , 87 )
-				grch = kwargs.get( 'grch' , 37 )
+				ensemblRelease = kwargs.get( 'ensemblRelease' , defaultEnsemblRelease )
+				vepVersion = kwargs.get( 'vepVersion' , defaultVEPVersion )
+				grch = kwargs.get( 'grch' , defaultGRCh )
 				#defaultVEPOutput = "./charger.vep.vcf"
 				#defaultVEPScript = vepDir + "/variant_effect_predictor.pl"
 				assembly = "GRCh" + str( grch )
@@ -1045,7 +1046,7 @@ class charger(object):
 				#outputFile = kwargs.get( 'vepOutput' , defaultVEPOutput )
 				#vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
 				#vcfFile = kwargs.get( 'vcf' , "" )
-				forks = kwargs.get( 'fork' , 0 )
+				forks = kwargs.get( 'fork' , defaultForks )
 				#vepConfig = kwargs.get( 'vepConfig', "" )
 				print( defaultFasta )
 				print( fasta )
@@ -1160,7 +1161,7 @@ class charger(object):
 		print "CharGer module PVS1"
 		print "- truncations in genes where LOF is a known mechanism of the disease"
 		print "- require the mode of inheritance to be dominant (assuming heterzygosity) and co-occurence with reduced gene expression"
-		print "- run concurrently with PMC1, PM4, and PPC1 - "
+		print "- run concurrently with PSC1, PMC1, PM4, PPC1, and PPC2 - "
 		self.runIndelModules()
 		
 
@@ -1197,11 +1198,15 @@ class charger(object):
 						var.PS4 = True
 						var.addSummary( "PS4(Prevalence significantly greater than controls)" )
 
-	def PMC1( self ):
-		print "CharGer module PMC1"
-		print "Truncations of other, not-specificied genes"
+	def PSC1( self ):
+		print "CharGer module PSC1"
+		print "Recessive truncations of susceptible genes"
 
 ##### Moderate #####
+	def PMC1( self ):
+		print "CharGer module PMC1"
+		print "Truncations of genes when no gene list provided"
+
 	def PM1( self , recurrenceThreshold , **kwargs ):
 		print "CharGer module PM1:  Located in a mutational hot spot and/or critical and well-established \
 		functional domain (e.g., active site of an enzyme) without benign variation"
@@ -1272,7 +1277,7 @@ class charger(object):
 		if self.userGeneList: #gene, disease, mode of inheritance
 			for var in self.userVariants:
 				varGene = var.gene
-				varDisease = var.disease # no disease field in MAF; may require user input	
+				#varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = "asdfasdf"
 				if var.variantClass:
@@ -1375,6 +1380,9 @@ class charger(object):
 	def PPC1( self ):
 		print "CharGer module PPC1"
 		print "- protein length changes due to inframe indels or nonstop variant of other, not-specificied genes - "
+	def PPC2( self ):
+		print "CharGer module PPC2"
+		print "- protein length changes due to inframe indels or nonstop variant when no susceptibility genes given - "
 
 ### helper functions of evidence levels ###
 	def runIndelModules( self ):
@@ -1401,18 +1409,17 @@ class charger(object):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if varDisease in self.userGeneList[varGene]:
-							if "dominant" in self.userGeneList[varGene][varDisease].lower():
+						if varDisease in self.userGeneList[varGene] \
+						or charger.allDiseases in self.userGeneList[varGene]:
+							if charger.DOMINANT in self.userGeneList[varGene][varDisease].lower() \
+							or charger.DOMINANT in self.userGeneList[varGene][charger.allDiseases].lower():
 								var.PVS1 = True # if call is true then check expression effect
-						if charger.allDiseases in self.userGeneList[varGene]:
-							if "dominant" in self.userGeneList[varGene][charger.allDiseases].lower():
-								var.PVS1 = True # if call is true then check expression effect
-							if self.userExpression: # consider expression data only if the user has supplied an expression matrix
-								varSample = var.sample
-								if self.userExpression[varSample][varGene] >= expressionThreshold:
-									var.PVS1 = False
-					else:
-						var.PMC1 = True 
+								if self.userExpression: # consider expression data only if the user has supplied an expression matrix
+									varSample = var.sample
+									if self.userExpression[varSample][varGene] >= expressionThreshold:
+										var.PVS1 = False
+							else:
+								var.PSC1 = True
 				else: 
 					# in case of no gene list, make all truncations PMC1
 					var.PMC1 = True
@@ -1421,26 +1428,29 @@ class charger(object):
 				if self.userGeneList:
 					if varGene in self.userGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if varDisease in self.userGeneList[varGene]:
-							if "dominant" in self.userGeneList[varGene][varDisease].lower():
+						if varDisease in self.userGeneList[varGene] \
+						or charger.allDiseases in self.userGeneList[varGene]:
+							if charger.DOMINANT in self.userGeneList[varGene][varDisease].lower() \
+							or charger.DOMINANT in self.userGeneList[varGene][charger.allDiseases].lower():
 								var.PM4 = True
-						if charger.allDiseases in self.userGeneList[varGene]:
-							if "dominant" in self.userGeneList[varGene][charger.allDiseases].lower():
-								var.PM4 = True
-					else: 
-						var.PPC1 = True
+							else:
+								var.PPC1 = True
 				else: 
-					# in case of no gene list, make all inframes PMC1
-					var.PPC1 = True
+					# in case of no gene list, make all inframes PPC1
+					var.PPC2 = True
 
 			if var.PVS1:
 				var.addSummary( "PVS1(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
+			if var.PSC1:
+				var.addSummary( "PSC1(" + str( varClass ) + " recessive in gene " + str( varGene ) + ")" )
 			if var.PMC1:
-				var.addSummary( "PMC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
+				var.addSummary( "PMC1(" + str( varClass ) + " no gene list but in gene " + str( varGene ) + ")" )
 			if var.PM4:
 				var.addSummary( "PM4(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PPC1:
-				var.addSummary( "PPC1(" + str( varClass ) + " in gene " + str( varGene ) + ")" )
+				var.addSummary( "PPC1(" + str( varClass ) + " recessive in gene " + str( varGene ) + ")" )
+			if var.PPC1:
+				var.addSummary( "PPC1(" + str( varClass ) + " no gene list but in gene " + str( varGene ) + ")" )
 
 	def peptideChange( self , mod , **kwargs ):
 		called = 0
@@ -1623,6 +1633,7 @@ class charger(object):
 		print "- same peptide change as a previously established benign variant"
 		self.peptideChange( "BSC1" )
 
+#### Moderate ####
 	def BMC1( self ):
 		print "CharGer module BMC1"
 		print "- different peptide change of a benign variant at the same reference peptide"
