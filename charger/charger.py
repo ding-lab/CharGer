@@ -122,10 +122,6 @@ class charger(object):
 		vepDone = False
 		exacDone = False
 		clinvarDone = False
-		if geneListFile:
-			self.readGeneList( geneListFile , specific=specific )
-		else:
-			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 		if mafFile:
 			self.readMAF( mafFile , **kwargs )
 		if vcfFile:
@@ -134,6 +130,10 @@ class charger(object):
 			#exacDone=False # currently only has 1000G
 		if tsvFile:
 			exacDone = self.readTSV( tsvFile , **kwargs )
+		if geneListFile:
+			self.readGeneList( geneListFile , specific=specific )
+		else:
+			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 		if pathogenicVariantsFile:
 			self.readVCF( pathogenicVariantsFile , appendTo="pathogenic" , **kwargs )
 		if deNovoFile:
@@ -241,6 +241,8 @@ class charger(object):
 				var = chargervariant( \
 					parentVariant=parentVar
 				)
+
+				var.disease = charger.allDiseases
 
 				hasAF = False
 				hasAF = self.getAF( info , var , alti )
@@ -1411,6 +1413,10 @@ class charger(object):
 						varDisease = var.disease # no disease field in MAF; may require user input	
 						if varDisease in self.userGeneList[varGene] \
 						or charger.allDiseases in self.userGeneList[varGene]:
+							print( varGene ) 
+							print( varClass )
+							print( varDisease )
+							print( self.userGeneList[varGene][varDisease] )
 							if charger.DOMINANT in self.userGeneList[varGene][varDisease].lower() \
 							or charger.DOMINANT in self.userGeneList[varGene][charger.allDiseases].lower():
 								var.PVS1 = True # if call is true then check expression effect

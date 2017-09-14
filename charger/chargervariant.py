@@ -273,7 +273,7 @@ class chargervariant(mafvariant):
 			checks[mods[14]] = self.PP4
 			checks[mods[15]] = self.PP5
 
-			checks[mods[28]] = self.PMS1
+			checks[mods[28]] = self.PSC1
 			checks[mods[28]] = self.PMC1
 			checks[mods[29]] = self.PPC1
 			checks[mods[29]] = self.PPC2
