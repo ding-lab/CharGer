@@ -80,6 +80,7 @@ class charger(object):
 		self.checkInputExistence( 'macClinVarVCF' , **kwargs )
 		self.checkInputExistence( 'exacVCF' , **kwargs )
 
+		self.checkInputExistence( 'perl' , **kwargs )
 		self.checkInputExistence( 'vepScript' , **kwargs )
 		self.checkInputExistence( 'vepConfig' , **kwargs )
 		#self.checkInputExistence( 'vepDir' , **kwargs )
@@ -985,6 +986,7 @@ class charger(object):
 #TODO add config file handling, would make this much more flexible and simple
 #TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
 		#print( kwargs )
+		perl = kwargs.get( 'perl', "/bin/perl" ) #, defaultVEPScript )
 		vepScript = kwargs.get( 'vepScript', "" ) #, defaultVEPScript )
 		vepConfig = kwargs.get( 'vepConfig', "" )
 		vcfFile = kwargs.get( 'vcf' , "" )
@@ -1025,7 +1027,7 @@ class charger(object):
 			vep_command = []
 			#print("AmilaW:outputFile"+str(outputFile))
 			if vepConfig:
-				vep_command = [ "/bin/perl" , vepScript , \
+				vep_command = [ perl , vepScript , \
 					"--config", vepConfig ]
 				#print( "AW:inside vep config loop" )
 			else:
@@ -1052,14 +1054,14 @@ class charger(object):
 				#vepConfig = kwargs.get( 'vepConfig', "" )
 				print( defaultFasta )
 				print( fasta )
-				vep_command = [ "/bin/perl" , vepScript , \
+				vep_command = [ perl , vepScript , \
 					"--species" , "homo_sapiens" , \
 					"--assembly" , assembly , \
 					"--input_file" , vcfFile , \
 					"--output_file" , outputFile , \
 					"--format" , "vcf" , \
 					"--fork" , forks , \
-					"--fasta" , defaultFasta , \
+					"--fasta" , fasta , \
 					"--everything" , \
 					"--vcf" , \
 					"--cache" , \

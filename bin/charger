@@ -1,7 +1,7 @@
 #!/bin/python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.3.1 - 2017*09
+# version: v0.3.2 - 2017*09
 
 import sys
 import getopt
@@ -10,7 +10,7 @@ import time
 import argparse
 
 def parseArgs( argv ):
-	helpText = "\nCharGer - v0.3.1\n\n"
+	helpText = "\nCharGer - v0.3.2\n\n"
 	helpText += "Usage: "
 	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"
@@ -44,6 +44,7 @@ def parseArgs( argv ):
 	helpText += "  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):\n"
 	helpText += "  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
+	helpText += "  --perl Path to Perl\n"
 	helpText += "  --vep-script Path to VEP\n"
 	helpText += "  --vep-config config-file for VEP\n"
 	#helpText += "  --vep-dir Path to VEP directory\n"
@@ -120,6 +121,7 @@ def parseArgs( argv ):
 	clustersFile = None
 	pathogenicVariantsFile = None
 	annotateInput = ""
+	perl = None
 	vepScript = None
 	vepConfig = None
 	vepCache = None
@@ -154,7 +156,7 @@ def parseArgs( argv ):
 		"vcf-any-filter" , "mutation-types=" , \
 		"hotspot3d=" , "pathogenicVariants=" , \
 		"vep-script=" , "vep-config=", "vep-dir=" , "vep-cache=" , "vep-output=" , \
-		"ensembl-release=" , "vep-version=" , \
+		"ensembl-release=" , "vep-version=" , "perl=" , \
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
 		"run-url-test" ] )
@@ -255,6 +257,8 @@ def parseArgs( argv ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
+		elif opt in ( "--perl" ):
+			perl = arg
 		elif opt in ( "--vep-script" ):
 			vepScript = arg
 		elif opt in ( "--vep-config" ):
@@ -332,6 +336,7 @@ def parseArgs( argv ):
 	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
+	"perl" : perl , \
 	"vepScript" : vepScript , \
 	"vepConfig" : vepConfig , \
 	#"vepDir" : vepDir , \
@@ -398,6 +403,7 @@ def main( argv ):
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
+	perl = values["perl"]
 	vepScript = values["vepScript"]
 	vepConfig = values["vepConfig"]
 	#vepDir = values["vepDir"]
@@ -427,6 +433,7 @@ def main( argv ):
 							 assumedDeNovo = assumedDeNovoFile , \
 							 coSegregation = coSegregationFile , \
 							 diseases = diseasesFile , \
+							 perl = perl , \
 							 vepScript = vepScript , \
 							 vepConfig = vepConfig , \
 							 #vepDir = vepDir , \
@@ -497,6 +504,7 @@ def main( argv ):
 	searchBatchSize=clinvarSearchBatchSize , \
 	allOptions=False , \
 	maxPost=vepBatchSize , \
+	perl=perl , \
 	vepScript=vepScript , \
 	vepConfig=vepConfig , \
 	#vepDir=vepDir , \
