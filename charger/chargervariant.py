@@ -274,9 +274,9 @@ class chargervariant(mafvariant):
 			checks[mods[15]] = self.PP5
 
 			checks[mods[28]] = self.PSC1
-			checks[mods[28]] = self.PMC1
-			checks[mods[29]] = self.PPC1
-			checks[mods[29]] = self.PPC2
+			checks[mods[29]] = self.PMC1
+			checks[mods[30]] = self.PPC1
+			checks[mods[31]] = self.PPC2
 		if doNegative:
 			checks[mods[16]] = self.BA1
 			checks[mods[17]] = self.BS1
@@ -291,8 +291,8 @@ class chargervariant(mafvariant):
 			checks[mods[26]] = self.BP6
 			checks[mods[27]] = self.BP7
 
-			checks[mods[30]] = self.BSC1
-			checks[mods[31]] = self.BMC1
+			checks[mods[32]] = self.BSC1
+			checks[mods[33]] = self.BMC1
 		return checks
 	def modules( self ):
 		return [ 'PVS1' , \
@@ -526,7 +526,7 @@ class chargervariant(mafvariant):
 		self.pathogenicScore += chargervariant.moderateScore*self.countPathogenicModerate()
 		self.pathogenicScore += chargervariant.strongScore*self.countPathogenicStrong()
 		self.pathogenicScore += 3 if self.PS1 else 0
-		self.pathogenicScore += chargervariant.strongScore*self.countPathogenicVeryStrong()
+		self.pathogenicScore += chargervariant.veryStrongScore*self.countPathogenicVeryStrong()
 		self.benignScore = 0
 		self.benignScore += chargervariant.supportScore*self.countBenignSupport()
 		self.benignScore += chargervariant.moderateScore*self.countBenignModerate()
@@ -561,7 +561,13 @@ class chargervariant(mafvariant):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		if not self.clinvarVariant:
 			return
-		desc = repr( self.clinvarVariant.clinical["description"].lower() )
+		desc = ""
+		try:
+			desc = repr( self.clinvarVariant.clinical["description"].lower() )
+		except:
+			print( "CharGer::clinvarvariant::clinvarOverride Warning: " \
+				+ "- no description for clinical information for " \
+				+ self.genomicVar() )
 		call = repr( self.pathogenicity[scoreSystem].lower() )
 		path = repr( chargervariant.pathogenic.lower() )
 		lPath = repr( chargervariant.likelyPathogenic.lower() )
