@@ -1457,8 +1457,8 @@ class charger(object):
 				var.addSummary( "PM4(" + str( varClass ) + " in susceptible gene " + str( varGene ) + ")" )
 			if var.PPC1:
 				var.addSummary( "PPC1(" + str( varClass ) + " recessive in gene " + str( varGene ) + ")" )
-			if var.PPC1:
-				var.addSummary( "PPC1(" + str( varClass ) + " no gene list but in gene " + str( varGene ) + ")" )
+			if var.PPC2:
+				var.addSummary( "PPC2(" + str( varClass ) + " no gene list but in gene " + str( varGene ) + ")" )
 
 	def peptideChange( self , mod , **kwargs ):
 		called = 0
