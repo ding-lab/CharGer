@@ -277,7 +277,6 @@ class charger(object):
 
 	def getAF( self , info , var , alti ):
 		hasAF = False
-		var.alleleFrequency = 0
 		withAF = info.get( 'AF' , "noAF" )
 		if ( withAF != "noAF" ):
 			afs = withAF[alti]
@@ -286,7 +285,7 @@ class charger(object):
 		return hasAF
 
 	def skipIfHighAF( self , var ):
-		if var.alleleFrequency != None:
+		if var.alleleFrequency is not None:
 			if var.isFrequentAllele( self.keepAF ):
 				return True
 		return False
@@ -350,8 +349,6 @@ class charger(object):
 			self.getMostSevereConsequence( var )
 			hasAF = self.getExAC_MAF( values , var , hasAF )
 			self.getGMAF( values , var , hasAF )
-			if not var.alleleFrequency:
-				var.alleleFrequency = 0
 			self.getCLIN_SIG( values , var )
 
 	def getCodingPosition( self , values , var , preVEP , key ):
@@ -433,33 +430,29 @@ class charger(object):
 		return csq_terms
 
 	def getExAC_MAF( self , values , var , hasAF ):
+		#if the .vcf does not have AF (hasAF)
+		#then check for ExAC_MAF
 		if ( not hasAF ):
 			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
-			if emaf:
+			if emaf is not None:
 				parts = emaf.split( ":" )
 				if len( parts ) > 1:
 					if parts[0] == var.alternate:
 						af = parts[1].split( "&" )
 						var.alleleFrequency = af[0]
 						return True
-			else:
-				var.alleleFrequency = 0
-				return True
 		return False
 
 	def getGMAF( self , values , var , hasAF ):
 		if ( not hasAF ):
 			gmaf = self.getVCFKeyIndex( values , "GMAF" )
-			if gmaf:
+			if gmaf is not None:
 				parts = gmaf.split( ":" )
 				if len( parts ) > 1:
 					if parts[0] == var.alternate:
 						af = parts[1].split( "&" )
 						var.alleleFrequency = af[0]
 						return True
-			else:
-				var.alleleFrequency = 0
-				return True
 		return False
 
 	def readMetaData( self , metadata , infos , vepInfo ):
@@ -905,8 +898,7 @@ class charger(object):
 		doExAC = kwargs.get( 'exac' , False )
 		useHarvard = kwargs.get( 'harvard' , True )
 		threshold = kwargs.get( 'thresholdAF' , 0.0005 )
-		alleleFrequencyColumn = kwargs.get( 'alleleFrequency' , None )
-		if doExAC: # and not alleleFrequencyColumn:
+		if doExAC:
 			sys.stdout.write( "charger::getExAC " )
 			if exacVCF:
 				print( "from local file - " + exacVCF )
@@ -919,7 +911,6 @@ class charger(object):
 				exac = exacapi(harvard=useHarvard)
 #entries by genomivVar
 				exacIn = self.getUniqueGenomicVariantList( self.userVariants )
-				#entries = exac.getAlleleFrequencies( self.userVariants )
 				entries = exac.getAlleleFrequencies( exacIn )
 			elen = 0
 			common = 0
@@ -983,7 +974,6 @@ class charger(object):
 		print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
 
 	def getVEPviaCMD( self , **kwargs ):
-#TODO add config file handling, would make this much more flexible and simple
 #TODO check ensemblRelease & grch for compatibility, GRCh37 -> [55,75] & GRCh38 -> [76,87]
 		#print( kwargs )
 		perl = kwargs.get( 'perl', "/bin/perl" ) #, defaultVEPScript )
@@ -1850,7 +1840,7 @@ class charger(object):
 				#self.appendStr( fields,var.positionPeptide)
 				#self.appendStr( fields,var.alternatePeptide)
 				self.appendStr( fields, var.HGVSp() ) # need to be corrected too
-				self.appendStr( fields,var.alleleFrequency)
+				self.appendStr( fields , var.alleleFrequency , emptyValue = 0 )
 				#self.appendStr( fields,var.vepVariant.mostSevereConsequence) ## this line will fail you on insertions regardless of all the checks in appendStr
 				mSC = var.returnMostSevereConsequence()
 				self.appendStr( fields , mSC )
@@ -1944,15 +1934,15 @@ class charger(object):
 		return None
 
 	@staticmethod
-	def appendStr( array, value ):
+	def appendStr( array, value , emptyValue = "NA" ):
 		try:
 			if value == None or value == "":
-				array.append( "NA" )
+				array.append( emptyValue )
 			else:
 				array.append( str( value ) )
 		except:
 			print "CharGer Warning: failed to append a value\n"
-			array.append( "NA" )
+			array.append( emptyValue )
 			pass
 
 	@staticmethod

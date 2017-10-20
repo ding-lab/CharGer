@@ -308,7 +308,7 @@ class chargervariant(mafvariant):
 		for info in self.vcfInfo:
 			print info
 	def hasAlleleFrequency( self ):
-		if var.alleleFrequency == None:
+		if var.alleleFrequency is None:
 			return False
 		return True
 	def isFrequentAllele( self , threshold ):
