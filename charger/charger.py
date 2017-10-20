@@ -1498,7 +1498,7 @@ class charger(object):
 			clinvarVar = var.clinvarVariant
 			clin = clinvarVar.clinical
 			if consequence.sameGenomicVariant( clinvarVar ):
-			#if genomic change is the same, then PS1
+				#if genomic change is the same, then PS1
 				if clin["description"] == clinvarvariant.benign:
 					if mod == "BSC1":
 						#print( "also BSC1 via samGenomicVariant" )
@@ -1548,9 +1548,6 @@ class charger(object):
 						for pathVar in self.pathogenicVariants[pathKey].vepVariant.consequences:
 							if consequence.sameGenomicVariant( pathVar ):
 							#if genomic change is the same, then PS1
-								if mod == "BSC1":
-									var.BSC1 = True # already benign still suffices to be BSC1
-									called = 1
 								if mod == "PS1":
 									var.PS1 = True # already pathogenic still suffices to be PS1
 									called = 1
@@ -1559,9 +1556,6 @@ class charger(object):
 							elif consequence.sameGenomicReference( pathVar ):
 							#if genomic change is different, but the peptide change is the same, then PS1
 								if pathVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
-									if mod == "BSC1":
-										var.BSC1 = True
-										called = 1
 									if mod == "PS1":
 										var.PS1 = True
 										called = 1
@@ -1571,9 +1565,6 @@ class charger(object):
 								if not consequence.samePeptideChange( pathVar ):
 								#if peptide change is different, but the peptide reference is the same, then PM5
 									if consequence.plausibleCodonFrame( pathVar ):
-										if mod == "BMC1":
-											var.BMC1 = True # already benign still suffices to be PS1
-											called = 1
 										if mod == "PM5":
 											var.PM5 = True # already pathogenic still suffices to be PS1
 											called = 1
