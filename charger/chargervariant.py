@@ -565,7 +565,7 @@ class chargervariant(mafvariant):
 		try:
 			desc = repr( self.clinvarVariant.clinical["description"].lower() )
 		except:
-			print( "CharGer::clinvarvariant::clinvarOverride Warning: " \
+			print( "CharGer::chargervariant::clinvarOverride Warning: " \
 				+ "- no description for clinical information for " \
 				+ self.genomicVar() )
 		call = repr( self.pathogenicity[scoreSystem].lower() )

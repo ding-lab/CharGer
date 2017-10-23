@@ -245,7 +245,6 @@ class charger(object):
 
 				var.disease = charger.allDiseases
 
-				hasAF = False
 				hasAF = self.getAF( info , var , alti )
 #				#print( str( var.alleleFrequency ) )
 #				hasClinVar = False
@@ -253,7 +252,7 @@ class charger(object):
 #				var.clinvarVariant.clinical["description"] = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				var.clinvarVariant.uid = info.get( 'clinvar_measureset_id' , "noClinVar" )
 #				if ClinVarElsewhere != 0:
-				self.getVEPConsequences( info , var , preVEP , hasAF )
+				self.getVEPConsequences( info , var , preVEP )
 				if self.skipIfHighAF( var ):
 					#self.filtered.append( var.vcf() )
 					failedAF += 1
@@ -298,7 +297,7 @@ class charger(object):
 				return True
 		return False
 
-	def getVEPConsequences( self , info , var , preVEP , hasAF ):
+	def getVEPConsequences( self , info , var , preVEP ):
 		csq = info.get( 'CSQ' , "noCSQ" )
 		if not csq == "noCSQ":
 			vepDone = True
@@ -347,8 +346,8 @@ class charger(object):
 				)
 				var.vepVariant.consequences.append( vcv )
 			self.getMostSevereConsequence( var )
-			hasAF = self.getExAC_MAF( values , var , hasAF )
-			self.getGMAF( values , var , hasAF )
+			hasAF = self.getExAC_MAF( values , var )
+			hasAF = self.getGMAF( values , var )
 			self.getCLIN_SIG( values , var )
 
 	def getCodingPosition( self , values , var , preVEP , key ):
@@ -429,30 +428,30 @@ class charger(object):
 			csq_terms = self.getVCFKeyIndex( values , "Consequence" ).split( "&" )
 		return csq_terms
 
-	def getExAC_MAF( self , values , var , hasAF ):
-		#if the .vcf does not have AF (hasAF)
+	def getExAC_MAF( self , values , var ):
+		#if the .vcf does not have AF
 		#then check for ExAC_MAF
-		if ( not hasAF ):
+		if ( var.alleleFrequency is not None ):
 			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
 			if emaf is not None:
-				parts = emaf.split( ":" )
-				if len( parts ) > 1:
-					if parts[0] == var.alternate:
-						af = parts[1].split( "&" )
-						var.alleleFrequency = af[0]
-						return True
+				for alt in emaf.split( "&" ):
+					if alt == var.alternate:
+						parts = emaf.split( ":" )
+						if len( parts ) > 1:
+							var.alleleFrequency = parts[1]
+							return True
 		return False
 
-	def getGMAF( self , values , var , hasAF ):
-		if ( not hasAF ):
+	def getGMAF( self , values , var ):
+		if ( var.alleleFrequency is not None ):
 			gmaf = self.getVCFKeyIndex( values , "GMAF" )
 			if gmaf is not None:
-				parts = gmaf.split( ":" )
-				if len( parts ) > 1:
-					if parts[0] == var.alternate:
-						af = parts[1].split( "&" )
-						var.alleleFrequency = af[0]
-						return True
+				for alt in gmaf.split( "&" ):
+					if alt == var.alternate:
+						parts = emaf.split( ":" )
+						if len( parts ) > 1:
+							var.alleleFrequency = parts[1]
+							return True
 		return False
 
 	def readMetaData( self , metadata , infos , vepInfo ):
