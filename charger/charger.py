@@ -448,7 +448,7 @@ class charger(object):
 			if gmaf is not None:
 				for alt in gmaf.split( "&" ):
 					if alt == var.alternate:
-						parts = emaf.split( ":" )
+						parts = gmaf.split( ":" )
 						if len( parts ) > 1:
 							var.alleleFrequency = parts[1]
 							return True
