@@ -314,6 +314,8 @@ class chargervariant(mafvariant):
 	def isFrequentAllele( self , threshold ):
 		#print( "isFrequencyAllele? " + str( self.alleleFrequency ) + " > " + str( threshold ) )
 		try:
+			if self.alleleFrequency is None:
+				return False
 			if float( self.alleleFrequency ) > float( threshold ):
 				return True
 		except:

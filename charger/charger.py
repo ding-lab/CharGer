@@ -1926,10 +1926,13 @@ class charger(object):
 	@staticmethod
 	def appendStr( array, value , emptyValue = "NA" ):
 		try:
-			if value == None or value == "":
-				array.append( emptyValue )
-			else:
-				array.append( str( value ) )
+			if value is None:
+				print( "value is None" )
+				value = emptyValue
+			if value == "":
+				print( "value is empty string" )
+				value = emptyValue
+			array.append( str( value ) )
 		except:
 			print "CharGer Warning: failed to append a value\n"
 			array.append( emptyValue )
