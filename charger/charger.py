@@ -1927,10 +1927,8 @@ class charger(object):
 	def appendStr( array, value , emptyValue = "NA" ):
 		try:
 			if value is None:
-				print( "value is None" )
 				value = emptyValue
 			if value == "":
-				print( "value is empty string" )
 				value = emptyValue
 			array.append( str( value ) )
 		except:
