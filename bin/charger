@@ -22,6 +22,7 @@ def parseArgs( argv ):
 	helpText += "  -w output as HTML (flag)\n"
 	helpText += "  -k annotate input (flag)\n"
 	helpText += "  --run-url-test test url when creating links\n"
+	helpText += "  --include-vcf-details (flag)\n"
 	helpText += "Access data:\n"
 	helpText += "  -l ClinVar (flag)\n"
 	helpText += "  -x ExAC (flag)\n"
@@ -140,6 +141,7 @@ def parseArgs( argv ):
 	keepAF = 1
 	anyFilter = False
 	mutationTypes = []
+	includeVCFDetails = False
 
 	try:
 		#haven't used ijquy
@@ -159,7 +161,7 @@ def parseArgs( argv ):
 		"ensembl-release=" , "vep-version=" , "perl=" , \
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
-		"run-url-test" ] )
+		"run-url-test" , "include-vcf-details" ] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -287,6 +289,8 @@ def parseArgs( argv ):
 			macClinVarTSV = arg
 		elif opt in ( "--run-url-test" ):
 			doURLTest = False
+		elif opt in ( "--include-vcf-details" ):
+			includeVCFDetails = True
 	if not mafFile and not vcfFile and not tsvFile:
 		print( "\nCharGer ERROR: must provide an input file\n" )
 		print( helpText )
@@ -351,6 +355,7 @@ def parseArgs( argv ):
 	"macClinVarTSV" : macClinVarTSV , \
 	"macClinVarVCF" : macClinVarVCF , \
 	"doURLTest" : doURLTest , \
+	"includeVCFDetails" : includeVCFDetails , \
 	}
 
 ### main ### 
@@ -418,6 +423,7 @@ def main( argv ):
 	macClinVarTSV = values["macClinVarTSV"]
 	macClinVarVCF = values["macClinVarVCF"]
 	doURLTest = values["doURLTest"]
+	includeVCFDetails = values["includeVCFDetails"]
 	
 	t1 = time.time()
 
@@ -478,6 +484,7 @@ def main( argv ):
 	keepAF = keepAF , \
 	anyFilter = anyFilter , \
 	mutationTypes = mutationTypes , \
+	includeVCFDetails = includeVCFDetails , \
 	)
 
 	if doVEP:

@@ -25,6 +25,7 @@ from autovivification import autovivification as AV
 import vcf
 from collections import OrderedDict as OD
 import gzip
+import json
 
 class charger(object):
 	''' Example usage:
@@ -192,6 +193,8 @@ class charger(object):
 		appendTo = kwargs.get( "appendTo" , "" )
 		anyFilter = kwargs.get( "anyFilter" , False )
 		self.mutationTypes = kwargs.get( "mutationTypes" , [] )
+		includeVCFDetails = kwargs.get( "includeVCFDetails" , False )
+		print( "Will capture vcf details for output: " + str( includeVCFDetails ) )
 		preVEP = []
 		vepDone = False
 		exacDone = False
@@ -215,6 +218,12 @@ class charger(object):
 				start = record.start + 1 #1-base beginning of ref
 				stop = record.end #0-base ending of ref
 				info = record.INFO
+				strALT = json.dumps( record.ALT , cls = charger.ALTEncoder , separators = ( ',' , ':' ) )
+				strINFO = json.dumps( record.INFO , cls = charger.ALTEncoder , separators = ( ',' , ':' ) ) 
+				if ( includeVCFDetails ):
+					vcfInfo = '::'.join( [ str( record.CHROM ) , str( record.POS ) , str( record.ID ) , str( record.REF ) , strALT , strINFO ] )
+				else:
+					vcfInfo = ""
 				alti = -1
 				for alternate in alternates:
 					alti += 1
@@ -222,8 +231,6 @@ class charger(object):
 					if alt == "None":
 						alt = None
 					if record.is_sv:
-						print( "CharGer::readVCF - SV detected" )
-						print( record )
 						if not record.is_sv_precise:
 							print( "CharGer::readVCF - SV is not precise" )
 							print( record )
@@ -250,12 +257,13 @@ class charger(object):
 						parentVariant=parentVar
 					)
 
+					var.vcfInfo = vcfInfo
 					var.disease = charger.allDiseases
 
 					hasAF = False
 					hasAF = self.getAF( info , var , alti )
 
-					self.getVEPConsequences( info , var , preVEP , hasAF )
+					self.getVEPConsequences( info , var , preVEP )
 					if self.skipIfHighAF( var ):
 						#self.filtered.append( var.vcf() )
 						failedAF += 1
@@ -267,8 +275,8 @@ class charger(object):
 						
 					variantDict = self.appendToList( appendTo , var , \
 													 variantDict = variantDict )
-			except:
-				print( "CharGer::readVCF - something about this variant record:\n\t" )
+			except Exception as E:
+				print( "CharGer::readVCF - something went wrong with this variant record:\n\t" )
 				print( record )
 		totalVars = len( self.userVariants ) + failedFilter + failedAF + failedMT
 		print(  "Skipping: " + str( failedFilter ) + " for filters and " + \
@@ -310,7 +318,6 @@ class charger(object):
 			var.vepVariant = vepvariant()
 			for thisCSQ in csq:
 				values = thisCSQ.split( "|" )
-				var.vcfInfo = values
 				aas = self.getRefAltAminoAcids( values , var , preVEP )
 				positionPeptide = self.getCodingPosition( values , var , preVEP , "Protein_position" )
 				positionCodon = self.getCodingPosition( values , var , preVEP , "cDNA_position" )
@@ -414,7 +421,7 @@ class charger(object):
 			if len( siftStuff ) == 1:
 				siftStuff.append( None )
 			else:
-				siftStuff[1] = siftStuff[1].rstrip( ")" )
+				siftStuff[1] = float( siftStuff[1].rstrip( ")" ) )
 		return siftStuff
 
 	def getPolyPhen( self , values ):
@@ -424,7 +431,7 @@ class charger(object):
 			if len( polyPhenStuff ) == 1:
 				polyPhenStuff.append( None )
 			else:
-				polyPhenStuff[1] = polyPhenStuff[1].rstrip( ")" )
+				polyPhenStuff[1] = float( polyPhenStuff[1].rstrip( ")" ) )
 		return polyPhenStuff
 
 	def getConsequence( self , values ):
@@ -1299,13 +1306,14 @@ class charger(object):
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
 		thresholdSIFT = 0.05
-		callPolyphen = "probably damaging"
+		callPolyphen = "probably_damaging"
 		thresholdPolyphen = 0.432
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
+		nFound = 0
 		for var in self.userVariants:
 			case = []
 			if var.vepVariant:
@@ -1365,10 +1373,13 @@ class charger(object):
 									evidence += 1
 							if evidence >= minimumEvidence:
 								var.PP3 = True
+								nFound += 1
+								break
 				if var.PP3:
 					var.addSummary( "PP3(Multiple (>=" + str( minimumEvidence ) \
 						+ ") in silico predictions of deliterious effect=" \
 						+ "|".join( case ) + ")" )
+		print( "Found " + str( nFound ) + " variants with >= " + str( minimumEvidence ) + " of in silico evidence" )
 
 	def PP4( self ):
 		print "CharGer module PP4: not yet implemented"
@@ -1649,13 +1660,14 @@ class charger(object):
 		callSIFTdam = "damaging"
 		callSIFTdel = "deleterious"
 		thresholdSIFT = 0.05
-		callPolyphen = "probably damaging"
+		callPolyphen = "probably_damaging"
 		thresholdPolyphen = 0.432
 		callBlosum62 = -2
 		callCompara = 2
 		callImpact = "high"
 		fracMaxEntScan = 0.8
 		callGeneSplicer = ""
+		nFound = 0
 		for var in self.userVariants:
 			case = []
 			if var.vepVariant:
@@ -1714,10 +1726,13 @@ class charger(object):
 									evidence += 1
 							if evidence >= minimumEvidence:
 								var.BP4 = True
+								nFound += 1
+								break
 				if var.BP4:
 					var.addSummary( "BP4(Multiple (>=" + str( minimumEvidence ) \
 						+ ") in silico predictions of non-deleterious effect=" \
 						+ "|".join( case ) + ")" )
+		print( "Found " + str( nFound ) + " variants with >= " + str( minimumEvidence ) + " with in silico evidence" )
 
 	def BP5( self ):
 		print "CharGer module BP5: not yet implemented"
@@ -1785,7 +1800,7 @@ class charger(object):
 			"Positive_CharGer_Score" , "Negative_CharGer_Score" , "CharGer_Score", "ClinVar_Pathogenicity" , \
 			"ACMG_Classification" , "CharGer_Classification" , \
 			"PubMed_Link" , "ClinVar_Traits" , \
-			"CharGer_Summary"] )
+			"CharGer_Summary" , "VCF_Details" ] )
 			# "VEP_Annotations" , \
 			# "VCF_Headers" , "VCF_INFO" , "CharGer_Summary"] )
 		try:
@@ -1870,8 +1885,8 @@ class charger(object):
 				# TODO: add all the bioinformatic good stuff from VEP
 				# self.appendStr( fields , var.vepAnnotations ) #make sure this works
 				# self.appendStr( fields , self.vcfHeaderInfo )
-				# self.appendStr( fields , var.vcfInfo )
 				self.appendStr( fields , ' -- '.join( var.callSummary ) )
+				self.appendStr( fields , var.vcfInfo )
 
 				if asHTML:
 					outFH.write( "<tr><td>" )
@@ -1989,3 +2004,15 @@ class charger(object):
 	@staticmethod
 	def pathogenicKey( var ):
 		return str( var.gene ) + str( var.referencePeptide ) + str( var.positionPeptide )
+
+	class ALTEncoder( json.JSONEncoder ):
+		def default( self , obj ):
+			try:
+				if isinstance( obj , vcf.model._Substitution ):
+					return str( obj )
+				if isinstance( obj , vcf.model._SV ):
+					return str( obj )
+				return json.JSONEncoder.default( self , obj )
+			except Exception as E:
+				print( E )
+				sys.exit()
