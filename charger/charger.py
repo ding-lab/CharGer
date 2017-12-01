@@ -44,7 +44,12 @@ class charger(object):
 		self.userVariants = kwargs.get( 'variants' , [] )
 		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
 		self.userExpression = kwargs.get( 'expressions' , AV({}) )
-		self.userGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.dominantGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.recessiveGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.inframeGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.missenseCauseGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.inframeRecessiveGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.missenseTruncatingCauseGeneList = kwargs.get( 'geneList' , AV({}) )
 		self.userDeNovoVariants = kwargs.get( 'deNovo' , {} )
 		self.userAssumedDeNovoVariants = kwargs.get( 'assumedDeNovo' , {} )
 		self.userCoSegregateVariants = kwargs.get( 'coSegregate' , {} )
@@ -133,7 +138,7 @@ class charger(object):
 		if tsvFile:
 			exacDone = self.readTSV( tsvFile , **kwargs )
 		if geneListFile:
-			self.readGeneList( geneListFile , specific=specific )
+			self.readModesGeneList( geneListFile , specific=specific )
 		else:
 			print "No gene list file uploaded. CharGer will not make PVS1 calls."
 		if pathogenicVariantsFile:
@@ -737,8 +742,8 @@ class charger(object):
 		except:
 			print "CharGer::readExpression Error: bad expression file"
 
-	def readGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
-		print( "CharGer::readGeneList" )
+	def readModesGeneList( self , inputFile , **kwargs ): # gene list formatted "gene", "disease", "mode of inheritance"
+		print( "CharGer::readModesGeneList" )
 		specific = kwargs.get( 'specific', True )
 		try:
 			inFile = self.safeOpen( inputFile , 'r' , warning=True )
@@ -750,10 +755,13 @@ class charger(object):
 				else: #set the gene to match all disease
 					disease = charger.allDiseases
 				mode_inheritance = fields[2].rstrip()
-				self.userGeneList[gene][disease] = mode_inheritance
+				if ( "dominant" in mode_inheritance ):
+					self.dominantGeneList[gene][disease] = mode_inheritance
+				if ( "recessive" in mode_inheritance ):
+					self.recessiveGeneList[gene][disease] = mode_inheritance
 				#print '\t'.join( [ gene , disease , mode_inheritance ] )
 		except:
-			print "CharGer::readGeneList Error: bad gene list file"
+			print "CharGer::readModesGeneList Error: bad gene list file"
 	def readDeNovo( self , inputFile ):
 		self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
 	def readAssumedDeNovo( self , inputFile ):
@@ -806,29 +814,36 @@ class charger(object):
 			elif macClinVarVCF:
 				self.getMacClinVarVCF( macClinVarTSV )
 			else:
-				summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
-				maxSearchBatchSize = 50
-				searchBatchSize = kwargs.get( 'searchBatchSize' , maxSearchBatchSize )
-				if searchBatchSize > maxSearchBatchSize:
-					message = "warning: ClinVar ReST search batch size given is "
-					message += "greater than max allowed ("
-					message += str( maxSearchBatchSize ) + ")"
-					message += ". Overriding to max search batch size."
-					print( message )
-					searchBatchSize = maxSearchBatchSize
-				ent = entrezapi()
-				i = 0
-				for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
-					varsEnd = varsStart + int(searchBatchSize)
-					varsSet = self.userVariants[varsStart:varsEnd]
-					ent.prepQuery( varsSet )
-					ent.subset = entrezapi.esearch
-					ent.database = entrezapi.clinvar
-					clinvarsSet = ent.doBatch( summaryBatchSize )
-					varsSet = self.matchClinVar( varsSet , clinvarsSet )
-					self.userVariants[varsStart:varsEnd] = varSet
-					#self.clinvarVariants.update( varsBoth["clinvarVariants"] )
-					#self.userVariants[varsStart:varsEnd] = self.matchClinVar( varsSet , clinvarsSet )
+				self.getClinVarviaREST( **kwargs )
+			self.makeGeneListForLowRateOfBenignMissense()
+
+	def makeGeneListForLowRateOfBenignMissense( self ):
+		for var in self.
+
+	def getClinVarviaREST( self , **kwargs ):
+		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
+		maxSearchBatchSize = 50
+		searchBatchSize = kwargs.get( 'searchBatchSize' , maxSearchBatchSize )
+		if searchBatchSize > maxSearchBatchSize:
+			message = "warning: ClinVar ReST search batch size given is "
+			message += "greater than max allowed ("
+			message += str( maxSearchBatchSize ) + ")"
+			message += ". Overriding to max search batch size."
+			print( message )
+			searchBatchSize = maxSearchBatchSize
+		ent = entrezapi()
+		i = 0
+		for varsStart in range( 0 , len( self.userVariants ) , int(searchBatchSize) ):
+			varsEnd = varsStart + int(searchBatchSize)
+			varsSet = self.userVariants[varsStart:varsEnd]
+			ent.prepQuery( varsSet )
+			ent.subset = entrezapi.esearch
+			ent.database = entrezapi.clinvar
+			clinvarsSet = ent.doBatch( summaryBatchSize )
+			varsSet = self.matchClinVar( varsSet , clinvarsSet )
+			self.userVariants[varsStart:varsEnd] = varSet
+			#self.clinvarVariants.update( varsBoth["clinvarVariants"] )
+			#self.userVariants[varsStart:varsEnd] = self.matchClinVar( varsSet , clinvarsSet )
 
 	def getMacClinVarTSV( self , tsvfile ):
 		"""
@@ -838,7 +853,9 @@ class charger(object):
 		all_submitters	all_traits	all_pmids	inheritance_modes
 		age_of_onset	prevalence	disease_mechanism	origin	xrefs
 		"""
-		clinvarSet = {}
+		clinvarSet = dict()
+		PP2GeneCounter = AV({})
+		BP1GeneCounter = AV({})
 		with gzip.open( tsvfile , "rb" ) as macFile:
 			next( macFile )
 			for line in macFile:
@@ -860,8 +877,24 @@ class charger(object):
 				#print( var.proteogenomicVar( ) )
 				#sys.exit() 
 				clinvarSet[var.uid] = var
+				self.getGenesForPP2( PP2GeneCounter , var )
+				self.getGenesForBP1( BP1GeneCounter , var )
 		print( "Have " + str( len( clinvarSet ) ) + " uid's from MacArthur ClinVar .tsv file: " + tsvfile )
 		return clinvarSet
+
+	def getGenesForBP1( self , counter , var ):
+		if ( "missense" in fields[9].lower() ):
+			if ( var.gene in counter.keys() ):
+				counter[var.gene][var.clinical["description"]] += 1
+			else:
+				counter[var.gene][var.clinical["description"]] = 1
+
+	def getGenesForPP2( self , counter , var ):
+		if ( "missense" in fields[9].lower() ):
+			if ( var.gene in counter.keys() ):
+				counter[var.gene][var.clinical["description"]] += 1
+			else:
+				counter[var.gene][var.clinical["description"]] = 1
 
 	@staticmethod
 	def parseMacPathogenicity( fields ):
