@@ -11,6 +11,7 @@ Add the following to your PATH environment (add it in ~/.bash_profile or ~/.bash
 
 ## Run
 Example for a VCF file
+
 	charger -f <variant file> -o <output file>
 
 ## For Help
