@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # analyze_charger_summary.py
 # Count membership numbers of pathways in a gene list file
 

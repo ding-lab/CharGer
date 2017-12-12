@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # autovivification - extends dict
 # author: Kuan-lin Huang (khuang@genome.wustl.edu) & Adam D Scott (ascott@genome.wustl.edu)
 # version: v0.0 - 2016*01*12

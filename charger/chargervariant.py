@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # chargervariant - CharGer annotated variants
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
