@@ -77,7 +77,7 @@ HotSpot3D clusters can be used for versions v1.x.x.
 The recurrence threshold will be pulled from the recurrence/weight column of the .clusters file when provided.
 
 ### Pathogenicity module scoring
-Specify option and value to change the default value.
+Specify option and non-negative integral value to change the default value.
 ```
 --support-score score for every mildly pathogenic or benign variant (default = 1)
 --moderate-score score for every moderately pathogenic or benign variant (default = 2)
@@ -86,7 +86,7 @@ Specify option and value to change the default value.
 ```
 
 ### Pathogenicity category thresholds
-Specify option and value to change the default value.
+Specify option and non-negative integral value to change the default value.
 ```
 --min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
 --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
