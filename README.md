@@ -78,17 +78,21 @@ The recurrence threshold will be pulled from the recurrence/weight column of the
 
 ### Pathogenicity module scoring
 Specify option and value to change the default value.
-	--support-score score for every mildly pathogenic or benign variant (default = 1)
-	--moderate-score score for every moderately pathogenic or benign variant (default = 2)
-	--strong-score score for every strongly pathogenic or benign variant (default = 4)
-	--standalone-score score for every very strongly benign variant (default = 8)
+```
+--support-score score for every mildly pathogenic or benign variant (default = 1)
+--moderate-score score for every moderately pathogenic or benign variant (default = 2)
+--strong-score score for every strongly pathogenic or benign variant (default = 4)
+--standalone-score score for every very strongly benign variant (default = 8)
+```
 
 ### Pathogenicity category thresholds
 Specify option and value to change the default value.
-	--min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
-	--min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
-	--min-benign-score threshold for classifying variant as benign (default = 8)
-	--min-likely-benign-score threshold for classifying variant as likely benign (default = 4)
+```
+--min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
+--min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
+--min-benign-score threshold for classifying variant as benign (default = 8)
+--min-likely-benign-score threshold for classifying variant as likely benign (default = 4)
+```
 
 ### Local VEP
 	--vep-script Path to VEP
