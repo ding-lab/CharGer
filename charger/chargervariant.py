@@ -9,15 +9,7 @@ from biomine.variant.mafvariant import mafvariant
 from autovivification import autovivification
 
 class chargervariant(mafvariant):
-	minPathogenicScore = 8
-	minLikelyPathogenicScore = 5
-	minLikelyBenignScore = 4
-	minBenignScore = 8
-	supportScore = 1
-	moderateScore = 2
-	strongScore = 4
-	veryStrongScore = 8
-	standAloneScore = 8
+	# (rjm) module scores and pathogenicity threshold values now set in __main__
 	pathogenic = "Pathogenic"
 	likelyPathogenic = "Likely Pathogenic"
 	likelyBenign = "Likely Benign"
@@ -523,36 +515,45 @@ class chargervariant(mafvariant):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		if scoreSystem != "CharGer":
 			return
+		supportScore = int( kwargs.get( "supportScore" ) )
+		moderateScore = int( kwargs.get( "moderateScore" ) )
+		strongScore = int( kwargs.get( "strongScore" ) )
+		veryStrongScore = int( kwargs.get( "veryStrongScore" ) )
+		standAloneScore = int( kwargs.get( "standAloneScore" ) )
 		self.pathogenicScore = 0
-		self.pathogenicScore += chargervariant.supportScore*self.countPathogenicSupport()
-		self.pathogenicScore += chargervariant.moderateScore*self.countPathogenicModerate()
-		self.pathogenicScore += chargervariant.strongScore*self.countPathogenicStrong()
+		self.pathogenicScore += supportScore * self.countPathogenicSupport()
+		self.pathogenicScore += moderateScore * self.countPathogenicModerate()
+		self.pathogenicScore += strongScore * self.countPathogenicStrong()
 		self.pathogenicScore += 3 if self.PS1 else 0
-		self.pathogenicScore += chargervariant.veryStrongScore*self.countPathogenicVeryStrong()
+		self.pathogenicScore += veryStrongScore * self.countPathogenicVeryStrong()
 		self.benignScore = 0
-		self.benignScore += chargervariant.supportScore*self.countBenignSupport()
-		self.benignScore += chargervariant.moderateScore*self.countBenignModerate()
-		self.benignScore += chargervariant.strongScore*self.countBenignStrong()
+		self.benignScore += supportScore * self.countBenignSupport()
+		self.benignScore += moderateScore * self.countBenignModerate()
+		self.benignScore += strongScore * self.countBenignStrong()
 		self.benignScore += 2 if self.BSC1 else 0
-		self.benignScore += chargervariant.standAloneScore*self.countBenignStandAlone()
+		self.benignScore += standAloneScore * self.countBenignStandAlone()
 		self.chargerScore = self.pathogenicScore - self.benignScore
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		self.compositeScore( **kwargs )
 	def compositeScore( self , **kwargs ):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		override = kwargs.get( 'override' , False )
-		if self.chargerScore > 8:
+		minPathogenicScore = int( kwargs.get( "minPathogenicScore" ) )
+		minLikelyPathogenicScore = int( kwargs.get( "minLikelyPathogenicScore" ) )
+		minBenignScore = int( kwargs.get( "minBenignScore" ) )
+		minLikelyBenignScore = int( kwargs.get( "minLikelyBenignScore" ) )
+		if self.chargerScore > minPathogenicScore:
 			self.setAsPathogenic( **kwargs )
-		elif self.chargerScore >= 5:
+		elif self.chargerScore >= minLikelyPathogenicScore:
 			self.setAsLikelyPathogenic( **kwargs )
-		elif self.benignScore >= 4:
+		elif self.benignScore >= minLikelyBenignScore:
 			if self.pathogenicity[scoreSystem] == chargervariant.pathogenic \
 			or self.pathogenicity[scoreSystem] == chargervariant.likelyPathogenic:
 				self.setAsUncertainSignificance( **kwargs ) 
 			else:
-				if self.benignScore >= 8:
+				if self.benignScore >= minBenignScore:
 					self.setAsBenign( **kwargs )
-				elif self.benignScore >= 4:
+				elif self.benignScore >= minLikelyBenignScore:
 					self.setAsLikelyBenign( **kwargs )
 		else:
 			self.setAsUncertainSignificance( **kwargs ) 

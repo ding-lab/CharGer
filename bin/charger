@@ -44,6 +44,16 @@ def parseArgs( argv ):
 	helpText += "  --recurrence-threshold HotSpot3D recurrence threshold (default = 2)\n"
 	helpText += "  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):\n"
 	helpText += "  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):\n"
+	helpText += "Pathogenicity module scoring and category thresholds:\n"
+	helpText += "  --support-score module score assigned to every mildly pathogenic or benign variant (default = 1)\n"
+	helpText += "  --moderate-score module score assigned to every moderately pathogenic or benign variant (default = 2)\n"
+	helpText += "  --strong-score module score assigned to every strongly pathogenic or benign variant (default = 4)\n"
+	helpText += "  --very-strong-score module score assigned to every very strongly pathogenic variant (default = 8)\n"
+	helpText += "  --standalone-score module score assigned to every very strongly benign variant (default = 8)\n"
+	helpText += "  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)\n"
+	helpText += "  --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)\n"
+	helpText += "  --min-benign-score threshold for classifying variant as benign (default = 8)\n"
+	helpText += "  --min-likely-benign-score threshold for classifying variant as likely benign (default = 4)\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --perl Path to Perl\n"
 	helpText += "  --vep-script Path to VEP\n"
@@ -142,6 +152,16 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
+	minPathogenicScore = 8
+	minLikelyPathogenicScore = 5
+	minLikelyBenignScore = 4
+	minBenignScore = 8
+	supportScore = 1
+	moderateScore = 2
+	strongScore = 4
+	veryStrongScore = 8
+	standAloneScore = 8
+	bHasUserScores = False
 
 	try:
 		#haven't used ijquy
@@ -161,7 +181,12 @@ def parseArgs( argv ):
 		"ensembl-release=" , "vep-version=" , "perl=" , \
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
-		"run-url-test" , "include-vcf-details" ] )
+		 "run-url-test" , "include-vcf-details" , \
+		"min-pathogenic-score=" , "min-likely-pathogenic-score=" , \
+		"min-benign-score=" , "min-likely-benign-score=" , \
+		"support-score=" , "moderate-score=" , "strong-score=" , \
+		"very-strong-score=" , "standalone-score=" ,\
+		] )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -259,6 +284,33 @@ def parseArgs( argv ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
+		elif opt in ( "--min-pathogenic-score" ):
+			minPathogenicScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--min-likely-pathogenic-score" ):
+			minLikelyPathogenicScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--min-benign-score" ):
+			minBenignScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--min-likely-benign-score" ):
+			minLikelyBenignScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--support-score" ):
+			supportScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--moderate-score" ):
+			moderateScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--strong-score" ):
+			strongScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--very-strong-score" ):
+			veryStrongScore = int( arg )
+			bHasUserScores = True
+		elif opt in ( "--standalone-score" ):
+			standAloneScore = int( arg )
+			bHasUserScores = True
 		elif opt in ( "--perl" ):
 			perl = arg
 		elif opt in ( "--vep-script" ):
@@ -340,6 +392,16 @@ def parseArgs( argv ):
 	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
+	"minPathogenicScore" : minPathogenicScore , \
+	"minLikelyPathogenicScore" : minLikelyPathogenicScore , \
+	"minBenignScore" : minBenignScore , \
+	"minLikelyBenignScore" : minLikelyBenignScore , \
+	"supportScore" : supportScore , \
+	"moderateScore" : moderateScore , \
+	"strongScore" : strongScore , \
+	"veryStrongScore" : veryStrongScore , \
+	"standAloneScore" : standAloneScore , \
+	"bHasUserScores" : bHasUserScores , \
 	"perl" : perl , \
 	"vepScript" : vepScript , \
 	"vepConfig" : vepConfig , \
@@ -408,6 +470,16 @@ def main( argv ):
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
+	minPathogenicScore = values["minPathogenicScore"]
+	minLikelyPathogenicScore = values["minLikelyPathogenicScore"]
+	minBenignScore = values["minBenignScore"]
+	minLikelyBenignScore = values["minLikelyBenignScore"]
+	supportScore = values["supportScore"]
+	moderateScore = values["moderateScore"]
+	strongScore = values["strongScore"]
+	veryStrongScore = values["veryStrongScore"]
+	standAloneScore = values["standAloneScore"]
+	bHasUserScores = values["bHasUserScores"]
 	perl = values["perl"]
 	vepScript = values["vepScript"]
 	vepConfig = values["vepConfig"]
@@ -425,6 +497,20 @@ def main( argv ):
 	doURLTest = values["doURLTest"]
 	includeVCFDetails = values["includeVCFDetails"]
 	
+	if bHasUserScores:
+		print "Using user-provided module scores and/or category thresholds:"
+	else:
+		print "Using default module scores and category thresholds:"
+	print "   minPathogenicScore = " + str( minPathogenicScore )
+	print "   minLikelyPathogenicScore = " + str ( minLikelyPathogenicScore )
+	print "   minBenignScore = " + str( minBenignScore )
+	print "   minLikelyBenignScore = " + str( minLikelyBenignScore )
+	print "   supportScore = " + str( supportScore )
+	print "   moderateScore = " + str( moderateScore )
+	print "   strongScore = " + str( strongScore )
+	print "   veryStrongScore = " + str( veryStrongScore )
+	print "   standAloneScore = " + str( standAloneScore )
+
 	t1 = time.time()
 
 	CharGer = charger.charger()
@@ -579,8 +665,16 @@ def main( argv ):
 	print( str( rareAF ) + " < " + str( commonAF ) )
 	t4 = time.time() 
 
-	CharGer.classify( system="ACMG" )
-	CharGer.classify( system="CharGer" , override=override )
+	CharGer.classify( system="ACMG" , \
+                          supportScore=supportScore, moderateScore=moderateScore, strongScore=strongScore , \
+                          veryStrongScore=veryStrongScore , standAloneScore=standAloneScore , \
+                          minPathogenicScore=minPathogenicScore , minLikelyPathogenicScore=minLikelyPathogenicScore , \
+                          minBenignScore=minBenignScore , minLikelyBenignScore=minLikelyBenignScore )
+	CharGer.classify( system="CharGer" , override=override , \
+                          supportScore=supportScore, moderateScore=moderateScore, strongScore=strongScore , \
+                          veryStrongScore=veryStrongScore , standAloneScore=standAloneScore , \
+                          minPathogenicScore=minPathogenicScore , minLikelyPathogenicScore=minLikelyPathogenicScore , \
+                          minBenignScore=minBenignScore , minLikelyBenignScore=minLikelyBenignScore )
 
 	t5 = time.time() 
 
