@@ -511,6 +511,17 @@ def main( argv ):
 	print "   veryStrongScore = " + str( veryStrongScore )
 	print "   standAloneScore = " + str( standAloneScore )
 
+	# error-check thresholds
+	if minPathogenicScore < 0 or minLikelyPathogenicScore < 0 or minBenignScore < 0 or minLikelyBenignScore < 0:
+		print( "\nCharGer ERROR: Threshold scores must not be negative\n" )
+		sys.exit(2)
+	if minPathogenicScore < minLikelyPathogenicScore:
+		print( "\nCharGer ERROR: Score threshold for 'pathogenic' status cannot be set lower than 'likely pathogenic' status\n" )
+		sys.exit(2)
+	if minBenignScore < minLikelyBenignScore:
+		print( "\nCharGer ERROR: Score threshold for 'benign' status cannot be set lower than 'likely benign' status\n" )
+		sys.exit(2)
+
 	t1 = time.time()
 
 	CharGer = charger.charger()
