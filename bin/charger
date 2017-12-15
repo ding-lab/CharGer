@@ -1,7 +1,7 @@
-#!/bin/python2
+#!/usr/bin/env python2
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.4.0 - 2017*10
+# version: v0.5.0 - 2017*12
 
 import sys
 import getopt
@@ -10,7 +10,7 @@ import time
 import argparse
 
 def parseArgs( argv ):
-	helpText = "\nCharGer - v0.4.0\n\n"
+	helpText = "\nCharGer - v0.5.0\n\n"
 	helpText += "Usage: "
 	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"
@@ -34,7 +34,9 @@ def parseArgs( argv ):
 	helpText += "Cross-reference data files:\n"
 	helpText += "  -z pathogenic variants, .vcf\n"
 	helpText += "  -e expression matrix file, .tsv\n"
-	helpText += "  -g gene list file, (format: gene\\tdisease\\tmode_of_inheritance) .txt\n"
+	helpText += "  --inheritanceGeneList inheritance gene list file, (format: gene\\tdisease\\tmode_of_inheritance) .txt\n"
+	helpText += "  --PP2GeneList PP2 gene list file, (format: column of genes) .txt\n"
+	helpText += "  --BP1GeneList BP1 gene list file, (format: column of genes) .txt\n"
 	helpText += "  -d diseases file, (format: gene\\tdisease\\tmode_of_inheritance) .tsv\n"
 	helpText += "  -n de novo file, standard .maf\n"
 	helpText += "  -a assumed de novo file, standard .maf\n"
@@ -90,7 +92,9 @@ def parseArgs( argv ):
 	vcfFile = ""
 	tsvFile = ""
 	expressionFile = ""
-	geneListFile = ""
+	inheritanceGeneListFile = ""
+	PP2GeneListFile = ""
+	BP1GeneListFile = ""
 	deNovoFile = ""
 	assumedDeNovoFile = ""
 	coSegregationFile = ""
@@ -151,7 +155,8 @@ def parseArgs( argv ):
 		"run-vep" , "run-clinvar" , "run-exac" , \
 		"vepBatchSize=" , "summaryBatchSize=" , "searchBatchSize=" , \
 		"peptideChange=" , "codon=" , "alleleFrequency=" , \
-		"geneList=" , "diseases=" , "expression=" , \
+		"inheritanceGeneList=" , "diseases=" , "expression=" , \
+		"PP2GeneList=" , "BP1GeneList=" , \
 		"deNovo=" , "assumedDeNovo=" , "coSegregation=" , \
 		"rare-threshold=" , "common-threshold=" , \
 		"recurrence-threshold=" , "frequency-filter=" , \
@@ -217,8 +222,12 @@ def parseArgs( argv ):
 			variantClassificationColumn = arg
 		elif opt in ( "-F" , "--alleleFrequency" ):
 			alleleFrequencyColumn = arg
-		elif opt in ( "-g" , "--geneList" ):
-			geneListFile = arg
+		elif opt in ( "-g" , "--inheritanceGeneList" ):
+			inheritanceGeneListFile = arg
+		elif opt in ( "--PP2GeneList" ):
+			PP2GeneListFile = arg
+		elif opt in ( "--BP1GeneList" ):
+			BP1GeneListFile = arg
 		elif opt in ( "-e" , "--expression" ):
 			expressionFile = arg
 		elif opt in ( "-n" , "--deNovo" ):
@@ -319,7 +328,9 @@ def parseArgs( argv ):
 	"assumedDeNovo" : assumedDeNovoFile , \
 	"coSegregation" : coSegregationFile , \
 	"diseases" : diseasesFile , \
-	"geneList" : geneListFile , \
+	"inheritanceGeneList" : inheritanceGeneListFile , \
+	"PP2GeneList" : PP2GeneListFile , \
+	"BP1GeneList" : BP1GeneListFile , \
 	"chrColumn" : chrColumn, \
 	"strandColumn" : strandColumn, \
 	"startColumn" : startColumn, \
@@ -374,7 +385,9 @@ def main( argv ):
 	deNovoFile = values["deNovo"]
 	assumedDeNovoFile = values["assumedDeNovo"]
 	coSegregationFile = values["coSegregation"]
-	geneListFile = values["geneList"]
+	inheritanceGeneListFile = values["inheritanceGeneList"]
+	PP2GeneListFile = values["PP2GeneList"]
+	BP1GeneListFile = values["BP1GeneList"]
 	diseasesFile = values["diseases"]
 	outputFile = values["output"]
 	diseaseSpecific = values["specific"]
@@ -433,7 +446,9 @@ def main( argv ):
 							 vcf = vcfFile , \
 							 tsv = tsvFile , \
 							 pathogenicVariants = pathogenicVariantsFile , \
-							 geneList = geneListFile , \
+							 inheritanceGeneList = inheritanceGeneListFile , \
+							 PP2GeneList = PP2GeneListFile , \
+							 BP1GeneList = BP1GeneListFile , \
 							 expression = expressionFile , \
 							 deNovo = deNovoFile , \
 							 assumedDeNovo = assumedDeNovoFile , \
@@ -461,7 +476,9 @@ def main( argv ):
 	pathogenicVariants=pathogenicVariantsFile , \
 	specific=diseaseSpecific , \
 	tcga=doTCGA , \
-	geneList=geneListFile , \
+	inheritanceGeneList=inheritanceGeneListFile , \
+	PP2GeneList=PP2GeneListFile , \
+	BP1GeneList=BP1GeneListFile , \
 	expression=expressionFile , \
 	deNovo=deNovoFile , \
 	assumedDeNovo=assumedDeNovoFile , \

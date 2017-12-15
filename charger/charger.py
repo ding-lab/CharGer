@@ -40,16 +40,14 @@ class charger(object):
 	'''
 	allDiseases = "all"
 	DOMINANT = "dominant"
+	RECESSIVE = "recessive"
 	def __init__( self , **kwargs ):
 		self.userVariants = kwargs.get( 'variants' , [] )
 		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
 		self.userExpression = kwargs.get( 'expressions' , AV({}) )
-		self.dominantGeneList = kwargs.get( 'geneList' , AV({}) )
-		self.recessiveGeneList = kwargs.get( 'geneList' , AV({}) )
-		self.inframeGeneList = kwargs.get( 'geneList' , AV({}) )
-		self.missenseCauseGeneList = kwargs.get( 'geneList' , AV({}) )
-		self.inframeRecessiveGeneList = kwargs.get( 'geneList' , AV({}) )
-		self.missenseTruncatingCauseGeneList = kwargs.get( 'geneList' , AV({}) )
+		self.inheritanceGeneList = kwargs.get( 'inheritanceGeneList' , AV({}) )
+		self.PP2GeneList = kwargs.get( 'PP2List' , set() )
+		self.BP1GeneList = kwargs.get( 'BP1List' , set() )
 		self.userDeNovoVariants = kwargs.get( 'deNovo' , {} )
 		self.userAssumedDeNovoVariants = kwargs.get( 'assumedDeNovo' , {} )
 		self.userCoSegregateVariants = kwargs.get( 'coSegregate' , {} )
@@ -76,7 +74,9 @@ class charger(object):
 
 		self.checkInputExistence( 'pathogenicVariants' , **kwargs )
 		self.checkInputExistence( 'expression' , **kwargs )
-		self.checkInputExistence( 'geneList' , **kwargs )
+		self.checkInputExistence( 'inheritanceGeneList' , **kwargs )
+		self.checkInputExistence( 'PP2GeneList' , **kwargs )
+		self.checkInputExistence( 'BP1GeneList' , **kwargs )
 		self.checkInputExistence( 'deNovo' , **kwargs )
 		self.checkInputExistence( 'assumedDeNovo' , **kwargs )
 		self.checkInputExistence( 'coSegregate' , **kwargs )
@@ -118,7 +118,9 @@ class charger(object):
 		tsvFile = kwargs.get( 'tsv' , "" )
 		pathogenicVariantsFile = kwargs.get( 'pathogenicVariants' , "" )
 		expressionFile = kwargs.get( 'expression' , "" )
-		geneListFile = kwargs.get( 'geneList' , "" )
+		inheritanceGeneListFile = kwargs.get( 'inheritanceGeneList' , "" )
+		PP2GeneListFile = kwargs.get( 'PP2GeneList' , "" )
+		BP1GeneListFile = kwargs.get( 'BP1GeneList' , "" )
 		deNovoFile = kwargs.get( 'deNovo' , "" )
 		assumedDeNovoFile = kwargs.get( 'assumedDeNovo' , "" )
 		coSegregateFile = kwargs.get( 'coSegregate' , "" )
@@ -137,10 +139,18 @@ class charger(object):
 			#exacDone=False # currently only has 1000G
 		if tsvFile:
 			exacDone = self.readTSV( tsvFile , **kwargs )
-		if geneListFile:
-			self.readModesGeneList( geneListFile , specific=specific )
+		if inheritanceGeneListFile:
+			self.readModesGeneList( inheritanceGeneListFile , specific=specific )
 		else:
 			print "No gene list file uploaded. CharGer will not make PVS1 calls."
+		if PP2GeneListFile:
+			self.readPP2GeneList( PP2GeneListFile )
+		else:
+			print "No PP2 gene list file uploaded. CharGer will not make PP2 calls."
+		if BP1GeneListFile:
+			self.readBP1GeneList( BP1GeneListFile )
+		else:
+			print "No BP1 gene list file uploaded. CharGer will not make BP1 calls."
 		if pathogenicVariantsFile:
 			self.readVCF( pathogenicVariantsFile , appendTo="pathogenic" , **kwargs )
 		if deNovoFile:
@@ -755,13 +765,32 @@ class charger(object):
 				else: #set the gene to match all disease
 					disease = charger.allDiseases
 				mode_inheritance = fields[2].rstrip()
-				if ( "dominant" in mode_inheritance ):
-					self.dominantGeneList[gene][disease] = mode_inheritance
-				if ( "recessive" in mode_inheritance ):
-					self.recessiveGeneList[gene][disease] = mode_inheritance
+				if ( charger.DOMINANT in mode_inheritance ):
+					self.inheritanceGeneList[gene][disease] = charger.DOMINANT
+				if ( charger.RECESSIVE in mode_inheritance ):
+					self.inheritanceGeneList[gene][disease] = charger.RECESSIVE
 				#print '\t'.join( [ gene , disease , mode_inheritance ] )
+			inFile.close()
 		except:
 			print "CharGer::readModesGeneList Error: bad gene list file"
+	def readPP2GeneList( self , inputFile , **kwargs ):
+		print( "CharGer::readPP2GeneList" )
+		try:
+			inFile = self.safeOpen( inputFile , 'r' , warning = True )
+			for line in inFile:
+				self.PP2GeneList.add( line.strip() )
+			inFile.close()
+		except:
+			print( "CharGer::readPP2GeneList Error: bad gene list file" )
+	def readBP1GeneList( self , inputFile , **kwargs ):
+		print( "CharGer::readBP1GeneList" )
+		try:
+			inFile = self.safeOpen( inputFile , 'r' , warning = True )
+			for line in inFile:
+				self.BP1GeneList.add( line.strip() )
+			inFile.close()
+		except:
+			print( "CharGer::readBP1GeneList Error: bad gene list file" )
 	def readDeNovo( self , inputFile ):
 		self.readOtherMAF( inputFile , varDict = self.deNovoVariants )
 	def readAssumedDeNovo( self , inputFile ):
@@ -815,10 +844,6 @@ class charger(object):
 				self.getMacClinVarVCF( macClinVarTSV )
 			else:
 				self.getClinVarviaREST( **kwargs )
-			self.makeGeneListForLowRateOfBenignMissense()
-
-	def makeGeneListForLowRateOfBenignMissense( self ):
-		for var in self.
 
 	def getClinVarviaREST( self , **kwargs ):
 		summaryBatchSize = kwargs.get( 'summaryBatchSize' , 500 )
@@ -854,8 +879,6 @@ class charger(object):
 		age_of_onset	prevalence	disease_mechanism	origin	xrefs
 		"""
 		clinvarSet = dict()
-		PP2GeneCounter = AV({})
-		BP1GeneCounter = AV({})
 		with gzip.open( tsvfile , "rb" ) as macFile:
 			next( macFile )
 			for line in macFile:
@@ -877,24 +900,8 @@ class charger(object):
 				#print( var.proteogenomicVar( ) )
 				#sys.exit() 
 				clinvarSet[var.uid] = var
-				self.getGenesForPP2( PP2GeneCounter , var )
-				self.getGenesForBP1( BP1GeneCounter , var )
 		print( "Have " + str( len( clinvarSet ) ) + " uid's from MacArthur ClinVar .tsv file: " + tsvfile )
 		return clinvarSet
-
-	def getGenesForBP1( self , counter , var ):
-		if ( "missense" in fields[9].lower() ):
-			if ( var.gene in counter.keys() ):
-				counter[var.gene][var.clinical["description"]] += 1
-			else:
-				counter[var.gene][var.clinical["description"]] = 1
-
-	def getGenesForPP2( self , counter , var ):
-		if ( "missense" in fields[9].lower() ):
-			if ( var.gene in counter.keys() ):
-				counter[var.gene][var.clinical["description"]] += 1
-			else:
-				counter[var.gene][var.clinical["description"]] = 1
 
 	@staticmethod
 	def parseMacPathogenicity( fields ):
@@ -1312,11 +1319,10 @@ class charger(object):
 				var.PP1 = True
 				var.addSummary( "PP1(Cosegregation with disease in family from known disease gene " + self.gene + ")" )
 	def PP2( self ):
-		print "CharGer module PP2: Missense variant in a gene of the given gene list"
-		if self.userGeneList: #gene, disease, mode of inheritance
+		print( "CharGer module PP2: Missense variant in a gene that has low rate of benign missense and in which missense are common mechanism of disease" )
+		if self.PP2GeneList: #gene
 			for var in self.userVariants:
 				varGene = var.gene
-				#varDisease = var.disease # no disease field in MAF; may require user input	
 				varSample = var.sample
 				varClass = "asdfasdf"
 				if var.variantClass:
@@ -1324,14 +1330,13 @@ class charger(object):
 				varVEPClass = "asdfasdf"
 				if var.vepVariant:
 					varVEPClass = var.vepVariant.mostSevereConsequence
-				#print str( varGene ) + "\t" + str( varClass ) + "\t" + str( varVEPClass )
 				if ( "missense" in varClass.lower() ) or \
 					( "missense" in varVEPClass.lower() ):
-					if varGene in self.userGeneList: # check if in gene list
+					if varGene in self.PP2GeneList: # check if in gene list
 						var.PP2 = True # if call is true then check expression effect
-						var.addSummary( "PP2(Missense variant in gene from gene list)" )
+						var.addSummary( "PP2(Missense variant in gene from PP2 gene list)" )
 		else: 
-			print "CharGer::PP2 Error: Cannot evaluate PP2: No gene list supplied."
+			print "CharGer::PP2 Error: Cannot evaluate PP2: No PP2 gene list supplied."
 #		print "- "
 	def PP3( self , minimumEvidence ):
 		print "CharGer module PP3"
@@ -1436,8 +1441,8 @@ class charger(object):
 		vep_inframe = [	"inframe_insertion" , "inframe_deletion" , \
 						"stop_lost" ]
 
-		if not self.userGeneList:
-			print "CharGer::runIndelModules Error: Cannot evaluate PVS1 or PM4: No gene list supplied."
+		if not self.inheritanceGeneList:
+			print( "CharGer::runIndelModules Error: Cannot evaluate PVS1 or PM4: No gene list supplied." )
 		for var in self.userVariants:
 			varClass = var.variantClass
 			varGene = var.gene
@@ -1449,38 +1454,40 @@ class charger(object):
 					(varVEPClass in vep_truncations) or \
 					altPeptide == "*" or \
 					altPeptide == "fs":
-				if self.userGeneList:
-					if varGene in self.userGeneList: # check if in gene list
+				if self.inheritanceGeneList:
+					if varGene in self.inheritanceGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if varDisease in self.userGeneList[varGene] \
-						or charger.allDiseases in self.userGeneList[varGene]:
+						if varDisease in self.inheritanceGeneList[varGene] \
+						or charger.allDiseases in self.inheritanceGeneList[varGene]:
 							print( varGene ) 
 							print( varClass )
 							print( varDisease )
-							print( self.userGeneList[varGene][varDisease] )
-							if charger.DOMINANT in self.userGeneList[varGene][varDisease].lower() \
-							or charger.DOMINANT in self.userGeneList[varGene][charger.allDiseases].lower():
+							print( self.inheritanceGeneList[varGene][varDisease] )
+							if charger.DOMINANT in self.inheritanceGeneList[varGene][varDisease].lower() \
+							or charger.DOMINANT in self.inheritanceGeneList[varGene][charger.allDiseases].lower():
 								var.PVS1 = True # if call is true then check expression effect
 								if self.userExpression: # consider expression data only if the user has supplied an expression matrix
 									varSample = var.sample
 									if self.userExpression[varSample][varGene] >= expressionThreshold:
 										var.PVS1 = False
-							else:
+							elif charger.RECESSIVE in self.inheritanceGeneList[varGene][varDisease].lower() \
+							or charger.RECESSIVE in self.inheritanceGeneList[varGene][charger.allDiseases].lower():
 								var.PSC1 = True
 				else: 
 					# in case of no gene list, make all truncations PMC1
 					var.PMC1 = True
 			elif (varClass in lenShift \
-				or varClass in vep_inframe):
-				if self.userGeneList:
-					if varGene in self.userGeneList: # check if in gene list
+			or varClass in vep_inframe):
+				if self.inheritanceGeneList:
+					if varGene in self.inheritanceGeneList: # check if in gene list
 						varDisease = var.disease # no disease field in MAF; may require user input	
-						if varDisease in self.userGeneList[varGene] \
-						or charger.allDiseases in self.userGeneList[varGene]:
-							if charger.DOMINANT in self.userGeneList[varGene][varDisease].lower() \
-							or charger.DOMINANT in self.userGeneList[varGene][charger.allDiseases].lower():
+						if varDisease in self.inheritanceGeneList[varGene] \
+						or charger.allDiseases in self.inheritanceGeneList[varGene]:
+							if charger.DOMINANT in self.inheritanceGeneList[varGene][varDisease].lower() \
+							or charger.DOMINANT in self.inheritanceGeneList[varGene][charger.allDiseases].lower():
 								var.PM4 = True
-							else:
+							elif charger.RECESSIVE in self.inheritanceGeneList[varGene][varDisease].lower() \
+							or charger.RECESSIVE in self.inheritanceGeneList[varGene][charger.allDiseases].lower():
 								var.PPC1 = True
 				else: 
 					# in case of no gene list, make all inframes PPC1
@@ -1679,8 +1686,24 @@ class charger(object):
 
 #### Supporting ####
 	def BP1( self ):
-		print "CharGer module BP1: not yet implemented"
-		#Missense variant in a gene for which primarily truncating variants are known to cause disease
+		print( "CharGer module BP1: Missense variant in a gene for which primarily truncations cause disease" )
+		if self.BP1GeneList: #gene
+			for var in self.userVariants:
+				varGene = var.gene
+				varSample = var.sample
+				varClass = "asdfasdf"
+				if var.variantClass:
+					varClass = var.variantClass
+				varVEPClass = "asdfasdf"
+				if var.vepVariant:
+					varVEPClass = var.vepVariant.mostSevereConsequence
+				if ( "missense" in varClass.lower() ) or \
+					( "missense" in varVEPClass.lower() ):
+					if varGene in self.BP1GeneList: # check if in gene list
+						var.BP1 = True # if call is true then check expression effect
+						var.addSummary( "BP1(Missense variant in gene from BP1 gene list)" )
+		else: 
+			print "CharGer::BP1 Error: Cannot evaluate BP1: No BP1 gene list supplied."
 	def BP2( self ):
 		print "CharGer module BP2: not yet implemented"
 		#Observed in trans with a pathogenic variant for a fully penetrant dominant gene/disorder or observed in cis with a pathogenic variant in any inheritance pattern
