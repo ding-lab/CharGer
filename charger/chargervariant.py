@@ -3,6 +3,7 @@
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2016*01*13
 
+import pdb
 from biomine.variant.clinvarvariant import clinvarvariant
 from biomine.variant.vepvariant import vepvariant
 from biomine.variant.mafvariant import mafvariant
@@ -192,6 +193,27 @@ class chargervariant(mafvariant):
 			if self.clinvarVariant:
 				self.clinvarVariant.printVariant( delim , **kwargs )
 		print( "}" )
+	def __nonzero__( self ):
+		pathogenicitySet = True
+		clinicalSet = True
+		for k , v in self.__dict__.iteritems():
+			if ( k == "pathogenicity" ):
+				if ( v["CharGer"] == chargervariant.uncertain \
+				and v["ACMG"] == chargervariant.uncertain ):
+					pathogenicitySet = False
+			elif ( k == "clinical" ):
+				if ( v["description"] == chargervariant.uncertain \
+				and v["review_status"] == "" ):
+					clinicalSet = False
+			elif ( self.checkIfRefAltStrand( k ) ):
+				if ( self.nonzeroRefAltStrand( k ) ):
+					return True
+			else:
+				if ( bool( v ) ):
+					return True
+		if ( pathogenicitySet and clinicalSet ):
+			return True
+		return False
 	def fillMissingInfo( self , copy ):
 		#print( "FMI: before" )
 		#self.printVariant( ", " )
@@ -208,13 +230,13 @@ class chargervariant(mafvariant):
 			#self.printVariant( ", " )
 		elif isinstance( copy , vepvariant ):
 			if not self.vepVariant:
-				self.vepVariant = copy.vepVariant
-				self.vepVariant.fillMissingInfo( copy.vepVariant )
+				self.vepVariant = copy
+				self.vepVariant.fillMissingInfo( copy )
 			#self.printVariant( ", " )
 		elif isinstance( copy , clinvarvariant ):
 			if not self.clinvarVariant:
-				self.clinvarVariant = copy.clinvarVariant
-				self.clinvarVariant.fillMissingInfo( copy.clinvarVariant )
+				self.clinvarVariant = copy
+				self.clinvarVariant.fillMissingInfo( copy )
 			#self.printVariant( ", " )
 
 	def copyMostSevereConsequence( self ):
