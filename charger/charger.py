@@ -26,6 +26,7 @@ import vcf
 from collections import OrderedDict as OD
 import gzip
 import json
+import pdb
 
 class charger(object):
 	''' Example usage:
@@ -1166,19 +1167,32 @@ class charger(object):
 		return userVariants
 
 	def matchVEP( self , vepVariants ):
+		# print "Charger::matchVEP"
 		currentVars = str( len( self.userVariants ) )
 		removedVars = 0
-		self.userVariants = [x for x in self.userVariants if x.vcf() in vepVariants]
-		for var in self.userVariants:
-			genVar = var.vcf()
-			if genVar in vepVariants:
-				charVEPVar = vepVariants[genVar]
-				charVEPVar.fillMissingInfo( var )
-				var.copyMostSevereConsequence()
-				var.fillMissingInfo( charVEPVar )
-				var.vepVariant = charVEPVar.vepVariant
-			else:
-				print( "CharGer warning: should have been filtered in VEP match: " + genVar + " -- " + var.proteogenomicVar() )
+		for var in self.userVariants: # var is a chargervariant object
+			for vepVar in vepVariants:
+				genVar = var.vcf()
+				if var.sameGenomicVariant(vepVariants[vepVar]):
+					# var.printVariant("|")
+					charVEPVar = vepVariants[vepVar]
+					pdb.set_trace()
+					# print "ACSW: charVEPVar = "
+					# charVEPVar.printVariant("|")
+					if not var.vepVariant:
+						var.vepVariant = charVEPVar
+					# charVEPVar.fillMissingInfo( var.vepVariant )
+					# pdb.set_trace()
+					var.fillMissingInfo( charVEPVar )
+					# pdb.set_trace()
+					var.copyMostSevereConsequence()
+					# pdb.set_trace()
+					var.vepVariant = charVEPVar
+					# print "ACSW:after filling info"
+					# var.printVariant("|")
+					# charVEPVar.printVariant("|")
+					pdb.set_trace()
+					break
 		afterFilter = len( self.userVariants )
 		removedVars = int( currentVars ) - afterFilter
 		print( "Removed " + str( removedVars ) + " from initial user set of " + currentVars + ", now have " + str( len( self.userVariants ) ) + " user variants left." )
