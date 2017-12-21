@@ -1023,6 +1023,7 @@ class charger(object):
 			if var.vepVariant:
 				aluv += 1
 		luvafter = len(self.userVariants)
+		# pdb.set_trace()
 		print "\nVEP annotated userVariants " + str( luvafter )
 		print "VEP annotated " + str(aluv) + " from the original set of " + str(luv)
 
@@ -1172,11 +1173,10 @@ class charger(object):
 		removedVars = 0
 		for var in self.userVariants: # var is a chargervariant object
 			for vepVar in vepVariants:
-				genVar = var.vcf()
-				if var.sameGenomicVariant(vepVariants[vepVar]):
+				if var.sameGenomicVariant( vepVariants[vepVar] ):
 					# var.printVariant("|")
 					charVEPVar = vepVariants[vepVar]
-					pdb.set_trace()
+					# pdb.set_trace()
 					# print "ACSW: charVEPVar = "
 					# charVEPVar.printVariant("|")
 					if not var.vepVariant:
@@ -1188,10 +1188,13 @@ class charger(object):
 					var.copyMostSevereConsequence()
 					# pdb.set_trace()
 					var.vepVariant = charVEPVar
-					# print "ACSW:after filling info"
+					# if var.gene == "NA" or var.gene is None:
+					# 	print "ACSW:after missing gene info"
+					# 	var.printVariant("|")
+					# 	pdb.set_trace()
 					# var.printVariant("|")
 					# charVEPVar.printVariant("|")
-					pdb.set_trace()
+					# pdb.set_trace()
 					break
 		afterFilter = len( self.userVariants )
 		removedVars = int( currentVars ) - afterFilter
