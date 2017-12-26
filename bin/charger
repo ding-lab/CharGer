@@ -152,17 +152,32 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
-	scoresMap = { 'minPathogenicScore' : 8 , 'minLikelyPathogenicScore' : 5 , \
-		'minLikelyBenignScore' : 4 , 'minBenignScore' : 8 , \
-		'supportScore' : 1 , 'moderateScore' : 2 , 'strongScore' : 4 , 'veryStrongScore' : 8 , 'standAloneScore' : 8 }
-	userScoreStrings = [ "min-pathogenic-score=" , "min-likely-pathogenic-score=" , \
-		"min-benign-score=" , "min-likely-benign-score=" , \
-		"support-score=" , "moderate-score=" , "strong-score=" , \
-		"very-strong-score=" , "standalone-score=" ]
-	userScoreSwitches = [ "--min-pathogenic-score" , "--min-likely-pathogenic-score" , \
-		"--min-benign-score" , "--min-likely-benign-score" , \
-		"--support-score" , "--moderate-score" , "--strong-score" , \
-		"--very-strong-score" , "--standalone-score" ]
+	scoresMap = { \
+		'minPathogenicScore'       : 8 , \
+		'minLikelyPathogenicScore' : 5 , \
+		'minLikelyBenignScore'     : 4 , \
+		'minBenignScore'           : 8 , \
+		'supportScore'             : 1 , \
+		'moderateScore'            : 2 , \
+		'strongScore'              : 4 , \
+		'veryStrongScore'          : 8 , \
+		'standAloneScore'          : 8 , \
+		}
+	userScoreSwitchesMap = { \
+		"--min-pathogenic-score"        : 'minPathogenicScore', \
+		"--min-likely-pathogenic-score" : 'minLikelyPathogenicScore' , \
+		"--min-benign-score"            : 'minBenignScore' , \
+		"--min-likely-benign-score"     : 'minLikelyBenignScore' , \
+		"--support-score"               : 'supportScore' , \
+		"--moderate-score"              : 'moderateScore' , \
+		"--strong-score"                : 'strongScore' , \
+		"--very-strong-score"           : 'veryStrongScore' , \
+		"--standalone-score"            : 'standAloneScore' , \
+		}
+	# Transform switches to getopt
+	userScoreStrings = []
+	for k in userScoreSwitchesMap.keys():
+		userScoreStrings.insert( len(userScoreStrings) , k[2:] + "=" )
 	bHasUserScores = False
 
 	try:
@@ -282,24 +297,8 @@ def parseArgs( argv ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
-		elif opt in ( "--min-pathogenic-score" ):
-			scoresMap[ 'minPathogenicScore' ] = int( arg )
-		elif opt in ( "--min-likely-pathogenic-score" ):
-			scoresMap[ 'minLikelyPathogenicScore' ] = int( arg )
-		elif opt in ( "--min-benign-score" ):
-			scoresMap[ 'minBenignScore' ] = int( arg )
-		elif opt in ( "--min-likely-benign-score" ):
-			scoresMap[ 'minLikelyBenignScore' ] = int( arg )
-		elif opt in ( "--support-score" ):
-			scoresMap[ 'supportScore' ] = int( arg )
-		elif opt in ( "--moderate-score" ):
-			scoresMap[ 'moderateScore' ] = int( arg )
-		elif opt in ( "--strong-score" ):
-			scoresMap[ 'strongScore' ] = int( arg )
-		elif opt in ( "--very-strong-score" ):
-			scoresMap[ 'veryStrongScore' ] = int( arg )
-		elif opt in ( "--standalone-score" ):
-			scoresMap[ 'standAloneScore' ] = int( arg )
+		elif opt in userScoreSwitchesMap.keys():
+			scoresMap[ userScoreSwitchesMap[ opt ] ] = int( arg )
 		elif opt in ( "--perl" ):
 			perl = arg
 		elif opt in ( "--vep-script" ):
@@ -332,7 +331,7 @@ def parseArgs( argv ):
 			doURLTest = False
 		elif opt in ( "--include-vcf-details" ):
 			includeVCFDetails = True
-		if opt in ( userScoreSwitches ):
+		if opt in userScoreSwitchesMap.keys():
 			bHasUserScores = True
 	if not mafFile and not vcfFile and not tsvFile:
 		print( "\nCharGer ERROR: must provide an input file\n" )
@@ -383,15 +382,7 @@ def parseArgs( argv ):
 	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
-	"scoresMap" : { "minPathogenicScore" : scoresMap[ 'minPathogenicScore' ] , \
-		"minLikelyPathogenicScore" : scoresMap[ 'minLikelyPathogenicScore' ] , \
-		"minBenignScore" : scoresMap[ 'minBenignScore' ] , \
-		"minLikelyBenignScore" : scoresMap[ 'minLikelyBenignScore' ] , \
-		"supportScore" : scoresMap[ 'supportScore' ] , \
-		"moderateScore" : scoresMap[ 'moderateScore' ] , \
-		"strongScore" : scoresMap[ 'strongScore' ] , \
-		"veryStrongScore" : scoresMap[ 'veryStrongScore' ] , \
-		"standAloneScore" : scoresMap[ 'standAloneScore' ] } , \
+	"scoresMap" : scoresMap , \
 	"bHasUserScores" : bHasUserScores , \
 	"perl" : perl , \
 	"vepScript" : vepScript , \
