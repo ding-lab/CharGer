@@ -515,11 +515,12 @@ class chargervariant(mafvariant):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		if scoreSystem != "CharGer":
 			return
-		supportScore = int( kwargs.get( "supportScore" ) )
-		moderateScore = int( kwargs.get( "moderateScore" ) )
-		strongScore = int( kwargs.get( "strongScore" ) )
-		veryStrongScore = int( kwargs.get( "veryStrongScore" ) )
-		standAloneScore = int( kwargs.get( "standAloneScore" ) )
+		scoresMap = kwargs.get( "scoresMap" )
+		supportScore = int( scoresMap[ 'supportScore' ] )
+		moderateScore = int( scoresMap[ 'moderateScore' ] )
+		strongScore = int( scoresMap[ 'strongScore' ] )
+		veryStrongScore = int( scoresMap[ 'veryStrongScore' ] )
+		standAloneScore = int( scoresMap[ 'standAloneScore' ] )
 		self.pathogenicScore = 0
 		self.pathogenicScore += supportScore * self.countPathogenicSupport()
 		self.pathogenicScore += moderateScore * self.countPathogenicModerate()
@@ -538,10 +539,11 @@ class chargervariant(mafvariant):
 	def compositeScore( self , **kwargs ):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		override = kwargs.get( 'override' , False )
-		minPathogenicScore = int( kwargs.get( "minPathogenicScore" ) )
-		minLikelyPathogenicScore = int( kwargs.get( "minLikelyPathogenicScore" ) )
-		minBenignScore = int( kwargs.get( "minBenignScore" ) )
-		minLikelyBenignScore = int( kwargs.get( "minLikelyBenignScore" ) )
+		scoresMap = kwargs.get( "scoresMap" )
+		minPathogenicScore = int( scoresMap[ 'minPathogenicScore' ] )
+		minLikelyPathogenicScore = int( scoresMap[ 'minLikelyPathogenicScore' ] )
+		minBenignScore = int( scoresMap[ 'minBenignScore' ] )
+		minLikelyBenignScore = int( scoresMap[ 'minLikelyBenignScore' ] )
 		if self.chargerScore > minPathogenicScore:
 			self.setAsPathogenic( **kwargs )
 		elif self.chargerScore >= minLikelyPathogenicScore:

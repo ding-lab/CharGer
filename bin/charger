@@ -152,15 +152,17 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
-	minPathogenicScore = 8
-	minLikelyPathogenicScore = 5
-	minLikelyBenignScore = 4
-	minBenignScore = 8
-	supportScore = 1
-	moderateScore = 2
-	strongScore = 4
-	veryStrongScore = 8
-	standAloneScore = 8
+	scoresMap = { 'minPathogenicScore' : 8 , 'minLikelyPathogenicScore' : 5 , \
+		'minLikelyBenignScore' : 4 , 'minBenignScore' : 8 , \
+		'supportScore' : 1 , 'moderateScore' : 2 , 'strongScore' : 4 , 'veryStrongScore' : 8 , 'standAloneScore' : 8 }
+	userScoreStrings = [ "min-pathogenic-score=" , "min-likely-pathogenic-score=" , \
+		"min-benign-score=" , "min-likely-benign-score=" , \
+		"support-score=" , "moderate-score=" , "strong-score=" , \
+		"very-strong-score=" , "standalone-score=" ]
+	userScoreSwitches = [ "--min-pathogenic-score" , "--min-likely-pathogenic-score" , \
+		"--min-benign-score" , "--min-likely-benign-score" , \
+		"--support-score" , "--moderate-score" , "--strong-score" , \
+		"--very-strong-score" , "--standalone-score" ]
 	bHasUserScores = False
 
 	try:
@@ -182,11 +184,7 @@ def parseArgs( argv ):
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
 		 "run-url-test" , "include-vcf-details" , \
-		"min-pathogenic-score=" , "min-likely-pathogenic-score=" , \
-		"min-benign-score=" , "min-likely-benign-score=" , \
-		"support-score=" , "moderate-score=" , "strong-score=" , \
-		"very-strong-score=" , "standalone-score=" ,\
-		] )
+		] + userScoreStrings )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -285,32 +283,23 @@ def parseArgs( argv ):
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
 		elif opt in ( "--min-pathogenic-score" ):
-			minPathogenicScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'minPathogenicScore' ] = int( arg )
 		elif opt in ( "--min-likely-pathogenic-score" ):
-			minLikelyPathogenicScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'minLikelyPathogenicScore' ] = int( arg )
 		elif opt in ( "--min-benign-score" ):
-			minBenignScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'minBenignScore' ] = int( arg )
 		elif opt in ( "--min-likely-benign-score" ):
-			minLikelyBenignScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'minLikelyBenignScore' ] = int( arg )
 		elif opt in ( "--support-score" ):
-			supportScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'supportScore' ] = int( arg )
 		elif opt in ( "--moderate-score" ):
-			moderateScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'moderateScore' ] = int( arg )
 		elif opt in ( "--strong-score" ):
-			strongScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'strongScore' ] = int( arg )
 		elif opt in ( "--very-strong-score" ):
-			veryStrongScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'veryStrongScore' ] = int( arg )
 		elif opt in ( "--standalone-score" ):
-			standAloneScore = int( arg )
-			bHasUserScores = True
+			scoresMap[ 'standAloneScore' ] = int( arg )
 		elif opt in ( "--perl" ):
 			perl = arg
 		elif opt in ( "--vep-script" ):
@@ -343,6 +332,8 @@ def parseArgs( argv ):
 			doURLTest = False
 		elif opt in ( "--include-vcf-details" ):
 			includeVCFDetails = True
+		if opt in ( userScoreSwitches ):
+			bHasUserScores = True
 	if not mafFile and not vcfFile and not tsvFile:
 		print( "\nCharGer ERROR: must provide an input file\n" )
 		print( helpText )
@@ -392,15 +383,15 @@ def parseArgs( argv ):
 	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
-	"minPathogenicScore" : minPathogenicScore , \
-	"minLikelyPathogenicScore" : minLikelyPathogenicScore , \
-	"minBenignScore" : minBenignScore , \
-	"minLikelyBenignScore" : minLikelyBenignScore , \
-	"supportScore" : supportScore , \
-	"moderateScore" : moderateScore , \
-	"strongScore" : strongScore , \
-	"veryStrongScore" : veryStrongScore , \
-	"standAloneScore" : standAloneScore , \
+	"scoresMap" : { "minPathogenicScore" : scoresMap[ 'minPathogenicScore' ] , \
+		"minLikelyPathogenicScore" : scoresMap[ 'minLikelyPathogenicScore' ] , \
+		"minBenignScore" : scoresMap[ 'minBenignScore' ] , \
+		"minLikelyBenignScore" : scoresMap[ 'minLikelyBenignScore' ] , \
+		"supportScore" : scoresMap[ 'supportScore' ] , \
+		"moderateScore" : scoresMap[ 'moderateScore' ] , \
+		"strongScore" : scoresMap[ 'strongScore' ] , \
+		"veryStrongScore" : scoresMap[ 'veryStrongScore' ] , \
+		"standAloneScore" : scoresMap[ 'standAloneScore' ] } , \
 	"bHasUserScores" : bHasUserScores , \
 	"perl" : perl , \
 	"vepScript" : vepScript , \
@@ -470,15 +461,7 @@ def main( argv ):
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
-	minPathogenicScore = values["minPathogenicScore"]
-	minLikelyPathogenicScore = values["minLikelyPathogenicScore"]
-	minBenignScore = values["minBenignScore"]
-	minLikelyBenignScore = values["minLikelyBenignScore"]
-	supportScore = values["supportScore"]
-	moderateScore = values["moderateScore"]
-	strongScore = values["strongScore"]
-	veryStrongScore = values["veryStrongScore"]
-	standAloneScore = values["standAloneScore"]
+	scoresMap = values["scoresMap"]
 	bHasUserScores = values["bHasUserScores"]
 	perl = values["perl"]
 	vepScript = values["vepScript"]
@@ -501,24 +484,18 @@ def main( argv ):
 		print "Using user-provided module scores and/or category thresholds:"
 	else:
 		print "Using default module scores and category thresholds:"
-	print "   minPathogenicScore = " + str( minPathogenicScore )
-	print "   minLikelyPathogenicScore = " + str ( minLikelyPathogenicScore )
-	print "   minBenignScore = " + str( minBenignScore )
-	print "   minLikelyBenignScore = " + str( minLikelyBenignScore )
-	print "   supportScore = " + str( supportScore )
-	print "   moderateScore = " + str( moderateScore )
-	print "   strongScore = " + str( strongScore )
-	print "   veryStrongScore = " + str( veryStrongScore )
-	print "   standAloneScore = " + str( standAloneScore )
+	for key , value in scoresMap.items():
+		print "   " + key + " = " + str( value )
 
 	# error-check thresholds
-	if minPathogenicScore < 0 or minLikelyPathogenicScore < 0 or minBenignScore < 0 or minLikelyBenignScore < 0:
+	if scoresMap['minPathogenicScore'] < 0 or scoresMap['minLikelyPathogenicScore'] < 0 \
+	or scoresMap['minBenignScore'] < 0 or scoresMap['minLikelyBenignScore'] < 0:
 		print( "\nCharGer ERROR: Threshold scores must not be negative\n" )
 		sys.exit(2)
-	if minPathogenicScore < minLikelyPathogenicScore:
+	if scoresMap['minPathogenicScore'] < scoresMap['minLikelyPathogenicScore']:
 		print( "\nCharGer ERROR: Score threshold for 'pathogenic' status cannot be set lower than 'likely pathogenic' status\n" )
 		sys.exit(2)
-	if minBenignScore < minLikelyBenignScore:
+	if scoresMap['minBenignScore'] < scoresMap['minLikelyBenignScore']:
 		print( "\nCharGer ERROR: Score threshold for 'benign' status cannot be set lower than 'likely benign' status\n" )
 		sys.exit(2)
 
@@ -677,15 +654,9 @@ def main( argv ):
 	t4 = time.time() 
 
 	CharGer.classify( system="ACMG" , \
-                          supportScore=supportScore, moderateScore=moderateScore, strongScore=strongScore , \
-                          veryStrongScore=veryStrongScore , standAloneScore=standAloneScore , \
-                          minPathogenicScore=minPathogenicScore , minLikelyPathogenicScore=minLikelyPathogenicScore , \
-                          minBenignScore=minBenignScore , minLikelyBenignScore=minLikelyBenignScore )
+                          scoresMap = scoresMap )
 	CharGer.classify( system="CharGer" , override=override , \
-                          supportScore=supportScore, moderateScore=moderateScore, strongScore=strongScore , \
-                          veryStrongScore=veryStrongScore , standAloneScore=standAloneScore , \
-                          minPathogenicScore=minPathogenicScore , minLikelyPathogenicScore=minLikelyPathogenicScore , \
-                          minBenignScore=minBenignScore , minLikelyBenignScore=minLikelyBenignScore )
+                          scoresMap = scoresMap )
 
 	t5 = time.time() 
 
