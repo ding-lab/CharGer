@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
+# author: R Jay Mashl (rmashl@wustl.edu)
 # version: v0.4.0 - 2017*10
 
 import sys
@@ -152,6 +153,20 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
+	moduleList = [ \
+		'PVS1' , \
+		'PS1' , 'PS2' , 'PS3' , 'PS4' , \
+		'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' , \
+		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' , \
+		'BA1' , \
+		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
+		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7', \
+		'PSC1' , \
+		'PMC1' , \
+		'PPC1' , 'PPC2' , \
+		'BSC1' , \
+		'BMC1' ,
+		]
 	scoresMap = { \
 		'minPathogenicScore'       : 8 , \
 		'minLikelyPathogenicScore' : 5 , \
@@ -174,6 +189,10 @@ def parseArgs( argv ):
 		"--very-strong-score"           : 'veryStrongScore' , \
 		"--standalone-score"            : 'standAloneScore' , \
 		}
+	# Update maps to include modules
+	for i in moduleList:
+		scoresMap[ i ] = 1
+		userScoreSwitchesMap[ "--" + i ] = i
 	# Transform switches to getopt
 	userScoreStrings = []
 	for k in userScoreSwitchesMap.keys():
@@ -475,8 +494,8 @@ def main( argv ):
 		print "Using user-provided module scores and/or category thresholds:"
 	else:
 		print "Using default module scores and category thresholds:"
-	for key , value in scoresMap.items():
-		print "   " + key + " = " + str( value )
+	for key in sorted( scoresMap.keys() ):
+		print "   " + key + " = " + str( scoresMap[ key ] )
 
 	# error-check thresholds
 	if scoresMap['minPathogenicScore'] < 0 or scoresMap['minLikelyPathogenicScore'] < 0 \
