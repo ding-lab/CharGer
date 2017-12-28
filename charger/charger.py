@@ -41,7 +41,7 @@ class charger(object):
 	allDiseases = "all"
 	DOMINANT = "dominant"
 	def __init__( self , **kwargs ):
-		self.userVariants = kwargs.get( 'variants' , [] )
+		self.userVariants = kwargs.get( 'variants' , [] )   # (rjm) list of variants of class chargervariant
 		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
 		self.userExpression = kwargs.get( 'expressions' , AV({}) )
 		self.userGeneList = kwargs.get( 'geneList' , AV({}) )

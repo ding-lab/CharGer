@@ -77,16 +77,30 @@ HotSpot3D clusters can be used for versions v1.x.x.
 The recurrence threshold will be pulled from the recurrence/weight column of the .clusters file when provided.
 
 ### Pathogenicity module scoring
-Specify option and non-negative integral value to change the default value.
+Specify option and positive whole number value to change the default value.
+
+Standard modules:
 ```
---support-score score for every mildly pathogenic or benign variant (default = 1)
---moderate-score score for every moderately pathogenic or benign variant (default = 2)
---strong-score score for every strongly pathogenic or benign variant (default = 4)
---standalone-score score for every very strongly benign variant (default = 8)
+--PVS1 very strong pathogenicity (default = 1)
+--PS1, --PS2, --PS3, --PS4 strong pathogenicity (defaults = 1)
+--PM1, --PM2, --PM3, --PM4, --PM5, --PM6 moderate pathogenicity (defaults = 1)
+--PP1, --PP2, --PP3, --PP4, --PP5 supporting pathogenicity (defaults = 1)
+--BA1 stand-alone benignity (default = 1)
+--BS1, --BS2, --BS3, --BS4 strong benignity (defaults = 1)
+--BP1, --BP2, --BP3, --BP4, --BP5, --BP6, --BP7 supporting benignity (defaults = 1)
+```
+
+CharGer-defined modules:
+```
+--PSC1 strong pathogenicity (default = 1)
+--PMC1 moderate pathogenicity (default = 1)
+--PPC1, --PPC2 supporting pathogenicity (defaults = 1)
+--BSC1 strong benignity (default = 1)
+--BMC1 moderate benignity (default = 1)
 ```
 
 ### Pathogenicity category thresholds
-Specify option and non-negative integral value to change the default value.
+Specify option and positive whole number value to change the default value.
 ```
 --min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
 --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)

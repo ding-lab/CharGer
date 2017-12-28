@@ -45,12 +45,21 @@ def parseArgs( argv ):
 	helpText += "  --recurrence-threshold HotSpot3D recurrence threshold (default = 2)\n"
 	helpText += "  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):\n"
 	helpText += "  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):\n"
-	helpText += "Pathogenicity module scoring and category thresholds:\n"
-	helpText += "  --support-score module score assigned to every mildly pathogenic or benign variant (default = 1)\n"
-	helpText += "  --moderate-score module score assigned to every moderately pathogenic or benign variant (default = 2)\n"
-	helpText += "  --strong-score module score assigned to every strongly pathogenic or benign variant (default = 4)\n"
-	helpText += "  --very-strong-score module score assigned to every very strongly pathogenic variant (default = 8)\n"
-	helpText += "  --standalone-score module score assigned to every very strongly benign variant (default = 8)\n"
+	helpText += "Pathogenicity/benignity standard module scores:\n"
+	helpText += "  --PVS1 very strong pathogenicity (default = 1)\n"
+	helpText += "  --PS1 , --PS2 , --PS3 , --PS4 strong pathogenicity (defaults = 1)\n"
+	helpText += "  --PM1 , --PM2 , --PM3 , --PM4 , --PM5 , --PM6 moderate pathogenicity (defaults = 1)\n"
+	helpText += "  --PP1 , --PP2 , --PP3 , --PP4 , --PP5 supporting pathogenicity (defaults = 1)\n"
+	helpText += "  --BA1 stand-alone benignity (default = 1)\n"
+	helpText += "  --BS1 , --BS2 , --BS3 , --BS4 strong benignity (defaults = 1)\n"
+	helpText += "  --BP1 , --BP2 , --BP3 , --BP4 , --BP5 , --BP6 , --BP7 supporting benignity (defaults = 1)\n"
+	helpText += "Pathogenicity/benignity CharGer-defined module scores:\n"
+	helpText += "  --PSC1 strong pathogenicity (default = 1)\n"
+	helpText += "  --PMC1 moderate pathogenicity (default = 1)\n"
+	helpText += "  --PPC1 , --PPC2 supporting pathogenicity (defaults = 1)\n"
+	helpText += "  --BSC1 strong benignity (default = 1)\n"
+	helpText += "  --BMC1 moderate benignity (default = 1)\n"
+	helpText += "Pathogenicity/benignity category thresholds:\n"
 	helpText += "  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)\n"
 	helpText += "  --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)\n"
 	helpText += "  --min-benign-score threshold for classifying variant as benign (default = 8)\n"
@@ -172,22 +181,12 @@ def parseArgs( argv ):
 		'minLikelyPathogenicScore' : 5 , \
 		'minLikelyBenignScore'     : 4 , \
 		'minBenignScore'           : 8 , \
-		'supportScore'             : 1 , \
-		'moderateScore'            : 2 , \
-		'strongScore'              : 4 , \
-		'veryStrongScore'          : 8 , \
-		'standAloneScore'          : 8 , \
 		}
 	userScoreSwitchesMap = { \
 		"--min-pathogenic-score"        : 'minPathogenicScore', \
 		"--min-likely-pathogenic-score" : 'minLikelyPathogenicScore' , \
 		"--min-benign-score"            : 'minBenignScore' , \
 		"--min-likely-benign-score"     : 'minLikelyBenignScore' , \
-		"--support-score"               : 'supportScore' , \
-		"--moderate-score"              : 'moderateScore' , \
-		"--strong-score"                : 'strongScore' , \
-		"--very-strong-score"           : 'veryStrongScore' , \
-		"--standalone-score"            : 'standAloneScore' , \
 		}
 	# Update maps to include modules
 	for i in moduleList:
