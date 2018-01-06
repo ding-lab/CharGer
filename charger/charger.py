@@ -987,24 +987,16 @@ class charger(object):
 		preVEP = kwargs.get( 'prevep' , [] )
 		doREST = kwargs.get( 'rest' , False )
 		vepScript = kwargs.get( 'vepScript' , "" )
-		#print( "AmilaW:" + vepScript )
 		if doVEP:
 			sys.stdout.write( "charger::getVEP " )
 			if not vepScript:
 				print( "through BioMine ReST" )
-				#sys.exit( )
 				self.getVEPviaREST( **kwargs )
 			else:
 				print( "from local tool" )
-				#sys.exit( )
 				self.getVEPviaCMD( **kwargs )
 		else:
 			print( "charger::getVEP Warning: skipping VEP" )
-		#elif len( preVEP ) > 0:
-		#	if doREST or ( not doREST and not doCMD ):
-		#		self.getVEPviaREST( **kwargs )
-		#	if doCMD:
-		#		self.getVEPviaCMD( **kwargs )
 
 	def getVEPviaREST( self , **kwargs ):
 		doAllOptions = kwargs.get( 'allOptions' , True )
