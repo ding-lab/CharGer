@@ -1088,8 +1088,8 @@ class charger(object):
 				#vcfFile = kwargs.get( 'vcf' , "" )
 				forks = kwargs.get( 'fork' , defaultForks )
 				#vepConfig = kwargs.get( 'vepConfig', "" )
-				print( defaultFasta )
-				print( fasta )
+				#print( defaultFasta )
+				#print( fasta )
 				vep_command = [ perl , vepScript , \
 					"--species" , "homo_sapiens" , \
 					"--assembly" , assembly , \
@@ -1468,10 +1468,6 @@ class charger(object):
 						varDisease = var.disease # no disease field in MAF; may require user input	
 						if varDisease in self.inheritanceGeneList[varGene] \
 						or charger.allDiseases in self.inheritanceGeneList[varGene]:
-							print( varGene ) 
-							print( varClass )
-							print( varDisease )
-							print( self.inheritanceGeneList[varGene][varDisease] )
 							if charger.DOMINANT in self.inheritanceGeneList[varGene][varDisease].lower() \
 							or charger.DOMINANT in self.inheritanceGeneList[varGene][charger.allDiseases].lower():
 								var.PVS1 = True # if call is true then check expression effect
