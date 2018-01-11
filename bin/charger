@@ -4,7 +4,7 @@
 # author: Kuan-lin Huang (kuan-lin.huang@wustl.edu)
 # author: Amila Weerasinghe (amila@wustl.edu)
 # author: R Jay Mashl (rmashl@wustl.edu)
-# version: v0.5.1 - 2018*01
+# version: v0.5.2 - 2018*01
 
 import sys
 import getopt
@@ -13,7 +13,7 @@ import time
 import argparse
 
 def parseArgs( argv ):
-	helpText = "\nCharGer - v0.5.1\n\n"
+	helpText = "\nCharGer - v0.5.2\n\n"
 	helpText += "Usage: "
 	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"
@@ -168,21 +168,25 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
+
 	pVeryStrong = [ 'PVS1' ]
 	pStrong = [ 'PS1' , 'PS2' , 'PS3' , 'PS4' ]
 	pModerate = [ 'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' ]
 	pSupport = [ 'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' ]
-	bStandAlone = [ 'BA1' ]
-	bStrong = [ 'BS1' , 'BS2' , 'BS3' , 'BS4' ]
-	bModerate = [] 
 	bSupport = [ 'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' ]
+	bModerate = [] 
+	bStrong = [ 'BS1' , 'BS2' , 'BS3' , 'BS4' ]
+	bStandAlone = [ 'BA1' ]
+
 	cpStrong = [ 'PSC1' ]
 	cpModerate = [ 'PMC1' ]
 	cpSupport = [ 'PPC1' , 'PPC2' ]
-	cbStrong = [ 'BSC1' ]
+	cbSupport = []
 	cbModerate = [ 'BMC1' ]
-	pModuleList = pVeryStrong + pStrong + pModerate + pSupport
-	bModuleList = bStandAlone + bStrong + bModerate + bSupport
+	cbStrong = [ 'BSC1' ]
+
+	pModuleList = pVeryStrong + pStrong + pModerate + pSupport + cpStrong + cpModerate + cpSupport
+	bModuleList = bStandAlone + bStrong + bModerate + bSupport + cbStrong + cbModerate
 	moduleList = pModuleList + bModuleList
 	scoresMap = { \
 		'minPathogenicScore'       : 9 , \
@@ -200,20 +204,20 @@ def parseArgs( argv ):
 	for i in moduleList:
 		if ( i in  pVeryStrong ):
 			scoresMap[ i ] = 8
-		elif ( i in pStrong ):
+		elif ( i in pStrong or i in cpStrong ):
 			if ( i == "PS1" ):
 				scoresMap[ i ] = 7
 			else:
 				scoresMap[ i ] = 4
-		elif ( i in pModerate ):
+		elif ( i in pModerate or i in cpModerate ):
 			scoresMap[ i ] = 2
-		elif ( i in pSupport ):
+		elif ( i in pSupport or i in cpSupport ):
 			scoresMap[ i ] = 1
-		elif ( i in bSupport ):
+		elif ( i in bSupport or i in cbSupport ):
 			scoresMap[ i ] = -1
-		elif ( i in bModerate ):
+		elif ( i in bModerate or i in cbModerate ):
 			scoresMap[ i ] = -2
-		elif ( i in bStrong ):
+		elif ( i in bStrong or i in cbStrong ):
 			if ( i == "BSC1" ):
 				scoresMap[ i ] = -6
 			else:
