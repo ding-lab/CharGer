@@ -1,7 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # CharGer - Characterization of Germline variants
-# author: Adam D Scott (adamscott@wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.5.0 - 2017*12
+# author: Adam D Scott (adamscott@wustl.edu)
+# author: Kuan-lin Huang (kuan-lin.huang@wustl.edu)
+# author: Amila Weerasinghe (amila@wustl.edu)
+# author: R Jay Mashl (rmashl@wustl.edu)
+# version: v0.5.0 - 2018*01
 
 import sys
 import getopt
@@ -46,6 +49,25 @@ def parseArgs( argv ):
 	helpText += "  --recurrence-threshold HotSpot3D recurrence threshold (default = 2)\n"
 	helpText += "  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):\n"
 	helpText += "  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):\n"
+	helpText += "Pathogenicity/benignity standard module scores:\n"
+	helpText += "  --PVS1 very strong pathogenicity (default = 8)\n"
+	helpText += "  --PS1 , --PS2 , --PS3 , --PS4 strong pathogenicity (defaults: PS1 = 7, PS2=PS3=PS4 = 4)\n"
+	helpText += "  --PM1 , --PM2 , --PM3 , --PM4 , --PM5 , --PM6 moderate pathogenicity (defaults: PM1=PM2=PM3=PM4=PM5 = 2)\n"
+	helpText += "  --PP1 , --PP2 , --PP3 , --PP4 , --PP5 supporting pathogenicity (defaults: PP1=PP2=PP3=PP4=PP5 = 1)\n"
+	helpText += "  --BP1 , --BP2 , --BP3 , --BP4 , --BP5 , --BP6 , --BP7 supporting benignity (defaults: BP1=BP2=BP3=BP4=BP5=BP6=BP7 = -1)\n"
+	helpText += "  --BS1 , --BS2 , --BS3 , --BS4 strong benignity (defaults: BS1=BS2=BS3=BS4 = -4)\n"
+	helpText += "  --BA1 stand-alone benignity (defaults: BA1 = -8)\n"
+	helpText += "Pathogenicity/benignity CharGer-defined module scores:\n"
+	helpText += "  --PSC1 strong pathogenicity (defaults: PSC1 = 4)\n"
+	helpText += "  --PMC1 moderate pathogenicity (defaults: PMC1 = 2)\n"
+	helpText += "  --PPC1 , --PPC2 supporting pathogenicity (defaults: PPC1=PPC2 = 1)\n"
+	helpText += "  --BMC1 moderate benignity (defaults: BMC1 = -2)\n"
+	helpText += "  --BSC1 strong benignity (defaults: BSC1 = -6)\n"
+	helpText += "Pathogenicity/benignity CharGer category thresholds:\n"
+	helpText += "  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 9)\n"
+	helpText += "  --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)\n"
+	helpText += "  --max-likely-benign-score threshold for classifying variant as likely benign (default = -4)\n"
+	helpText += "  --max-benign-score threshold for classifying variant as benign (default = -8)\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --perl Path to Perl\n"
 	helpText += "  --vep-script Path to VEP\n"
@@ -146,6 +168,64 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
+	pVeryStrong = [ 'PVS1' ]
+	pStrong = [ 'PS1' , 'PS2' , 'PS3' , 'PS4' ]
+	pModerate = [ 'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' ]
+	pSupport = [ 'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' ]
+	bStandAlone = [ 'BA1' ]
+	bStrong = [ 'BS1' , 'BS2' , 'BS3' , 'BS4' ]
+	bModerate = [] 
+	bSupport = [ 'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' ]
+	cpStrong = [ 'PSC1' ]
+	cpModerate = [ 'PMC1' ]
+	cpSupport = [ 'PPC1' , 'PPC2' ]
+	cbStrong = [ 'BSC1' ]
+	cbModerate = [ 'BMC1' ]
+	pModuleList = pVeryStrong + pStrong + pModerate + pSupport
+	bModuleList = bStandAlone + bStrong + bModerate + bSupport
+	moduleList = pModuleList + bModuleList
+	scoresMap = { \
+		'minPathogenicScore'       : 9 , \
+		'minLikelyPathogenicScore' : 5 , \
+		'maxLikelyBenignScore'     : -4 , \
+		'maxBenignScore'           : -8 , \
+		}
+	userScoreSwitchesMap = { \
+		"--min-pathogenic-score"        : 'minPathogenicScore', \
+		"--min-likely-pathogenic-score" : 'minLikelyPathogenicScore' , \
+		"--max-benign-score"            : 'maxBenignScore' , \
+		"--max-likely-benign-score"     : 'maxLikelyBenignScore' , \
+		}
+	# Update maps to include modules
+	for i in moduleList:
+		if ( i in  pVeryStrong ):
+			scoresMap[ i ] = 8
+		elif ( i in pStrong ):
+			if ( i == "PS1" ):
+				scoresMap[ i ] = 7
+			else:
+				scoresMap[ i ] = 4
+		elif ( i in pModerate ):
+			scoresMap[ i ] = 2
+		elif ( i in pSupport ):
+			scoresMap[ i ] = 1
+		elif ( i in bSupport ):
+			scoresMap[ i ] = -1
+		elif ( i in bModerate ):
+			scoresMap[ i ] = -2
+		elif ( i in bStrong ):
+			if ( i == "BSC1" ):
+				scoresMap[ i ] = -6
+			else:
+				scoresMap[ i ] = -4
+		elif ( i in bStandAlone ):
+			scoresMap[ i ] = -8
+		userScoreSwitchesMap[ "--" + i ] = i
+	# Transform switches to getopt
+	userScoreStrings = []
+	for k in userScoreSwitchesMap.keys():
+		userScoreStrings.insert( len(userScoreStrings) , k[2:] + "=" )
+	bHasUserScores = False
 
 	try:
 		#haven't used ijquy
@@ -166,7 +246,8 @@ def parseArgs( argv ):
 		"ensembl-release=" , "vep-version=" , "perl=" , \
 		"grch=" , "reference-fasta=" , "fork=" , \
 		"exac-vcf=" , "mac-clinvar-vcf=" , "mac-clinvar-tsv=" , \
-		"run-url-test" , "include-vcf-details" ] )
+		 "run-url-test" , "include-vcf-details" , \
+		] + userScoreStrings )
 	except getopt.GetoptError:
 		print "CharGer ERROR: Command not recognized"
 		print( helpText ) 
@@ -268,6 +349,8 @@ def parseArgs( argv ):
 			clustersFile = arg
 		elif opt in ( "-k" , "--annotate" ):
 			annotateInput = True
+		elif opt in userScoreSwitchesMap.keys():
+			scoresMap[ userScoreSwitchesMap[ opt ] ] = int( arg )
 		elif opt in ( "--perl" ):
 			perl = arg
 		elif opt in ( "--vep-script" ):
@@ -300,6 +383,8 @@ def parseArgs( argv ):
 			doURLTest = False
 		elif opt in ( "--include-vcf-details" ):
 			includeVCFDetails = True
+		if opt in userScoreSwitchesMap.keys():
+			bHasUserScores = True
 	if not mafFile and not vcfFile and not tsvFile:
 		print( "\nCharGer ERROR: must provide an input file\n" )
 		print( helpText )
@@ -351,6 +436,8 @@ def parseArgs( argv ):
 	"mutationTypes" : mutationTypes , \
 	"clustersFile" : clustersFile , \
 	"annotate" : annotateInput , \
+	"scoresMap" : scoresMap , \
+	"bHasUserScores" : bHasUserScores , \
 	"perl" : perl , \
 	"vepScript" : vepScript , \
 	"vepConfig" : vepConfig , \
@@ -421,6 +508,8 @@ def main( argv ):
 	clustersFile = values["clustersFile"]
 	pathogenicVariantsFile = values["pathogenicVariantsFile"]
 	annotateInput = values["annotate"]
+	scoresMap = values["scoresMap"]
+	bHasUserScores = values["bHasUserScores"]
 	perl = values["perl"]
 	vepScript = values["vepScript"]
 	vepConfig = values["vepConfig"]
@@ -438,6 +527,25 @@ def main( argv ):
 	doURLTest = values["doURLTest"]
 	includeVCFDetails = values["includeVCFDetails"]
 	
+	if bHasUserScores:
+		print "Using user-provided module scores and/or category thresholds:"
+	else:
+		print "Using default module scores and category thresholds:"
+	for key in sorted( scoresMap.keys() ):
+		print "   " + key + " = " + str( scoresMap[ key ] )
+
+	# error-check thresholds
+	if scoresMap['minPathogenicScore'] < 0 or scoresMap['minLikelyPathogenicScore'] < 0 \
+	or scoresMap['maxBenignScore'] > 0 or scoresMap['maxLikelyBenignScore'] > 0:
+		print( "\nCharGer ERROR: Pathogenic thresholds must be positive and benign thresholds must be negative\n" )
+		sys.exit(2)
+	if scoresMap['minPathogenicScore'] < scoresMap['minLikelyPathogenicScore']:
+		print( "\nCharGer ERROR: Score threshold for 'pathogenic' status cannot be set lower than 'likely pathogenic' status\n" )
+		sys.exit(2)
+	if scoresMap['maxBenignScore'] > scoresMap['maxLikelyBenignScore']:
+		print( "\nCharGer ERROR: Score threshold for 'benign' status cannot be set higher than 'likely benign' status\n" )
+		sys.exit(2)
+
 	t1 = time.time()
 
 	CharGer = charger.charger()
@@ -596,8 +704,10 @@ def main( argv ):
 	print( str( rareAF ) + " < " + str( commonAF ) )
 	t4 = time.time() 
 
-	CharGer.classify( system="ACMG" )
-	CharGer.classify( system="CharGer" , override=override )
+	CharGer.classify( system="ACMG" , \
+                          scoresMap = scoresMap )
+	CharGer.classify( system="CharGer" , override=override , \
+                          scoresMap = scoresMap )
 
 	t5 = time.time() 
 

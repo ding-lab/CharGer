@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 #03 February 2016 - Kuan-Lin Huang @ WashU - 
  
 import sys

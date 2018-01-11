@@ -7,11 +7,12 @@ Characterization of Germline variants
 ## Configure
 Add the following to your PATH environment (add it in ~/.bash_profile or ~/.bashrc)
 
-	export PATH="<path to charger bin/>:$PATH"
+	export PATH="/path/to/charger/bin:${PATH}"
 
 ## Run
+Example for a VCF file
 
-	charger -i <variant file> -o <output file>
+	charger -f <variant file> -o <output file>
 
 ## For Help
 Run:
@@ -74,6 +75,38 @@ An expression matrix file has columns for each sample, and its rows are genes.
 The genes should be approved HUGO symbols. 
 HotSpot3D clusters can be used for versions v1.x.x. 
 The recurrence threshold will be pulled from the recurrence/weight column of the .clusters file when provided.
+
+### Pathogenicity module scoring
+Specify option and positive whole number value to change the default value.
+
+Standard modules:
+```
+--PVS1 very strong pathogenicity (default = 1)
+--PS1, --PS2, --PS3, --PS4 strong pathogenicity (defaults = 1)
+--PM1, --PM2, --PM3, --PM4, --PM5, --PM6 moderate pathogenicity (defaults = 1)
+--PP1, --PP2, --PP3, --PP4, --PP5 supporting pathogenicity (defaults = 1)
+--BA1 stand-alone benignity (default = 1)
+--BS1, --BS2, --BS3, --BS4 strong benignity (defaults = 1)
+--BP1, --BP2, --BP3, --BP4, --BP5, --BP6, --BP7 supporting benignity (defaults = 1)
+```
+
+CharGer-defined modules:
+```
+--PSC1 strong pathogenicity (default = 1)
+--PMC1 moderate pathogenicity (default = 1)
+--PPC1, --PPC2 supporting pathogenicity (defaults = 1)
+--BSC1 strong benignity (default = 1)
+--BMC1 moderate benignity (default = 1)
+```
+
+### Pathogenicity category thresholds
+Specify option and positive whole number value to change the default value.
+```
+--min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
+--min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
+--min-benign-score threshold for classifying variant as benign (default = 8)
+--min-likely-benign-score threshold for classifying variant as likely benign (default = 4)
+```
 
 ### Local VEP
 	--vep-script Path to VEP

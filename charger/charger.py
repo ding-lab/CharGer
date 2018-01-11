@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # CharGer - Characterization of Germline variants
 # author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
 # version: v0.0 - 2015*12
@@ -43,7 +43,7 @@ class charger(object):
 	DOMINANT = "dominant"
 	RECESSIVE = "recessive"
 	def __init__( self , **kwargs ):
-		self.userVariants = kwargs.get( 'variants' , [] )
+		self.userVariants = kwargs.get( 'variants' , [] )   # (rjm) list of variants of class chargervariant
 		self.pathogenicVariants = kwargs.get( 'pathogenic' , AV({}) )
 		self.userExpression = kwargs.get( 'expressions' , AV({}) )
 		self.inheritanceGeneList = kwargs.get( 'inheritanceGeneList' , AV({}) )
