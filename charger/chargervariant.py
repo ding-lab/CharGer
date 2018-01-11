@@ -338,10 +338,10 @@ class chargervariant(mafvariant):
 				+ str( self.alleleFrequency ) + ") for " + self.genomicVar() )
 			pass
 		return False
-	def countModule( self , module , weighted ):
-		if ( self.get( module ) ):
+	def countModule( self , module , weighted , scoresMap ):
+		if ( self.__dict__.get( module ) ):
 			if ( weighted ):
-				return self.scoresMap.get( module , 0 )
+				return scoresMap.get( module , 0 )
 			else:
 				return 1
 		return 0
@@ -358,7 +358,7 @@ class chargervariant(mafvariant):
 		count += self.countModule( 'PS4' , weighted , kwargs[ 'scoresMap' ] )
 		count += self.countModule( 'PSC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
-	def countPathogenicModerate( self , **kwargs ):
+	def countPathogenicModerate( self , weighted , **kwargs ):
 		count = 0
 		count += self.countModule( 'PM1' , weighted , kwargs[ 'scoresMap' ] )
 		count += self.countModule( 'PM2' , weighted , kwargs[ 'scoresMap' ] )
@@ -368,7 +368,7 @@ class chargervariant(mafvariant):
 		count += self.countModule( 'PM6' , weighted , kwargs[ 'scoresMap' ] )
 		count += self.countModule( 'PMC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
-	def countPathogenicSupport( self , **kwargs ):
+	def countPathogenicSupport( self , weighted , **kwargs ):
 		count = 0
 		count += self.countModule( 'PP1' , weighted , kwargs[ 'scoresMap' ] )
 		count += self.countModule( 'PP2' , weighted , kwargs[ 'scoresMap' ] )
@@ -538,20 +538,20 @@ class chargervariant(mafvariant):
 		override = kwargs.get( 'override' , False )
 		minPathogenicScore = kwargs[ 'scoresMap' ][ 'minPathogenicScore' ]
 		minLikelyPathogenicScore = kwargs[ 'scoresMap' ][ 'minLikelyPathogenicScore' ]
-		minBenignScore = kwargs[ 'scoresMap' ][ 'minBenignScore' ]
-		minLikelyBenignScore = kwargs[ 'scoresMap' ][ 'minLikelyBenignScore' ]
+		maxBenignScore = kwargs[ 'scoresMap' ][ 'maxBenignScore' ]
+		maxLikelyBenignScore = kwargs[ 'scoresMap' ][ 'maxLikelyBenignScore' ]
 		if self.chargerScore > minPathogenicScore:
 			self.setAsPathogenic( **kwargs )
 		elif self.chargerScore >= minLikelyPathogenicScore:
 			self.setAsLikelyPathogenic( **kwargs )
-		elif self.benignScore >= minLikelyBenignScore:
+		elif self.benignScore <= maxLikelyBenignScore:
 			if self.pathogenicity[scoreSystem] == chargervariant.pathogenic \
 			or self.pathogenicity[scoreSystem] == chargervariant.likelyPathogenic:
 				self.setAsUncertainSignificance( **kwargs ) 
 			else:
-				if self.benignScore >= minBenignScore:
+				if self.benignScore <= maxBenignScore:
 					self.setAsBenign( **kwargs )
-				elif self.benignScore >= minLikelyBenignScore:
+				elif self.benignScore <= maxLikelyBenignScore:
 					self.setAsLikelyBenign( **kwargs )
 		else:
 			self.setAsUncertainSignificance( **kwargs ) 
