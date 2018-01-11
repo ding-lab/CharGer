@@ -4,7 +4,7 @@
 # author: Kuan-lin Huang (kuan-lin.huang@wustl.edu)
 # author: Amila Weerasinghe (amila@wustl.edu)
 # author: R Jay Mashl (rmashl@wustl.edu)
-# version: v0.5.0 - 2018*01
+# version: v0.5.1 - 2018*01
 
 import sys
 import getopt
@@ -13,7 +13,7 @@ import time
 import argparse
 
 def parseArgs( argv ):
-	helpText = "\nCharGer - v0.5.0\n\n"
+	helpText = "\nCharGer - v0.5.1\n\n"
 	helpText += "Usage: "
 	helpText += "charger <input file> [options]\n\n"
 	helpText += "Accepted input data files:\n"

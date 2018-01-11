@@ -1,6 +1,6 @@
 #https://docs.python.org/2/distutils/examples.html
 from distutils.core import setup
-version = "0.5.0"
+version = "0.5.1"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
@@ -23,7 +23,7 @@ setup( \
 				"ClinVar" , "ExAC" , "VEP" , "BioMine" , "germline" , \
 				"variant" , "classifier" ] ,
 	classifiers = [ \
-		"License :: OSI Approved :: MIT License " , 
+		"License :: OSI Approved :: GNU General Public License v3 (GPLv3)" ,
 		"Programming Language :: Python" , 
 		"Programming Language :: Python :: 2.7" , 
 		"Development Status :: 4 - Beta" , 
@@ -34,7 +34,7 @@ setup( \
 		"Topic :: Scientific/Engineering :: Bio-Informatics" , 
 		"Topic :: Scientific/Engineering :: Chemistry" , 
 	] ,
-	license = 'MIT' ,
+	license = 'GPL-3.0' ,
 	package_dir = { 'charger' : 'charger' , 
 	} ,
 	packages = [ \

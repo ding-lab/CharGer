@@ -436,8 +436,7 @@ class chargervariant(mafvariant):
 		return count
 	def countBenignModerate( self , weighted , **kwargs ):
 		count = 0
-		if self.BMC1:
-			count += kwargs[ 'scoresMap' ][ 'BMC1' ]
+		count += self.countModule( 'BMC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
 	def countBenignSupport( self , weighted , **kwargs ):
 		count = 0
