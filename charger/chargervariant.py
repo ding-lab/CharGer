@@ -77,6 +77,7 @@ class chargervariant(mafvariant):
 		self.vepVariant = kwargs.get( 'vepvariant' , vepvariant() )
 		self.clinvarVariant = kwargs.get( 'clinvarvariant' , clinvarvariant() )
 		self.transvarVariant = kwargs.get( 'transvarvariant' , None )
+		self.scoresMap = kwargs.get( 'scoresMap' , dict() )
 
 	def annotations( self , delim = "\t" ):
 		line = delim.join( [ self.gene , \
@@ -315,62 +316,51 @@ class chargervariant(mafvariant):
 				+ str( self.alleleFrequency ) + ") for " + self.genomicVar() )
 			pass
 		return False
-	def countPathogenicVeryStrong( self , **kwargs ):
+	def countModule( self , module , weighted ):
+		if ( self.get( module ) ):
+			if ( weighted ):
+				return self.scoresMap.get( module , 0 )
+			else:
+				return 1
+		return 0
+	def countPathogenicVeryStrong( self , weighted , **kwargs ):
 		count = 0
 		if self.PVS1:
-			count += kwargs[ 'scoresMap' ][ 'PVS1' ]
+			count += self.countModule( 'PVS1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
-	def countPathogenicStrong( self , **kwargs ):
+	def countPathogenicStrong( self , weighted , **kwargs ):
 		count = 0
-		if self.PS1:
-			count += kwargs[ 'scoresMap' ][ 'PS1' ]
-		if self.PS2:
-			count += kwargs[ 'scoresMap' ][ 'PS2' ]
-		if self.PS3:
-			count += kwargs[ 'scoresMap' ][ 'PS3' ]
-		if self.PS4:
-			count += kwargs[ 'scoresMap' ][ 'PS4' ]
-		if self.PSC1:
-			count += kwargs[ 'scoresMap' ][ 'PSC1' ]
+		count += self.countModule( 'PS1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PS2' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PS3' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PS4' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PSC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
 	def countPathogenicModerate( self , **kwargs ):
 		count = 0
-		if self.PM1:
-			count += kwargs[ 'scoresMap' ][ 'PM1' ]
-		if self.PM2:
-			count += kwargs[ 'scoresMap' ][ 'PM2' ]
-		if self.PM3:
-			count += kwargs[ 'scoresMap' ][ 'PM3' ]
-		if self.PM4:
-			count += kwargs[ 'scoresMap' ][ 'PM4' ]
-		if self.PM5:
-			count += kwargs[ 'scoresMap' ][ 'PM5' ]
-		if self.PM6:
-			count += kwargs[ 'scoresMap' ][ 'PM6' ]
-		if self.PMC1:
-			count += kwargs[ 'scoresMap' ][ 'PMC1' ]
+		count += self.countModule( 'PM1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PM2' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PM3' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PM4' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PM5' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PM6' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PMC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
 	def countPathogenicSupport( self , **kwargs ):
 		count = 0
-		if self.PP1:
-			count += kwargs[ 'scoresMap' ][ 'PP1' ]
-		if self.PP2:
-			count += kwargs[ 'scoresMap' ][ 'PP2' ]
-		if self.PP3:
-			count += kwargs[ 'scoresMap' ][ 'PP3' ]
-		if self.PP4:
-			count += kwargs[ 'scoresMap' ][ 'PP4' ]
-		if self.PP5:
-			count += kwargs[ 'scoresMap' ][ 'PP5' ]
-		if self.PPC1:
-			count += kwargs[ 'scoresMap' ][ 'PPC1' ]
-		if self.PPC2:
-			count += kwargs[ 'scoresMap' ][ 'PPC2' ]
+		count += self.countModule( 'PP1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PP2' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PP3' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PP4' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PP5' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PPC1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'PPC2' , weighted , kwargs[ 'scoresMap' ] )
 		return count
 	def isPathogenic( self , **kwargs ):
-		numPathogenicStrong = self.countPathogenicStrong( **kwargs )
-		numPathogenicModerate = self.countPathogenicModerate( **kwargs )
-		numPathogenicSupport = self.countPathogenicSupport( **kwargs )
+		weighted = False
+		numPathogenicStrong = self.countPathogenicStrong( weighted , **kwargs )
+		numPathogenicModerate = self.countPathogenicModerate( weighted , **kwargs )
+		numPathogenicSupport = self.countPathogenicSupport( weighted , **kwargs )
 		if self.PVS1:
 			if numPathogenicStrong >= 1 or \
 			numPathogenicModerate >= 2 or \
@@ -388,9 +378,10 @@ class chargervariant(mafvariant):
 				self.setAsPathogenic( **kwargs )
 				return True
 	def isLikelyPathogenic( self , **kwargs ):
-		numPathogenicStrong = self.countPathogenicStrong( **kwargs )
-		numPathogenicModerate = self.countPathogenicModerate( **kwargs )
-		numPathogenicSupport = self.countPathogenicSupport( **kwargs )
+		weighted = False
+		numPathogenicStrong = self.countPathogenicStrong( weighted , **kwargs )
+		numPathogenicModerate = self.countPathogenicModerate( weighted , **kwargs )
+		numPathogenicSupport = self.countPathogenicSupport( weighted , **kwargs )
 		if numPathogenicStrong and numPathogenicModerate == 1:
 			self.setAsLikelyPathogenic( **kwargs )
 			return True
@@ -409,46 +400,36 @@ class chargervariant(mafvariant):
 		if numPathogenicModerate == 1 and numPathogenicSupport >= 4:
 			self.setAsLikelyPathogenic( **kwargs )
 			return True
-	def countBenignStandAlone( self , **kwargs ):
+	def countBenignStandAlone( self , weighted , **kwargs ):
 		count = 0
-		if self.BA1:
-			count += kwargs[ 'scoresMap' ][ 'BA1' ]
+		count += self.countModule( 'BA1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
-	def countBenignStrong( self , **kwargs ):
+	def countBenignStrong( self , weighted , **kwargs ):
 		count = 0
-		if self.BS1:
-			count += kwargs[ 'scoresMap' ][ 'BS1' ]
-		if self.BS2:
-			count += kwargs[ 'scoresMap' ][ 'BS2' ]
-		if self.BS3:
-			count += kwargs[ 'scoresMap' ][ 'BS3' ]
-		if self.BS4:
-			count += kwargs[ 'scoresMap' ][ 'BS4' ]
-		if self.BSC1:
-			count += kwargs[ 'scoresMap' ][ 'BSC1' ]
+		count += self.countModule( 'BS1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BS2' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BS3' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BS4' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BSC1' , weighted , kwargs[ 'scoresMap' ] )
 		return count
-	def countBenignModerate( self , **kwargs ):
+	def countBenignModerate( self , weighted , **kwargs ):
 		count = 0
 		if self.BMC1:
 			count += kwargs[ 'scoresMap' ][ 'BMC1' ]
 		return count
-	def countBenignSupport( self , **kwargs ):
+	def countBenignSupport( self , weighted , **kwargs ):
 		count = 0
-		if self.BP1:
-			count += kwargs[ 'scoresMap' ][ 'BP1' ]
-		if self.BP2:
-			count += kwargs[ 'scoresMap' ][ 'BP2' ]
-		if self.BP3:
-			count += kwargs[ 'scoresMap' ][ 'BP3' ]
-		if self.BP4:
-			count += kwargs[ 'scoresMap' ][ 'BP4' ]
-		if self.BP5:
-			count += kwargs[ 'scoresMap' ][ 'BP5' ]
+		count += self.countModule( 'BP1' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BP2' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BP3' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BP4' , weighted , kwargs[ 'scoresMap' ] )
+		count += self.countModule( 'BP5' , weighted , kwargs[ 'scoresMap' ] )
 		return count
 	def isLikelyBenign( self , **kwargs ):
-		numBenignStrong = self.countBenignStrong( **kwargs )
-		numBenignModerate = self.countBenignModerate( **kwargs )
-		numBenignSupport = self.countBenignSupport( **kwargs )
+		weighted = False
+		numBenignStrong = self.countBenignStrong( weighted , **kwargs )
+		numBenignModerate = self.countBenignModerate( weighted , **kwargs )
+		numBenignSupport = self.countBenignSupport( weighted , **kwargs )
 		if numBenignStrong == 1 and \
 		numBenignSupport == 1:
 			return True
@@ -456,10 +437,11 @@ class chargervariant(mafvariant):
 			return True
 		return False
 	def isBenign( self , **kwargs ):
-		numBenignStandAlone = self.countBenignStandAlone( **kwargs )
-		numBenignStrong = self.countBenignStrong( **kwargs )
-		numBenignModerate = self.countBenignModerate( **kwargs )
-		numBenignSupport = self.countBenignSupport( **kwargs )
+		weighted = False
+		numBenignStandAlone = self.countBenignStandAlone( weighted , **kwargs )
+		numBenignStrong = self.countBenignStrong( weighted , **kwargs )
+		numBenignModerate = self.countBenignModerate( weighted , **kwargs )
+		numBenignSupport = self.countBenignSupport( weighted , **kwargs )
 		if numBenignStandAlone:
 			return True
 		if numBenignStrong >= 2:
@@ -515,19 +497,18 @@ class chargervariant(mafvariant):
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		if scoreSystem != "CharGer":
 			return
+		weighted = True
 		self.pathogenicScore = 0
-		self.pathogenicScore += self.countPathogenicSupport( **kwargs )
-		self.pathogenicScore += self.countPathogenicModerate( **kwargs )
-		self.pathogenicScore += self.countPathogenicStrong( **kwargs )
-		self.pathogenicScore += 3 if self.PS1 else 0
-		self.pathogenicScore += self.countPathogenicVeryStrong( **kwargs )
+		self.pathogenicScore += self.countPathogenicSupport( weighted , **kwargs )
+		self.pathogenicScore += self.countPathogenicModerate( weighted , **kwargs )
+		self.pathogenicScore += self.countPathogenicStrong( weighted , **kwargs )
+		self.pathogenicScore += self.countPathogenicVeryStrong( weighted , **kwargs )
 		self.benignScore = 0
-		self.benignScore += self.countBenignSupport( **kwargs )
-		self.benignScore += self.countBenignModerate( **kwargs )
-		self.benignScore += self.countBenignStrong( **kwargs )
-		self.benignScore += 2 if self.BSC1 else 0
-		self.benignScore += self.countBenignStandAlone( **kwargs )
-		self.chargerScore = self.pathogenicScore - self.benignScore
+		self.benignScore += self.countBenignSupport( weighted , **kwargs )
+		self.benignScore += self.countBenignModerate( weighted , **kwargs )
+		self.benignScore += self.countBenignStrong( weighted , **kwargs )
+		self.benignScore += self.countBenignStandAlone( weighted , **kwargs )
+		self.chargerScore = self.pathogenicScore + self.benignScore
 		scoreSystem = kwargs.get( "system" , "CharGer" )
 		self.compositeScore( **kwargs )
 	def compositeScore( self , **kwargs ):
@@ -552,7 +533,6 @@ class chargervariant(mafvariant):
 					self.setAsLikelyBenign( **kwargs )
 		else:
 			self.setAsUncertainSignificance( **kwargs ) 
-
 		if override:
 			self.clinvarOverride( **kwargs )
 	def clinvarOverride( self , **kwargs ):

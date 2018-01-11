@@ -46,24 +46,24 @@ def parseArgs( argv ):
 	helpText += "  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):\n"
 	helpText += "  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):\n"
 	helpText += "Pathogenicity/benignity standard module scores:\n"
-	helpText += "  --PVS1 very strong pathogenicity (default = 1)\n"
-	helpText += "  --PS1 , --PS2 , --PS3 , --PS4 strong pathogenicity (defaults = 1)\n"
-	helpText += "  --PM1 , --PM2 , --PM3 , --PM4 , --PM5 , --PM6 moderate pathogenicity (defaults = 1)\n"
-	helpText += "  --PP1 , --PP2 , --PP3 , --PP4 , --PP5 supporting pathogenicity (defaults = 1)\n"
-	helpText += "  --BA1 stand-alone benignity (default = 1)\n"
-	helpText += "  --BS1 , --BS2 , --BS3 , --BS4 strong benignity (defaults = 1)\n"
-	helpText += "  --BP1 , --BP2 , --BP3 , --BP4 , --BP5 , --BP6 , --BP7 supporting benignity (defaults = 1)\n"
+	helpText += "  --PVS1 very strong pathogenicity (default = 8)\n"
+	helpText += "  --PS1 , --PS2 , --PS3 , --PS4 strong pathogenicity (defaults: PS1 = 7, PS2=PS3=PS4 = 4)\n"
+	helpText += "  --PM1 , --PM2 , --PM3 , --PM4 , --PM5 , --PM6 moderate pathogenicity (defaults: PM1=PM2=PM3=PM4=PM5 = 2)\n"
+	helpText += "  --PP1 , --PP2 , --PP3 , --PP4 , --PP5 supporting pathogenicity (defaults: PP1=PP2=PP3=PP4=PP5 = 1)\n"
+	helpText += "  --BP1 , --BP2 , --BP3 , --BP4 , --BP5 , --BP6 , --BP7 supporting benignity (defaults: BP1=BP2=BP3=BP4=BP5=BP6=BP7 = -1)\n"
+	helpText += "  --BS1 , --BS2 , --BS3 , --BS4 strong benignity (defaults: BS1=BS2=BS3=BS4 = -4)\n"
+	helpText += "  --BA1 stand-alone benignity (defaults: BA1 = -8)\n"
 	helpText += "Pathogenicity/benignity CharGer-defined module scores:\n"
-	helpText += "  --PSC1 strong pathogenicity (default = 1)\n"
-	helpText += "  --PMC1 moderate pathogenicity (default = 1)\n"
-	helpText += "  --PPC1 , --PPC2 supporting pathogenicity (defaults = 1)\n"
-	helpText += "  --BSC1 strong benignity (default = 1)\n"
-	helpText += "  --BMC1 moderate benignity (default = 1)\n"
-	helpText += "Pathogenicity/benignity category thresholds:\n"
-	helpText += "  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)\n"
+	helpText += "  --PSC1 strong pathogenicity (defaults: PSC1 = 4)\n"
+	helpText += "  --PMC1 moderate pathogenicity (defaults: PMC1 = 2)\n"
+	helpText += "  --PPC1 , --PPC2 supporting pathogenicity (defaults: PPC1=PPC2 = 1)\n"
+	helpText += "  --BMC1 moderate benignity (defaults: BMC1 = -2)\n"
+	helpText += "  --BSC1 strong benignity (defaults: BSC1 = -6)\n"
+	helpText += "Pathogenicity/benignity CharGer category thresholds:\n"
+	helpText += "  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 9)\n"
 	helpText += "  --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)\n"
-	helpText += "  --min-benign-score threshold for classifying variant as benign (default = 8)\n"
-	helpText += "  --min-likely-benign-score threshold for classifying variant as likely benign (default = 4)\n"
+	helpText += "  --max-likely-benign-score threshold for classifying variant as likely benign (default = -4)\n"
+	helpText += "  --max-benign-score threshold for classifying variant as benign (default = -8)\n"
 	helpText += "Local VEP (works with .vcf input only; suppresses ReST too):\n"
 	helpText += "  --perl Path to Perl\n"
 	helpText += "  --vep-script Path to VEP\n"
@@ -162,35 +162,58 @@ def parseArgs( argv ):
 	anyFilter = False
 	mutationTypes = []
 	includeVCFDetails = False
-	moduleList = [ \
-		'PVS1' , \
-		'PS1' , 'PS2' , 'PS3' , 'PS4' , \
-		'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' , \
-		'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' , \
-		'BA1' , \
-		'BS1' , 'BS2' , 'BS3' , 'BS4' , \
-		'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7', \
-		'PSC1' , \
-		'PMC1' , \
-		'PPC1' , 'PPC2' , \
-		'BSC1' , \
-		'BMC1' ,
-		]
+	pVeryStrong = [ 'PVS1' ]
+	pStrong = [ 'PS1' , 'PS2' , 'PS3' , 'PS4' ]
+	pModerate = [ 'PM1' , 'PM2' , 'PM3' , 'PM4' , 'PM5' , 'PM6' ]
+	pSupport = [ 'PP1' , 'PP2' , 'PP3' , 'PP4' , 'PP5' ]
+	bStandAlone = [ 'BA1' ]
+	bStrong = [ 'BS1' , 'BS2' , 'BS3' , 'BS4' ]
+	bModerate = [] 
+	bSupport = [ 'BP1' , 'BP2' , 'BP3' , 'BP4' , 'BP5' , 'BP6' , 'BP7' ]
+	cpStrong = [ 'PSC1' ]
+	cpModerate = [ 'PMC1' ]
+	cpSupport = [ 'PPC1' , 'PPC2' ]
+	cbStrong = [ 'BSC1' ]
+	cbModerate = [ 'BMC1' ]
+	pModuleList = pVeryStrong + pStrong + pModerate + pSupport
+	bModuleList = bStandAlone + bStrong + bModerate + bSupport
+	moduleList = pModuleList + bModuleList
 	scoresMap = { \
-		'minPathogenicScore'       : 8 , \
+		'minPathogenicScore'       : 9 , \
 		'minLikelyPathogenicScore' : 5 , \
-		'minLikelyBenignScore'     : 4 , \
-		'minBenignScore'           : 8 , \
+		'maxLikelyBenignScore'     : -4 , \
+		'maxBenignScore'           : -8 , \
 		}
 	userScoreSwitchesMap = { \
 		"--min-pathogenic-score"        : 'minPathogenicScore', \
 		"--min-likely-pathogenic-score" : 'minLikelyPathogenicScore' , \
-		"--min-benign-score"            : 'minBenignScore' , \
-		"--min-likely-benign-score"     : 'minLikelyBenignScore' , \
+		"--max-benign-score"            : 'maxBenignScore' , \
+		"--max-likely-benign-score"     : 'maxLikelyBenignScore' , \
 		}
 	# Update maps to include modules
 	for i in moduleList:
-		scoresMap[ i ] = 1
+		if ( i in  pVeryStrong ):
+			scoresMap[ i ] = 8
+		elif ( i in pStrong ):
+			if ( i == "PS1" ):
+				scoresMap[ i ] = 7
+			else:
+				scoresMap[ i ] = 4
+		elif ( i in pModerate ):
+			scoresMap[ i ] = 2
+		elif ( i in pSupport ):
+			scoresMap[ i ] = 1
+		elif ( i in bSupport ):
+			scoresMap[ i ] = -1
+		elif ( i in bModerate ):
+			scoresMap[ i ] = -2
+		elif ( i in bStrong ):
+			if ( i == "BSC1" ):
+				scoresMap[ i ] = -6
+			else:
+				scoresMap[ i ] = -4
+		elif ( i in bStandAlone ):
+			scoresMap[ i ] = -8
 		userScoreSwitchesMap[ "--" + i ] = i
 	# Transform switches to getopt
 	userScoreStrings = []
@@ -498,14 +521,14 @@ def main( argv ):
 
 	# error-check thresholds
 	if scoresMap['minPathogenicScore'] < 0 or scoresMap['minLikelyPathogenicScore'] < 0 \
-	or scoresMap['minBenignScore'] < 0 or scoresMap['minLikelyBenignScore'] < 0:
-		print( "\nCharGer ERROR: Threshold scores must not be negative\n" )
+	or scoresMap['maxBenignScore'] > 0 or scoresMap['maxLikelyBenignScore'] > 0:
+		print( "\nCharGer ERROR: Pathogenic thresholds must be positive and benign thresholds must be negative\n" )
 		sys.exit(2)
 	if scoresMap['minPathogenicScore'] < scoresMap['minLikelyPathogenicScore']:
 		print( "\nCharGer ERROR: Score threshold for 'pathogenic' status cannot be set lower than 'likely pathogenic' status\n" )
 		sys.exit(2)
-	if scoresMap['minBenignScore'] < scoresMap['minLikelyBenignScore']:
-		print( "\nCharGer ERROR: Score threshold for 'benign' status cannot be set lower than 'likely benign' status\n" )
+	if scoresMap['maxBenignScore'] > scoresMap['maxLikelyBenignScore']:
+		print( "\nCharGer ERROR: Score threshold for 'benign' status cannot be set higher than 'likely benign' status\n" )
 		sys.exit(2)
 
 	t1 = time.time()
