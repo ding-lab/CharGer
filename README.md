@@ -4,6 +4,8 @@ Characterization of Germline variants
 
 	pip install .
 
+BUG ALERT: Users who encounter the TLSV1_ALERT_PROTOCOL_VERSION error, which is the result of python.org ending support for TLSv1.0 and TLSv1.1 protocols, will first need to update pip outside of pip, e.g., by issuing "curl https://bootstrap.pypa.io/get-pip.py | python" prior to running "pip install .".
+
 ## Configure
 Add the following to your PATH environment (add it in ~/.bash_profile or ~/.bashrc)
 
