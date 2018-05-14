@@ -1,15 +1,47 @@
 # CharGer
 Characterization of Germline variants
-## Install
 
+### Requirements
+* python 2.7.x
+* pip 10.x
+* git
+* virtualenv (RECOMMENDED)
+
+### Install
+
+1. Use a python virtual environment (RECOMMENDED):
+```sh
+	mkdir -p /path/to/workdir
+	cd /path/to/workdir
+	virtualenv build_charger --python=python2.7
+	cd build_charger
+	. bin/activate
+```
+
+2. Get CharGer
+```sh
+	mkdir -p /path/to/workdir/build_charger
+	cd /path/to/workdir/build_charger
+	git clone https://github.com/ding-lab/CharGer.git
+	cd CharGer
+	pip --version
+```
+
+**Caution**: If the version of pip indicated above is < 10.x, you will need first to upgrade your pip
+as python.org has ended support for the TLSv1.0 and TLSv1.1 protocols:
+```sh
+	curl https://bootstrap.pypa.io/get-pip.py | python
+```
+
+Issue the following command to install CharGer and its dependencies:
+```sh
 	pip install .
+```
 
-BUG ALERT: Users who encounter the TLSV1_ALERT_PROTOCOL_VERSION error, which is the result of python.org ending support for TLSv1.0 and TLSv1.1 protocols, will first need to update pip outside of pip, e.g., by issuing "curl https://bootstrap.pypa.io/get-pip.py | python" prior to running "pip install .".
+### Configure
+Add the following to your PATH environment (append it to ~/.bash_profile or ~/.bashrc)
 
-## Configure
-Add the following to your PATH environment (add it in ~/.bash_profile or ~/.bashrc)
-
-	export PATH="/path/to/charger/bin:${PATH}"
+	export PATH="/path/to/workdir/build_charger/CharGer/bin:${PATH}"
 
 ## Run
 Example for a VCF file
