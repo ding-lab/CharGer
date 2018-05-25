@@ -91,6 +91,7 @@ This information will be added to your variants when available.
 	-w output as HTML (flag)
 	-k annotate input (flag)
 	--run-url-test test url when creating links
+	--include-vcf-details (flag)
 Name your output file; otherwise it will be called charger_summary.tsv. 
 You can opt to make the output into an HTML page, instead of a readable .tsv. 
 If you need to be assured of properly linked URL's, use the url test flag. 
@@ -110,57 +111,64 @@ The TCGA flag allows disease determination from sample barcodes in a .maf when u
 You can have CharGer override its pathogenic characterization with whatever ClinVar has. 
 Suppressing disease specific variants takes any variants in the diseases file (see below) and treats them as equally pathogenic without disease consideration.
 
-### Cross-reference data
+### Cross-reference data files
 	-z pathogenic variants, .vcf
 	-e expression matrix file, .tsv
-	-g gene list file, (format: gene\\tdisease\\tmode_of_inheritance) .txt
+	--inheritanceGeneList inheritance gene list file, (format: gene\tdisease\tmode_of_inheritance) .txt
+	--PP2GeneList PP2 gene list file, (format: column of genes) .txt
+	--BP1GeneList BP1 gene list file, (format: column of genes) .txt
 	-d diseases file, (format: gene\\tdisease\\tmode_of_inheritance) .tsv
 	-n de novo file, standard .maf
 	-a assumed de novo file, standard .maf
 	-c co-segregation file, standard .maf
 	-H HotSpot3D clusters file, .clusters
-	-r recurrence threshold (default = 2)
 Variants or genes from each of these files can be used as additional known information. 
 An expression matrix file has columns for each sample, and its rows are genes. 
 The genes should be approved HUGO symbols. 
 HotSpot3D clusters can be used for versions v1.x.x. 
+
+### Thresholds
+  --recurrence-threshold HotSpot3D recurrence threshold (default = 2)
+  --rare-threshold Allele frequency threshold for rare (default = 0.0005 (0.05%)):
+  --common-threshold Allele frequency threshold for common (default = 0.005 (0.5%)):
 The recurrence threshold will be pulled from the recurrence/weight column of the .clusters file when provided.
 
-### Pathogenicity module scoring
-Specify option and positive whole number value to change the default value.
+### Pathogenicity/benignity standard modules and scores
+Specify the option and positive whole number value to change the default value.
 
 Standard modules:
 ```
---PVS1 very strong pathogenicity (default = 1)
---PS1, --PS2, --PS3, --PS4 strong pathogenicity (defaults = 1)
---PM1, --PM2, --PM3, --PM4, --PM5, --PM6 moderate pathogenicity (defaults = 1)
---PP1, --PP2, --PP3, --PP4, --PP5 supporting pathogenicity (defaults = 1)
---BA1 stand-alone benignity (default = 1)
---BS1, --BS2, --BS3, --BS4 strong benignity (defaults = 1)
---BP1, --BP2, --BP3, --BP4, --BP5, --BP6, --BP7 supporting benignity (defaults = 1)
+  --PVS1 very strong pathogenicity (default = 8)
+  --PS1 , --PS2 , --PS3 , --PS4 strong pathogenicity (defaults: PS1 = 7, PS2=PS3=PS4 = 4)
+  --PM1 , --PM2 , --PM3 , --PM4 , --PM5 , --PM6 moderate pathogenicity (defaults: PM1=PM2=PM3=PM4=PM5 = 2)
+  --PP1 , --PP2 , --PP3 , --PP4 , --PP5 supporting pathogenicity (defaults: PP1=PP2=PP3=PP4=PP5 = 1)
+  --BP1 , --BP2 , --BP3 , --BP4 , --BP5 , --BP6 , --BP7 supporting benignity (defaults: BP1=BP2=BP3=BP4=BP5=BP6=BP7 = -1)
+  --BS1 , --BS2 , --BS3 , --BS4 strong benignity (defaults: BS1=BS2=BS3=BS4 = -4)
+  --BA1 stand-alone benignity (defaults: BA1 = -8)
 ```
 
-CharGer-defined modules:
+CharGer-defined modules and scores
 ```
---PSC1 strong pathogenicity (default = 1)
---PMC1 moderate pathogenicity (default = 1)
---PPC1, --PPC2 supporting pathogenicity (defaults = 1)
---BSC1 strong benignity (default = 1)
---BMC1 moderate benignity (default = 1)
+  --PSC1 strong pathogenicity (defaults: PSC1 = 4)
+  --PMC1 moderate pathogenicity (defaults: PMC1 = 2)
+  --PPC1 , --PPC2 supporting pathogenicity (defaults: PPC1=PPC2 = 1)
+  --BMC1 moderate benignity (defaults: BMC1 = -2)
+  --BSC1 strong benignity (defaults: BSC1 = -6)
 ```
 
-### Pathogenicity category thresholds
-Specify option and positive whole number value to change the default value.
+### Pathogenicity/benignity category thresholds
+Specify the option and positive whole number value to change the default value.
 ```
---min-pathogenic-score threshold for classifying variant as pathogenic (default = 8)
---min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
---min-benign-score threshold for classifying variant as benign (default = 8)
---min-likely-benign-score threshold for classifying variant as likely benign (default = 4)
+  --min-pathogenic-score threshold for classifying variant as pathogenic (default = 9)
+  --min-likely-pathogenic-score threshold for classifying variant as likely pathogenic (default = 5)
+  --max-likely-benign-score threshold for classifying variant as likely benign (default = -4)
+  --max-benign-score threshold for classifying variant as benign (default = -8)
 ```
 
 ### Local VEP
+	--perl Path to Perl
 	--vep-script Path to VEP
-	--vep-dir Path to VEP directory
+	--vep-config config-file for VEP
 	--vep-cache Path to VEP cache directory
 	--vep-version VEP version (default = 87)
 	--vep-output VEP output file (default = charger.vep.vcf)
@@ -184,16 +192,16 @@ The GRCh reference genome can be set to either 37 or 38.
 The reference Fasta file will be deteremined automatically if not specified. 
 If the reference Fasta file is constructed automatically, then if, for example, the VEP chache is ~/.vep/, the Ensembl release is 74, and the reference assembly is 37, then the reference Fasta file will be ~/.vep/homo\_sapiens/74\_GRCH37/Homo\_sapiens.GRCh37.74.dna.primary\_assembly.fa.gz.  
 
-### Local databases
+### Local databases (suppresses ReST)
 	--exac-vcf ExAC vcf.gz
 	--mac-clinvar-tsv ClinVar from MacArthur lab (clinvar_alleles.tsv.gz)
 Using local databases suppresses the BioMine accession too. 
 These files can be downloaded from their respective sites.
 
 ### Filters
-	--rare Allele frequency threshold for rare/common (default = 1, process variant with any frequency):
-	--vcf-any-filter Allow variants that do not pass all filters in .vcf input (flag)
-	--mutation-types Comma delimited list of types to allow
+	--frequency-filter Keep if allele frequency is lower (default = 1.0, process variant with any frequency):
+	--vcf-any-filter Keep variants that do not pass all filters in .vcf input (flag)
+	--mutation-types Keep types, as a comma-delimited list (no spaces)
 Using filters will limit the variants processed. 
 The rare option takes variants with allele frequency less than the given value. 
 The .vcf any filter accepts only variants that have passed all filters. 
@@ -201,9 +209,9 @@ If no .vcf pass filter status given, the .vcf null value will be taken as having
 Mutation types filtering requires a comma delimitted list (no spaces) using terms from Ensembl's consequence terms.
 
 ### ReST batch sizes
-	-v VEP (#variants, default/max allowed = 150)
-	-b ClinVar summary (#variants, default/max allowed = 500)
-	-B ClinVar searchsize (#variants, default/max allowed = 50)
+	-v VEP number of variants (default/max allowed = 300)
+	-b ClinVar summary number of variants (default/max allowed = 500)
+	-B ClinVar searchsize number of variants (default/max allowed = 50)
 ReST API's usually have limits on the amount of data sent or received. 
 Exceeding these batch sizes would normally lead to warnings and/or IP blockage, but CharGer and BioMine try to keep batches at safe sizes. Last updated limits February 2017.
 
@@ -219,6 +227,5 @@ Exceeding these batch sizes would normally lead to warnings and/or IP blockage, 
 	-C codon
 	-p peptide change
 	-L variant classification
-	-F allele frequency
 Use these for .tsv and/or .maf input variant files to specify columns of relevant data. 
-CharGer makes use of genomic and protein variant annotations, so the more data made available the better your results.
+CharGer makes use of genomic and protein variant annotations, so the more data made available, the better your results.
