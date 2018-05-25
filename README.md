@@ -66,13 +66,12 @@ Example for a VCF file
 	charger -f <variant file> -o <output file>
 
 ## For Help
-Run:
+To obtain a summary of options and default values, type
 
 	charger
 
-For detailed help/support, email Adam:
+For other help/support, please submit an issue with us <a href="https://github.com/ding-lab/CharGer/issues">here</a>.
 
-	adamscott@wustl.edu
 
 ## Usage Details
 ### Input data
