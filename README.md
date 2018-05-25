@@ -30,7 +30,7 @@ If the indicated version of pip is < 10.x, you will first need to upgrade your p
 
 (3) Select one of the following installation methods:
 
-* Binary modules option (i.e., the easy approach)
+* Binary modules option (i.e., the easy approach via <a href="https://pypi.org">PyPI</a>)
 ```sh
   pip install charger
 ```
