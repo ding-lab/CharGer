@@ -1,47 +1,64 @@
 # CharGer
 Characterization of Germline variants
 
+
 ### Requirements
 * python 2.7.x
 * pip 10.x
-* git
-* virtualenv (RECOMMENDED)
+* virtualenv (RECOMMENDED; assumed below)
+* git / wget / unzip / curl (depending on the approach taken)
 
 ### Install
 
-1. Use a python virtual environment (RECOMMENDED):
+(1) Set up a python virtual environment:
 ```sh
-	mkdir -p /path/to/workdir
-	cd /path/to/workdir
-	virtualenv build_charger --python=python2.7
-	cd build_charger
-	. bin/activate
+ mkdir -p /path/to/workdir
+ cd /path/to/workdir
+ virtualenv mycharger --python=python2.7
+ cd mycharger
+ . bin/activate
 ```
 
-2. Get CharGer
+(2) Prepare for CharGer
 ```sh
-	mkdir -p /path/to/workdir/build_charger
-	cd /path/to/workdir/build_charger
-	git clone https://github.com/ding-lab/CharGer.git
-	cd CharGer
-	pip --version
+ pip --version
+```
+If the indicated version of pip is < 10.x, you will first need to upgrade your pip because python.org has ended its support for the TLSv1.0 and TLSv1.1 protocols:
+```sh
+ curl https://bootstrap.pypa.io/get-pip.py | python
 ```
 
-**Caution**: If the version of pip indicated above is < 10.x, you will need first to upgrade your pip
-as python.org has ended support for the TLSv1.0 and TLSv1.1 protocols:
+(3) Select one of the following installation methods:
+
+* Binary modules option (i.e., the easy approach)
 ```sh
-	curl https://bootstrap.pypa.io/get-pip.py | python
+  pip install charger
+```
+&nbsp; &nbsp; &nbsp; &nbsp;This command downloads and installs CharGer and its dependencies. The charger executable is placed into your mycharger/bin directory and should be ready for use. Proceed to the Run section below.
+
+* Source code option
+
+&nbsp; &nbsp; &nbsp; &nbsp; Download the CharGer source using one of the following:
+```sh
+  git clone https://github.com/ding-lab/CharGer.git
+```
+&nbsp; &nbsp; &nbsp; &nbsp; or
+```sh
+  wget -O CharGer.zip https://github.com/ding-lab/CharGer/archive/master.zip
+  unzip CharGer.zip
+  mv CharGer-master CharGer
+```
+&nbsp; &nbsp; &nbsp; &nbsp;Then install CharGer and its dependencies:
+
+```sh
+  cd CharGer
+  pip install .
+
+  # Update your PATH environment variable
+  # It is suggested also to append this line to your ~/.bash_profile or ~/.bashrc
+  export PATH="/path/to/workdir/mycharger/CharGer/bin:${PATH}"
 ```
 
-Issue the following command to install CharGer and its dependencies:
-```sh
-	pip install .
-```
-
-### Configure
-Add the following to your PATH environment (append it to ~/.bash_profile or ~/.bashrc)
-
-	export PATH="/path/to/workdir/build_charger/CharGer/bin:${PATH}"
 
 ## Run
 Example for a VCF file
