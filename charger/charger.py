@@ -873,30 +873,49 @@ class charger(object):
 
 	def getMacClinVarTSV( self , tsvfile ):
 		"""
+		Function adapted to parse either version of MacArthur ClinVar file:
+		- Previous version header:
 		chrom	pos	ref	alt	measureset_type	measureset_id	rcv	allele_id
 		symbol	hgvs_c	hgvs_p	molecular_consequence	clinical_significance
 		pathogenic	benign	conflicted	review_status	gold_stars
 		all_submitters	all_traits	all_pmids	inheritance_modes
 		age_of_onset	prevalence	disease_mechanism	origin	xrefs
+
+		- Current version header:
+		chrom	pos	ref	alt	start	stop	strand	variation_type	variation_id
+		rcv	scv	allele_id	symbol	hgvs_c	hgvs_p	molecular_consequence	clinical_significance
+		clinical_significance_ordered	pathogenic	likely_pathogenic	uncertain_significance	likely_benign
+		benign	review_status	review_status_ordered	last_evaluated	all_submitters	submitters_ordered
+		all_traits	all_pmids	inheritance_modes	age_of_onset	prevalence	disease_mechanism	origin
+		xrefs	dates_ordered	gold_stars	conflicted
 		"""
 		clinvarSet = dict()
 		with gzip.open( tsvfile , "rb" ) as macFile:
-			next( macFile )
+			header = macFile.readline().strip().split("\t") # read in file header; columns are now called by name instead of index
 			for line in macFile:
 				fields = ( line.rstrip( ) ).split( "\t" )
-				[ description , status ] = self.parseMacPathogenicity( fields[12:17] )
-				var = clinvarvariant( chromosome = fields[0] , \
-									  start = fields[1] , \
-									  reference = fields[2] , \
-									  alternate = fields[3] , \
-									  uid = fields[5] , \
-									  gene = fields[8] , \
-									  clinical = { "description" : description , "review_status" : status } , \
-									  trait = { fields[-1] : fields[19] } , \
-				)
+				[ description , status ] = self.parseMacPathogenicity( header, fields ) # no need to specify which fields here anymore; parseMacPathogenicity now knows which specific columns to look for
+				if len(header) > 27: # if yes, file is in the new format
+					var = clinvarvariant( chromosome = fields[header.index("chrom")] , \
+										  start = fields[header.index("pos")] , \
+										  reference = fields[header.index("ref")] , \
+										  alternate = fields[header.index("alt")] , \
+										  uid = fields[header.index("variation_id")], \
+										  gene = fields[header.index("symbol")] , \
+										  clinical = { "description" : description , "review_status" : status } , \
+										  trait = { fields[header.index("xrefs")] : fields[header.index("all_traits")] } )
+				else: # file in the old format
+					var = clinvarvariant( chromosome = fields[header.index("chrom")] , \
+										  start = fields[header.index("pos")] , \
+										  reference = fields[header.index("ref")] , \
+										  alternate = fields[header.index("alt")] , \
+										  uid = fields[header.index("measureset_id")], \
+										  gene = fields[header.index("symbol")] , \
+										  clinical = { "description" : description , "review_status" : status } , \
+										  trait = { fields[-1] : fields[header.index("all_traits")] } )
 				var.setStopFromReferenceAndAlternate( )
-				var.splitHGVSc( fields[9] , override = True )
-				var.splitHGVSp( fields[10] )
+				var.splitHGVSc( fields[header.index("hgvs_c")] , override = True )
+				var.splitHGVSp( fields[header.index("hgvs_p")] )
 				#var.printVariant( "," )
 				#print( var.proteogenomicVar( ) )
 				#sys.exit() 
@@ -905,41 +924,73 @@ class charger(object):
 		return clinvarSet
 
 	@staticmethod
-	def parseMacPathogenicity( fields ):
-		named = fields[0]
-		isPathogenic = fields[1]
+	def parseMacPathogenicity( header, fields ): # addded header argument, so can recognize column names from file header (defined by the modified getMacClinVarTSV function)
+		named = fields[header.index("clinical_significance")]
+		isPathogenic = fields[header.index("pathogenic")]
 		if isPathogenic == "1;0":
 			isPathogenic = 1
-		else:
-			isPathogenic = int( isPathogenic )
-		isBenign = fields[2]
-		if isBenign == "1;0":
+		elif int(isPathogenic) >= 1:
+			isPathogenic = 1
+
+		isBenign = fields[header.index("benign")]
+		if isBenign == "1;0": 
 			isBenign = 1
-		else:
-			isBenign = int( isBenign )
-		isConflicted = fields[3]
+		elif int(isBenign) >= 1:
+			isBenign = 1
+
+		isConflicted = fields[header.index("conflicted")]
 		if isConflicted == "1;0":
 			isConflicted = 1
-		else:
-			isConflicted = int( isConflicted )
-		status = fields[4]
+		elif int(isConflicted) >= 1:
+			isConflicted = 1
+
+		status = fields[header.index("review_status")]
 		desc = chargervariant.uncertain
+
+		# added snippet (next 5 lines) to solve cases where variant is categorized likely pathogenic, likely benign, 
+		# or as both uncertain significance and likely pathogenic or likely benign. 
+		if "likely_pathogenic" in header:
+			if fields[header.index("likely_pathogenic")] >= 1:
+				isPathogenic = 1
+			
+			if fields[header.index("likely_benign")] >= 1:
+				isBenign = 1
+		
 		if isConflicted == 1:
 			return [ desc , status ]
+		
+		# adjusted function to read values split by either ";" or "/"
 		if isBenign == 1:
-			for desc in named.split( ";" ):
-				if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-					desc = chargervariant.likelyBenign
-				elif re.match( desc.lower( ) , "benign" ):
-					desc = chargervariant.benign
-					break
+			if ";" in named: # old version
+				for desc in named.split( ";" ):
+					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
+						desc = chargervariant.likelyBenign
+					elif re.match( desc.lower( ) , "benign" ):
+						desc = chargervariant.benign
+						break
+			else:
+				for desc in named.split( "/" ): # new version
+					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
+						desc = chargervariant.likelyBenign
+					elif re.match( desc.lower( ) , "benign" ):
+						desc = chargervariant.benign
+						break
+		
 		if isPathogenic == 1:
-			for desc in named.split( ";" ):
-				if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-					desc = chargervariant.likelyPanic
-				elif re.match( desc.lower( ) , "athog" ):
-					desc = chargervariant.pathogenic
-					break
+			if ";" in named:
+				for desc in named.split( ";" ): # old version
+					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
+						desc = chargervariant.likelyPanic
+					elif re.match( desc.lower( ) , "athog" ):
+						desc = chargervariant.pathogenic
+						break
+			else:
+				for desc in named.split( "/" ): # new version
+					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
+						desc = chargervariant.likelyPanic
+					elif re.match( desc.lower( ) , "athog" ):
+						desc = chargervariant.pathogenic
+						break
 		return [ desc , status ]
 
 	def getMacClinVarVCF( self , vcffile ):
@@ -1827,6 +1878,7 @@ class charger(object):
 			print '\t'.join( [ str(i) , var.uniqueProteogenomicVar() , \
 				var.positiveEvidence() , var.pathogenicity[scoreSystem] , \
 				var.clinical["description"] ] )
+
 	def writeSummary( self , outFile , **kwargs ):
 		delim = kwargs.get( 'delim' , '\t' )
 		asHTML = kwargs.get( 'html' , False )
