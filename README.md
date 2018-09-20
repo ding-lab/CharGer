@@ -8,7 +8,7 @@ Characterization of Germline variants
 * virtualenv (RECOMMENDED; assumed below)
 * git / wget / unzip / curl (depending on the approach taken)
 
-### Install
+### Standard installation
 
 (1) Set up a python virtual environment:
 ```sh
@@ -59,6 +59,89 @@ If the indicated version of pip is < 10.x, you will first need to upgrade your p
   export PATH="/path/to/workdir/mycharger/CharGer/bin:${PATH}"
 ```
 
+## Installation using conda
+
+In case you do not have python 2.7.x installed in your machine or the installation process above does not run smoothly for you, please follow the installation steps below using conda:
+
+(1) Download and install Anaconda® 
+
+Download the installer for Anaconda® for python 2.7.x here (https://www.anaconda.com/download/) or download and install via command line as follows (please copy link for the .sh file appropriate for your operational system in the webpage provided):
+
+```sh
+  wget https://repo.anaconda.com/archive/Anaconda2-5.2.0-Linux-x86_64.sh
+```
+
+Install anaconda:
+
+```sh
+  bash Anaconda2-5.2.0-Linux-x86_64.sh
+```
+
+(2) Prepare for CharGer
+
+Create a virtual environment:
+```sh
+  conda create --name CharGer
+```
+
+Switch to virtual environment:
+```sh
+  source activate CharGer
+```
+
+Ensure that the appropriate version of pip (>10.x) is available in your environment:
+```sh
+  pip --version
+```
+
+If the indicated version of pip is < 10.x, you will first need to install or upgrade your pip because python.org has ended its support for the TLSv1.0 and TLSv1.1 protocols. 
+To install pip in your environment, run:
+
+```sh
+  conda install pip
+```
+
+To upgrade pip in your environment, run:
+
+```sh
+  conda update pip
+```
+
+Install pysam in your environment:
+
+```sh
+  conda install pysam
+```
+
+(3) Download and install CharGer
+
+```sh
+  wget -O CharGer.zip https://github.com/ding-lab/CharGer/archive/master.zip
+  unzip CharGer.zip
+  mv CharGer_master/ CharGer
+```
+
+Install CharGer:
+
+```sh
+  cd CharGer
+  pip install .
+```
+
+(4) Update your PATH environment variable
+
+After installation is complete, leave the conda environment and update your PATH environment variable. 
+
+Leave conda environment:
+
+```sh
+  source deactivate
+```
+Update PATH (it is suggested that you also append this line to your ~/.bash_profile or ~/.bashrc) :
+  
+```sh
+  export PATH=“path/to/anaconda2/envs/CharGer/bin:${PATH}”
+```
 
 ## Run
 Example for a VCF file
