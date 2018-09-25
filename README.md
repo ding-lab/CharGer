@@ -118,7 +118,7 @@ Install pysam in your environment:
 ```sh
   wget -O CharGer.zip https://github.com/ding-lab/CharGer/archive/master.zip
   unzip CharGer.zip
-  mv CharGer_master/ CharGer
+  mv CharGer-master/ CharGer
 ```
 
 Install CharGer:
