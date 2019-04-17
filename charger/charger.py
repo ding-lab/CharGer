@@ -914,7 +914,7 @@ class charger(object):
 										  clinical = { "description" : description , "review_status" : status } , \
 										  trait = { fields[-1] : fields[header.index("all_traits")] } )
 				var.setStopFromReferenceAndAlternate( )
-				var.splitHGVSc( fields[header.index("hgvs_c")] , override = True )
+				var.splitHGVSc( fields[header.index("hgvs_c")] )
 				var.splitHGVSp( fields[header.index("hgvs_p")] )
 				#var.printVariant( "," )
 				#print( var.proteogenomicVar( ) )
