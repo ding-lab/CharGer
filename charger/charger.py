@@ -956,7 +956,7 @@ class charger(object):
 			if fields[header.index("likely_benign")] >= 1:
 				isBenign = 1
 		
-		if isConflicted == 1:
+		if isConflicted == 1 and isPathogenic == 1 and isBenign == 1:
 			return [ desc , status ]
 		
 		# adjusted function to read values split by either ";" or "/"
