@@ -925,7 +925,10 @@ class charger(object):
 
 	@staticmethod
 	def parseMacPathogenicity( header, fields ): # addded header argument, so can recognize column names from file header (defined by the modified getMacClinVarTSV function)
-		named = fields[header.index("clinical_significance")]
+		if "clinical_significance_ordered" in header:
+			named = fields[header.index("clinical_significance_ordered")]
+		else:
+			named = fields[header.index("clinical_significance")]
 		isPathogenic = fields[header.index("pathogenic")]
 		if isPathogenic == "1;0":
 			isPathogenic = 1
