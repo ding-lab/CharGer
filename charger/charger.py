@@ -960,37 +960,27 @@ class charger(object):
 			return [ desc , status ]
 		
 		# adjusted function to read values split by either ";" or "/"
+		if ";" in named: # old version
+			split=";"
+		else: # new version
+			split="/"
+
 		if isBenign == 1:
-			if ";" in named: # old version
-				for desc in named.split( ";" ):
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
-		
+			for descL in named.split( split ):
+				if re.search( "ikely", descL.lower( ) ):
+					desc = chargervariant.likelyBenign
+				elif re.search( "benign",  descL.lower( ) ):
+					desc = chargervariant.benign
+					break
+
 		if isPathogenic == 1:
-			if ";" in named:
-				for desc in named.split( ";" ): # old version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
+			for descL in named.split( split ):
+				if re.search( "ikely", descL.lower( ) ):
+					desc = chargervariant.likelyPathogenic
+				elif re.search( "athog", descL.lower( ) ):
+					desc = chargervariant.pathogenic
+					break
+
 		return [ desc , status ]
 
 	def getMacClinVarVCF( self , vcffile ):
