@@ -1621,7 +1621,7 @@ class charger(object):
 						#print( "also PS1 via samGenomicVariant" )
 						var.PS1 = True # already pathogenic still suffices to be PS1
 						called = 1
-			elif consequence.sameGenomicReference( clinvarVar ):
+			elif consequence.samePeptideChange( clinvarVar ):
 			#if genomic change is different, but the peptide change is the same, then PS1
 				if clinvarVar.alternatePeptide == consequence.alternatePeptide: #same amino acid change
 					if clin["description"] == clinvarvariant.benign:
