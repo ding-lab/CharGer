@@ -406,8 +406,9 @@ class charger(object):
 				if changep:
 					aas = mafvariant().splitHGVSp( hgvsp[1] )
 					#print( "AmilaW:aas = " + str(aas) )
+					del aas[1]
 					aas[0] = mafvariant().convertAA( aas[0] )
-					aas[2] = mafvariant().convertAA( aas[2] )
+					aas[1] = mafvariant().convertAA( aas[1] )
 				else:
 					aas.append( None )
 					needVEP = True
