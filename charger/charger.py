@@ -460,7 +460,7 @@ class charger(object):
 	def getExAC_MAF( self , values , var ):
 		#if the .vcf does not have AF
 		#then check for ExAC_MAF
-		if ( var.alleleFrequency is not None ):
+		if ( var.alleleFrequency is None ):
 			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
 			if emaf is not None:
 				for alt in emaf.split( "&" ):
@@ -472,7 +472,7 @@ class charger(object):
 		return False
 
 	def getGMAF( self , values , var ):
-		if ( var.alleleFrequency is not None ):
+		if ( var.alleleFrequency is None ):
 			gmaf = self.getVCFKeyIndex( values , "GMAF" )
 			if gmaf is not None:
 				for alt in gmaf.split( "&" ):
