@@ -3,7 +3,6 @@ pp2="PP2GeneList.txt"
 out="charged.demo.tsv"
 in="demo.vcf"
 pvs1="inheritanceGeneList.txt"
-ps1="pathogenicVariants.vcf"
 pm5="somaticHotspots.hotspot3d.clusters"
 #Test CharGer using BioMine ReST VEP & ClinVar
 ## grch37 VEP endpoint currently down as of Jan 2018
