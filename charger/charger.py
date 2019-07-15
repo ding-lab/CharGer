@@ -486,7 +486,7 @@ class charger(object):
 	def readMetaData( self , metadata , infos , vepInfo ):
 		vepDone = False
 		exacDone = False
-		clinvarDone = True
+		clinvarDone = False
 		for pairs in metadata:
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
