@@ -85,12 +85,12 @@ Install anaconda:
 
 Create a virtual environment:
 ```sh
-  conda create --name CharGer
+  conda create --name CharGer python=2.7
 ```
 
 Switch to virtual environment:
 ```sh
-  source activate CharGer
+  conda activate CharGer
 ```
 
 Ensure that the appropriate version of pip (>10.x) is available in your environment:
@@ -139,7 +139,7 @@ After installation is complete, leave the conda environment and update your PATH
 Leave conda environment:
 
 ```sh
-  source deactivate
+  conda deactivate
 ```
 Update PATH (it is suggested that you also append this line to your ~/.bash_profile or ~/.bashrc) :
   
