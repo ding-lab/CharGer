@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # CharGer - Characterization of Germline variants
-# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.0 - 2015*12
+# author: 
+#	- Adam D Scott (ascott@genome.wustl.edu)
+#	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
+#	- Jay R. Mashl (rmashl@wustl.edu)
+#	- Kuan-lin Huang (khuang@genome.wustl.edu)
+# version: v0.5.2
 
 import os
 import sys
@@ -458,26 +462,30 @@ class charger(object):
 		return csq_terms
 
 	def getExAC_MAF( self , values , var ):
-		#if the .vcf does not have AF
-		#then check for ExAC_MAF
-		if ( var.alleleFrequency is not None ):
+		#if the .vcf does not have AF, then check for ExAC_MAF
+		if ( var.alleleFrequency is None ): # fixed (refer to pull request #28)
 			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
 			if emaf is not None:
+				if len(emaf)==0:
+					return False
 				for alt in emaf.split( "&" ):
-					if alt == var.alternate:
-						parts = emaf.split( ":" )
+					if alt.split(":")[0] == var.alternate:
+						parts = alt.split( ":" )
 						if len( parts ) > 1:
 							var.alleleFrequency = parts[1]
 							return True
 		return False
 
 	def getGMAF( self , values , var ):
-		if ( var.alleleFrequency is not None ):
+		#if the .vcf does not have AF or ExAC_MAF, then check for 1kg MAF
+		if ( var.alleleFrequency is None ):  # fixed (refer to pull request #28)
 			gmaf = self.getVCFKeyIndex( values , "GMAF" )
 			if gmaf is not None:
+				if len(gmaf)==0:
+					return False
 				for alt in gmaf.split( "&" ):
-					if alt == var.alternate:
-						parts = gmaf.split( ":" )
+					if alt.split(":")[0] == var.alternate:
+						parts = alt.split( ":" )
 						if len( parts ) > 1:
 							var.alleleFrequency = parts[1]
 							return True
