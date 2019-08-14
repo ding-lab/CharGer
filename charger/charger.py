@@ -958,10 +958,10 @@ class charger(object):
 		# added snippet (next 5 lines) to solve cases where variant is categorized likely pathogenic, likely benign, 
 		# or as both uncertain significance and likely pathogenic or likely benign. 
 		if "likely_pathogenic" in header:
-			if fields[header.index("likely_pathogenic")] >= 1:
+			if int(fields[header.index("likely_pathogenic")]) >= 1:
 				isPathogenic = 1
 			
-			if fields[header.index("likely_benign")] >= 1:
+			if int(fields[header.index("likely_benign")]) >= 1:
 				isBenign = 1
 		
 		if isConflicted == 1:
