@@ -539,7 +539,7 @@ class chargervariant(mafvariant):
 		minLikelyPathogenicScore = kwargs[ 'scoresMap' ][ 'minLikelyPathogenicScore' ]
 		maxBenignScore = kwargs[ 'scoresMap' ][ 'maxBenignScore' ]
 		maxLikelyBenignScore = kwargs[ 'scoresMap' ][ 'maxLikelyBenignScore' ]
-		if self.chargerScore > minPathogenicScore:
+		if self.chargerScore >= minPathogenicScore:
 			self.setAsPathogenic( **kwargs )
 		elif self.chargerScore >= minLikelyPathogenicScore:
 			self.setAsLikelyPathogenic( **kwargs )
