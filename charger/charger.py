@@ -968,37 +968,26 @@ class charger(object):
 			return [ desc , status ]
 		
 		# adjusted function to read values split by either ";" or "/"
+		if ";" in named:
+			splitChar=";" # old macarthur format
+		else:
+			splitChar="/" # new macarthur format
+		
 		if isBenign == 1:
-			if ";" in named: # old version
-				for desc in named.split( ";" ):
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
+			for desc in named.split( splitChar ):
+				if re.match( "likely", desc.lower( ) ) and desc != chargervariant.benign:
+					desc = chargervariant.likelyBenign
+				elif re.match( "benign", desc.lower( ) ):
+					desc = chargervariant.benign
+					break
 		
 		if isPathogenic == 1:
-			if ";" in named:
-				for desc in named.split( ";" ): # old version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
+			for desc in named.split( splitChar ):
+				if re.match( "likely", desc.lower( ) ) and desc != chargervariant.pathogenic:
+					desc = chargervariant.likelyPathogenic
+				elif re.match( "pathog", desc.lower( ) ):
+					desc = chargervariant.pathogenic
+					break
 		return [ desc , status ]
 
 	def getMacClinVarVCF( self , vcffile ):
