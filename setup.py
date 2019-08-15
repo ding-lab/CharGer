@@ -6,8 +6,8 @@ setup( \
 	version = version , 
 	author = 'Adam D Scott, Kuan-lin Huang, Amila Weerasinghe' ,
 	author_email = 'adamscott@wustl.edu, kuan-lin.huang@wustl.edu, amila@wustl.edu' ,
-	maintainer = 'Adam D Scott' ,
-	maintainer_email = 'adamscott@wustl.edu' ,
+	maintainers = 'Adam D Scott, Fernanda Martins Rodrigues' ,
+	maintainers_email = 'adamscott@wustl.edu, fernanda@wustl.edu' ,
 	url = 'https://github.com/ding-lab/CharGer' ,
 	description = 'Characterization of Germline variants' ,
 	long_description = 'Characterization of Germline variants \
