@@ -4,8 +4,8 @@ version = "0.5.2"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
-	author = 'Adam D Scott, Kuan-lin Huang, Amila Weerasinghe' ,
-	author_email = 'adamscott@wustl.edu, kuan-lin.huang@wustl.edu, amila@wustl.edu' ,
+	author = 'Adam D Scott, Kuan-lin Huang, Amila Weerasinghe, Fernanda Martins Rodrigues' ,
+	author_email = 'adamscott@wustl.edu, kuan-lin.huang@wustl.edu, amila@wustl.edu, fernanda@wustl.edu' ,
 	maintainers = 'Adam D Scott, Fernanda Martins Rodrigues' ,
 	maintainers_email = 'adamscott@wustl.edu, fernanda@wustl.edu' ,
 	url = 'https://github.com/ding-lab/CharGer' ,
