@@ -903,25 +903,42 @@ class charger(object):
 			for line in macFile:
 				fields = ( line.rstrip( ) ).split( "\t" )
 				[ description , status ] = self.parseMacPathogenicity( header, fields ) # no need to specify which fields here anymore; parseMacPathogenicity now knows which specific columns to look for
+				pos = int(fields[header.index("pos")])
+				ref = fields[header.index("ref")]
+				alt = fields[header.index("alt")]
+				if len(ref) == 1 and len(alt) > 1: # insertion
+					ref = '-'
+					alt = alt[1:]
+					start = pos
+					stop = pos + 1
+				elif len(ref) > 1 and len(alt) == 1: # deletion
+					ref = ref[1:]
+					alt = '-'
+					start = pos + 1
+					stop = pos + len(ref)
+				else: # snv
+					start = pos
+					stop = pos
 				if len(header) > 27: # if yes, file is in the new format
 					var = clinvarvariant( chromosome = fields[header.index("chrom")] , \
-										  start = fields[header.index("pos")] , \
-										  reference = fields[header.index("ref")] , \
-										  alternate = fields[header.index("alt")] , \
+										  start = start , \
+										  stop = stop , \
+										  reference = ref , \
+										  alternate = alt , \
 										  uid = fields[header.index("variation_id")], \
 										  gene = fields[header.index("symbol")] , \
 										  clinical = { "description" : description , "review_status" : status } , \
 										  trait = { fields[header.index("xrefs")] : fields[header.index("all_traits")] } )
 				else: # file in the old format
 					var = clinvarvariant( chromosome = fields[header.index("chrom")] , \
-										  start = fields[header.index("pos")] , \
-										  reference = fields[header.index("ref")] , \
-										  alternate = fields[header.index("alt")] , \
+										  start = start , \
+										  stop = stop , \
+										  reference = ref , \
+										  alternate = alt , \
 										  uid = fields[header.index("measureset_id")], \
 										  gene = fields[header.index("symbol")] , \
 										  clinical = { "description" : description , "review_status" : status } , \
 										  trait = { fields[-1] : fields[header.index("all_traits")] } )
-				var.setStopFromReferenceAndAlternate( )
 				var.splitHGVSc( fields[header.index("hgvs_c")] )
 				var.splitHGVSp( fields[header.index("hgvs_p")] )
 				#var.printVariant( "," )
