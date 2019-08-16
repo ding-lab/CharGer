@@ -41,7 +41,7 @@ setup( \
 		'charger' ,
 	] , #each of the directories with modules (aka packages)
 	install_requires = [ \
-		'BioMine' ,
+		'BioMine @ https://github.com/ding-lab/BioMine/archive/master.zip' ,
 		'AdvancedHTMLParser' , 
 		'requests' ,
 		'pysam' , 
