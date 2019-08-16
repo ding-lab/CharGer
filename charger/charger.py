@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # CharGer - Characterization of Germline variants
-# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.0 - 2015*12
+# author: 
+#	- Adam D Scott (ascott@genome.wustl.edu)
+#	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
+#	- Jay R. Mashl (rmashl@wustl.edu)
+#	- Kuan-lin Huang (khuang@genome.wustl.edu)
+# version: v0.5.2
 
 import os
 import sys
@@ -336,7 +340,7 @@ class charger(object):
 				values = thisCSQ.split( "|" )
 				aas = self.getRefAltAminoAcids( values , var , preVEP )
 				positionPeptide = self.getCodingPosition( values , var , preVEP , "Protein_position" )
-				positionCodon = self.getCodingPosition( values , var , preVEP , "cDNA_position" )
+				positionCodon = self.getCodingPosition( values , var , preVEP , "CDS_position" )
 				exons = self.getExons( values )
 				introns = self.getIntrons( values )
 				siftStuff = self.getSIFT( values )
@@ -458,26 +462,30 @@ class charger(object):
 		return csq_terms
 
 	def getExAC_MAF( self , values , var ):
-		#if the .vcf does not have AF
-		#then check for ExAC_MAF
-		if ( var.alleleFrequency is not None ):
+		#if the .vcf does not have AF, then check for ExAC_MAF
+		if ( var.alleleFrequency is None ): # fixed (refer to pull request #28)
 			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
 			if emaf is not None:
+				if len(emaf)==0:
+					return False
 				for alt in emaf.split( "&" ):
-					if alt == var.alternate:
-						parts = emaf.split( ":" )
+					if alt.split(":")[0] == var.alternate:
+						parts = alt.split( ":" )
 						if len( parts ) > 1:
 							var.alleleFrequency = parts[1]
 							return True
 		return False
 
 	def getGMAF( self , values , var ):
-		if ( var.alleleFrequency is not None ):
+		#if the .vcf does not have AF or ExAC_MAF, then check for 1kg MAF
+		if ( var.alleleFrequency is None ):  # fixed (refer to pull request #28)
 			gmaf = self.getVCFKeyIndex( values , "GMAF" )
 			if gmaf is not None:
+				if len(gmaf)==0:
+					return False
 				for alt in gmaf.split( "&" ):
-					if alt == var.alternate:
-						parts = gmaf.split( ":" )
+					if alt.split(":")[0] == var.alternate:
+						parts = alt.split( ":" )
 						if len( parts ) > 1:
 							var.alleleFrequency = parts[1]
 							return True
@@ -486,7 +494,7 @@ class charger(object):
 	def readMetaData( self , metadata , infos , vepInfo ):
 		vepDone = False
 		exacDone = False
-		clinvarDone = True
+		clinvarDone = False
 		for pairs in metadata:
 			if pairs == 'VEP':
 				print "This .vcf has VEP annotations!"
@@ -950,47 +958,36 @@ class charger(object):
 		# added snippet (next 5 lines) to solve cases where variant is categorized likely pathogenic, likely benign, 
 		# or as both uncertain significance and likely pathogenic or likely benign. 
 		if "likely_pathogenic" in header:
-			if fields[header.index("likely_pathogenic")] >= 1:
+			if int(fields[header.index("likely_pathogenic")]) >= 1:
 				isPathogenic = 1
 			
-			if fields[header.index("likely_benign")] >= 1:
+			if int(fields[header.index("likely_benign")]) >= 1:
 				isBenign = 1
 		
 		if isConflicted == 1:
 			return [ desc , status ]
 		
 		# adjusted function to read values split by either ";" or "/"
+		if ";" in named:
+			splitChar=";" # old macarthur format
+		else:
+			splitChar="/" # new macarthur format
+		
 		if isBenign == 1:
-			if ";" in named: # old version
-				for desc in named.split( ";" ):
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.benign:
-						desc = chargervariant.likelyBenign
-					elif re.match( desc.lower( ) , "benign" ):
-						desc = chargervariant.benign
-						break
+			for desc in named.split( splitChar ):
+				if re.match( "likely", desc.lower( ) ) and desc != chargervariant.benign:
+					desc = chargervariant.likelyBenign
+				elif re.match( "benign", desc.lower( ) ):
+					desc = chargervariant.benign
+					break
 		
 		if isPathogenic == 1:
-			if ";" in named:
-				for desc in named.split( ";" ): # old version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
-			else:
-				for desc in named.split( "/" ): # new version
-					if re.match( desc.lower( ) , "ikely" ) and desc != chargervariant.pathogenic:
-						desc = chargervariant.likelyPanic
-					elif re.match( desc.lower( ) , "athog" ):
-						desc = chargervariant.pathogenic
-						break
+			for desc in named.split( splitChar ):
+				if re.match( "likely", desc.lower( ) ) and desc != chargervariant.pathogenic:
+					desc = chargervariant.likelyPathogenic
+				elif re.match( "pathog", desc.lower( ) ):
+					desc = chargervariant.pathogenic
+					break
 		return [ desc , status ]
 
 	def getMacClinVarVCF( self , vcffile ):

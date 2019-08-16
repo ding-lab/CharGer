@@ -1,6 +1,10 @@
 # CharGer
-Characterization of Germline variants
 
+CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants. CharGer gathers evidence from databases and annotations, provided by local tools and files or via ReST APIs, and classifies variants according to ACMG guidelines for assessing variant pathogenicity. User-designed pathogenicity criteria can be incorporated into CharGer’s flexible framework, thereby allowing users to create a customized classification protocol.
+
+If you use CharGer, please cite our publication so we can continue to support CharGer development:
+
+Adam D Scott, Kuan-Lin Huang, Amila Weerasinghe, R Jay Mashl, Qingsong Gao, Fernanda Martins Rodrigues, Matthew A Wyczalkowski, Li Ding, CharGer: clinical Characterization of Germline variants, Bioinformatics, Volume 35, Issue 5, 01 March 2019, Pages 865–867, https://doi.org/10.1093/bioinformatics/bty649
 
 ### Requirements
 * python 2.7.x
@@ -81,12 +85,12 @@ Install anaconda:
 
 Create a virtual environment:
 ```sh
-  conda create --name CharGer
+  conda create --name CharGer python=2.7
 ```
 
 Switch to virtual environment:
 ```sh
-  source activate CharGer
+  conda activate CharGer
 ```
 
 Ensure that the appropriate version of pip (>10.x) is available in your environment:
@@ -135,7 +139,7 @@ After installation is complete, leave the conda environment and update your PATH
 Leave conda environment:
 
 ```sh
-  source deactivate
+  conda deactivate
 ```
 Update PATH (it is suggested that you also append this line to your ~/.bash_profile or ~/.bashrc) :
   
@@ -185,7 +189,7 @@ If you need to be assured of properly linked URL's, use the url test flag.
 	-E VEP (flag)
 	-t TCGA cancer types (flag)
 Using these flags turns on accession features built in. 
-For the ClinVar, ExAC, and VEP flags, if no local VEP or databse is provided, then BioMine will be used to access the ReST interface. 
+For the ClinVar, ExAC, and VEP flags, if no local VEP or database is provided, then BioMine will be used to access the ReST interface. CharGer is currently capable of handling up until VEP release 87. VEP releases 88 and older are not yet implemented. 
 The TCGA flag allows disease determination from sample barcodes in a .maf when using a diseases file (see below). 
 
 ### Suppress data or overrides
@@ -260,6 +264,7 @@ Specify the option and positive whole number value to change the default value.
 	--reference-fasta VEP reference fasta
 	--fork Number of forked processes used in VEP (default = 0) 
 This currently only works with .vcf input only. 
+CharGer is currently capable of handling up until VEP release 87. VEP releases 88 and older are not yet implemented. 
 Annotations are run with the VEP everything flag, so any local plugins will be used. 
 The BioMine accession is also suppressed when using a local VEP installaltion. 
 The VEP directory is not the same as would be given to VEP's --dir option. 
