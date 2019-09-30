@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # autovivification - extends dict
-# author: Kuan-lin Huang (khuang@genome.wustl.edu) & Adam D Scott (ascott@genome.wustl.edu)
-# version: v0.0 - 2016*01*12
+# CharGer - Characterization of Germline variants
+# author: 
+#	- Adam D Scott (ascott@genome.wustl.edu)
+#	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
+#	- Jay R. Mashl (rmashl@wustl.edu)
+#	- Kuan-lin Huang (khuang@genome.wustl.edu)
+# version: v0.5.3 - September, 2019
 
 class autovivification(dict):
 	'''Implementation of perl's autovivification feature.'''
