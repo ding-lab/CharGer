@@ -1,6 +1,6 @@
 #https://docs.python.org/2/distutils/examples.html
 from distutils.core import setup
-version = "0.5.2"
+version = "0.5.3"
 setup( \
 	name = 'CharGer' , 
 	version = version , 
