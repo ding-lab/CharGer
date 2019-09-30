@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-# chargervariant - CharGer annotated variants
-# author: Adam D Scott (ascott@genome.wustl.edu) & Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.0 - 2016*01*13
+# CharGer - Characterization of Germline variants
+# author: 
+#	- Adam D Scott (ascott@genome.wustl.edu)
+#	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
+#	- Jay R. Mashl (rmashl@wustl.edu)
+#	- Kuan-lin Huang (khuang@genome.wustl.edu)
+# version: v0.5.3 - September, 2019
 
 import pdb
 from biomine.variant.clinvarvariant import clinvarvariant
