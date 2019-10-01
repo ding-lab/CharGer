@@ -5,7 +5,7 @@
 #	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
 #	- Jay R. Mashl (rmashl@wustl.edu)
 #	- Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.5.3 - September, 2019
+# version: v0.5.4 - September, 2019
 
 import pdb
 from biomine.variant.clinvarvariant import clinvarvariant

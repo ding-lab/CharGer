@@ -5,7 +5,7 @@
 #	- Fernanda Martins Rodrigues (fernanda@wustl.edu)
 #	- Jay R. Mashl (rmashl@wustl.edu)
 #	- Kuan-lin Huang (khuang@genome.wustl.edu)
-# version: v0.5.3 - September, 2019
+# version: v0.5.4 - September, 2019
 
 import os
 import sys
@@ -201,7 +201,7 @@ class charger(object):
 	def readVCF( self , inputFile , **kwargs ):
 		""" read & parse input .vcf
 			Look for VEP CSQ info field & extract all information possible
-			Can get allele frequency & clinical annotations after VEP v81 (or so)
+			Can get allele frequency & clinical annotations for all VEP releases after VEP v81.
 			http://useast.ensembl.org/info/docs/tools/vep/vep_formats.html#output
 		"""
 		inFile = None
@@ -332,6 +332,11 @@ class charger(object):
 		return False
 
 	def getVEPConsequences( self , info , var , preVEP ):
+		""" read & parse VEP annotations from input .vcf
+			Look for VEP CSQ info field & extract all information possible.
+			As of CharGer release 0.5.4, this function can get allele frequency & clinical annotations for all VEP releases after VEP v81.
+			http://useast.ensembl.org/info/docs/tools/vep/vep_formats.html#output
+		"""
 		csq = info.get( 'CSQ' , "noCSQ" )
 		if not csq == "noCSQ":
 			vepDone = True
@@ -379,8 +384,11 @@ class charger(object):
 				)
 				var.vepVariant.consequences.append( vcv )
 			self.getMostSevereConsequence( var )
-			hasAF = self.getExAC_MAF( values , var )
-			hasAF = self.getGMAF( values , var )
+			# adding support for VEP releases ≥ 90, which contain gnomAD frequencies by default.
+			# will proritize gnomAD AF over ExAC and 1Kg, when possible
+			hasAF = self.getGnomAD_MAF ( values , var )
+			hasAF = self.getExAC_MAF( values , var ) # if gnomAD MAF not there, take ExAC
+			hasAF = self.getGMAF( values , var ) # if gnomAD or ExAC MAF not there, take 1000 genomes
 			self.getCLIN_SIG( values , var )
 
 	def getCodingPosition( self , values , var , preVEP , key ):
@@ -461,14 +469,44 @@ class charger(object):
 		if consequence_terms:
 			csq_terms = self.getVCFKeyIndex( values , "Consequence" ).split( "&" )
 		return csq_terms
+	
+	# added function to parse gnomAD AF from VEP annotation
+	def getGnomAD_MAF( self , values , var ):
+		#if the .vcf does not have AF, then check for gnomAD_AF (annotated with VEP releases ≥ 90 )
+		if ( var.alleleFrequency is None ): # fixed (refer to pull request #28)
+			if "gnomAD_AF" in self.vcfKeyIndex:
+				gmaf = self.getVCFKeyIndex( values , "gnomAD_AF" )
+				VEP_version = 90 # VEP annotates gnomAD_AF by default when using its --everything argument as of release 90
+			else:
+				print("Unsupported VEP version or no gnomAD AF annotation in input file; will search for ExAC frequencies...")
+				return False
+			if gmaf is not None:
+				if len(gmaf)==0:
+					return False
+				if len(gmaf)>0 and VEP_version==90:
+					var.alleleFrequency = gmaf
+					return True
+		return False
 
 	def getExAC_MAF( self , values , var ):
-		#if the .vcf does not have AF, then check for ExAC_MAF
+		# if the .vcf does not have AF or gnomAD_AF, then check for ExAC_AF
+		# function now supports VEP releases 90 or older
 		if ( var.alleleFrequency is None ): # fixed (refer to pull request #28)
-			emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
+			if "ExAC_MAF" in self.vcfKeyIndex:
+				emaf = self.getVCFKeyIndex( values , "ExAC_MAF" )
+				VEP_version=87 # nomenclature changed to ExAC_AF after this VEP release
+			elif "ExAC_AF" in self.vcfKeyIndex:
+				emaf = self.getVCFKeyIndex( values , "ExAC_AF" )
+				VEP_version=90
+			else:
+				print("Unsupported VEP version or no ExAC AF annotation in input file; will search for 1000 Genomes frequencies...")
+				return False
 			if emaf is not None:
 				if len(emaf)==0:
 					return False
+				if len(emaf)>0 and VEP_version>=90:
+					var.alleleFrequency = emaf
+					return True
 				for alt in emaf.split( "&" ):
 					if alt.split(":")[0] == var.alternate:
 						parts = alt.split( ":" )
@@ -478,12 +516,23 @@ class charger(object):
 		return False
 
 	def getGMAF( self , values , var ):
-		#if the .vcf does not have AF or ExAC_MAF, then check for 1kg MAF
-		if ( var.alleleFrequency is None ):  # fixed (refer to pull request #28)
-			gmaf = self.getVCFKeyIndex( values , "GMAF" )
+		# if the .vcf does not have AF, gnomAD_AF or ExAC_AF, then check for frequencies from 1000 Genomes
+		# function now supports VEP releases 90 or older
+		if ( var.alleleFrequency is None ): # fixed (refer to pull request #28)
+			if "GMAF" in self.vcfKeyIndex:
+				gmaf = self.getVCFKeyIndex( values , "GMAF" )
+				VEP_version=87 # nomenclature changed to AF after this VEP release
+			elif "AF" in self.vcfKeyIndex:
+				gmaf = self.getVCFKeyIndex( values , "AF" )
+				VEP_version=90
+			else:
+				print("unsupported VEP version or not 1kG AF annotation in input file.")
 			if gmaf is not None:
-				if len(gmaf)==0:
+				if len(gmaf) == 0:
 					return False
+				if len(gmaf)>0 and VEP_version==90:
+					var.alleleFrequency = gmaf
+					return True
 				for alt in gmaf.split( "&" ):
 					if alt.split(":")[0] == var.alternate:
 						parts = alt.split( ":" )
