@@ -189,7 +189,7 @@ If you need to be assured of properly linked URL's, use the url test flag.
 	-E VEP (flag)
 	-t TCGA cancer types (flag)
 Using these flags turns on accession features built in. 
-For the ClinVar, ExAC, and VEP flags, if no local VEP or database is provided, then BioMine will be used to access the ReST interface. CharGer is currently capable of handling up until VEP release 87. VEP releases 88 and older are not yet implemented. 
+For the ClinVar, ExAC, and VEP flags, if no local VEP or database is provided, then BioMine will be used to access the ReST interface. CharGer is currently capable of handling all VEP releases up until release 97. 
 The TCGA flag allows disease determination from sample barcodes in a .maf when using a diseases file (see below). 
 
 ### Suppress data or overrides
@@ -264,7 +264,7 @@ Specify the option and positive whole number value to change the default value.
 	--reference-fasta VEP reference fasta
 	--fork Number of forked processes used in VEP (default = 0) 
 This currently only works with .vcf input only. 
-CharGer is currently capable of handling up until VEP release 87. VEP releases 88 and older are not yet implemented. 
+CharGer is currently capable of handling all VEP releases up until release 97. 
 Annotations are run with the VEP everything flag, so any local plugins will be used. 
 The BioMine accession is also suppressed when using a local VEP installaltion. 
 The VEP directory is not the same as would be given to VEP's --dir option. 
