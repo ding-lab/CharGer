@@ -1,0 +1,13 @@
+# OS generated files
+.DS_Store
+.Trash-*
+Thumbs.db
+
+# Vim swap files
+*.swp
+*~
+
+# Python
+*.egg-info/
+*.py[cod]
+__pycache__
