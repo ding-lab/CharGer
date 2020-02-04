@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "charger"
+version = "0.6.0"
+description = ""
+authors = ["Liang-Bo Wang <liang-bo.wang@wustl.edu>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
