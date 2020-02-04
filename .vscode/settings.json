@@ -1,0 +1,23 @@
+{
+    "python.pythonPath": "/Users/liang/miniconda3/envs/charger_py38/bin/python",
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 120,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "vim.textwidth": 120,
+    "cSpell.words": [
+        "conda",
+        "pytest",
+        "xfail"
+    ],
+    "python.linting.mypyEnabled": true,
+    "cSpell.ignorePaths": [
+        "**/package-lock.json",
+        "**/node_modules/**",
+        "**/vscode-extension/**",
+        "**/.git/objects/**",
+        ".vscode",
+        "pyproject.toml"
+    ],
+}

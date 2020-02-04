@@ -11,3 +11,5 @@ Thumbs.db
 *.egg-info/
 *.py[cod]
 __pycache__
+
+.mypy_cache/
