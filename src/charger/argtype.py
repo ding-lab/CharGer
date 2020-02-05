@@ -4,9 +4,17 @@ from typing import Union, Callable, Optional
 
 
 class PathType:
-    """Path type of argparse argument.
+    """Parse file path arguments as a pathlib.Path object.
 
+    Type factory for ArgumentParser.add_argument() that validates the file path arguments.
     Adapted from https://stackoverflow.com/a/33181083
+
+    Args:
+        exists: The path must exist when True, and the path must not exist when False.
+            Skip the check when None.
+        type: ``file`` or ``dir`` will be checked by Path.is_file() and Path.is_dir(), respectively.
+            It also accepts a function that takes Path object and returns True for valid paths.
+            Skip the check when None.
 
     Examples:
         >>> parser = argparse.ArgumentParser()
@@ -25,41 +33,33 @@ class PathType:
         exists: Optional[bool] = None,
         type: Union[None, str, Callable[[Path], bool]] = None,
     ):
-        """
-        exists:
-            True: a path that does exist
-            False: a path that does not exist, in a valid parent directory
-            None: don't care
-        type: 'file', 'dir', None, or a function returning True for valid paths
-            None: don't care
-        """
-
-        assert exists in (True, False, None)
-        assert type in ("file", "dir", None) or hasattr(type, "__call__")
-
-        self.check_exist = exists
-        self.check_type = type
+        self._exists = exists
+        self._type = type
 
     def __call__(self, pth: str) -> Path:
         p = Path(pth)
-        if self.check_exist is not None:
+        if self._exists is not None:
             # Check if the path must or must not exist
             pth_exists = p.exists()
-            if self.check_exist:
+            if self._exists:
                 if not pth_exists:
                     raise ArgumentTypeError(f"Path does not exist: {pth}")
             elif pth_exists:
                 raise ArgumentTypeError(f"Path already exists: {pth}")
 
-        if self.check_type is None:
+        if self._type is None:
             pass
-        elif isinstance(self.check_type, str):
+        elif isinstance(self._type, str):
             # Check if the path is the asserted type
-            if self.check_type == "file" and not p.is_file():
-                raise ArgumentTypeError(f"Path is not a file: {pth}")
-            elif self.check_type == "dir" and not p.is_dir():
-                raise ArgumentTypeError(f"Path is not a directory: {pth}")
-        elif not self.check_type(p):
+            if self._type == "file":
+                if not p.is_file():
+                    raise ArgumentTypeError(f"Path is not a file: {pth}")
+            elif self._type == "dir":
+                if not p.is_dir():
+                    raise ArgumentTypeError(f"Path is not a directory: {pth}")
+            else:
+                raise ValueError(f"Unknown type {self._type!r}")
+        elif not self._type(p):
             # Use the given function to check the path type
             raise ArgumentTypeError(f"Path is invalid: {pth}")
 
