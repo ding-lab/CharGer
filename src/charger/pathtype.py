@@ -12,18 +12,19 @@ class PathType:
         >>> parser = argparse.ArgumentParser()
 
         Add an argument that must be an existing file, but can also be specified as a dash ('-') in the command,
-        >>> parser.add_argument('existing_file', type=PathType(type='file', accept_dash=True, exists=True))
+        >>> parser.add_argument('existing_file', type=PathType(exists=True, type='file'))
 
-        Add an argument for a new folder that must NOT exist, but the parent folder exists,
+        Add an argument for a new path that must NOT exist, but the parent folder exists,
         >>> from pathlib import Path
-        >>> NonexistingFolderType = PathType(exists=False, type=lambda p: p.parent.is_dir())
-        >>> parser.add_argument('non_existant_folder', type=NonexistingFolderType)
+        >>> CreatablePathType = PathType(exists=False, type=lambda p: p.parent.is_dir())
+        >>> parser.add_argument('non_existing_folder', type=CreatablePathType)
     """
 
-    exists: Optional[bool]
-    check_type: Union[None, str, Callable[[Path], bool]]
-
-    def __init__(self, exists = False, type = None):
+    def __init__(
+        self,
+        exists: Optional[bool] = None,
+        type: Union[None, str, Callable[[Path], bool]] = None,
+    ):
         """
         exists:
             True: a path that does exist
@@ -44,21 +45,22 @@ class PathType:
         if self.check_exist is not None:
             # Check if the path must or must not exist
             pth_exists = p.exists()
-            if self.check_exist and not pth_exists:
-                raise ArgumentTypeError(f"path does not exist: {pth}")
+            if self.check_exist:
+                if not pth_exists:
+                    raise ArgumentTypeError(f"Path does not exist: {pth}")
             elif pth_exists:
-                raise ArgumentTypeError(f"path already exists: {pth}")
+                raise ArgumentTypeError(f"Path already exists: {pth}")
 
         if self.check_type is None:
             pass
         elif isinstance(self.check_type, str):
             # Check if the path is the asserted type
             if self.check_type == "file" and not p.is_file():
-                raise ArgumentTypeError(f"path is not a file: {pth}")
+                raise ArgumentTypeError(f"Path is not a file: {pth}")
             elif self.check_type == "dir" and not p.is_dir():
-                raise ArgumentTypeError(f"path is not a directory: {pth}")
+                raise ArgumentTypeError(f"Path is not a directory: {pth}")
         elif not self.check_type(p):
             # Use the given function to check the path type
-            raise ArgumentTypeError(f"path is invalid: {pth}")
+            raise ArgumentTypeError(f"Path is invalid: {pth}")
 
         return p
