@@ -7,7 +7,7 @@ def test_version():
     assert __version__ == "0.6.0"
 
 
-@pytest.mark.xfail(reason="Demo of long string comparison")
+# @pytest.mark.xfail(reason="Demo of long string comparison")
 def test_long_string():
     long_string_a = dedent(
         """
@@ -25,4 +25,4 @@ def test_long_string():
         A worker in basic scientific research is motivated by a driving unknown about curiosity.
         """
     )
-    assert long_string_a == long_string_b
+    assert long_string_a != long_string_b
