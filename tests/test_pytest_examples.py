@@ -1,10 +1,16 @@
 from charger import __version__
 from textwrap import dedent
-import pytest
+from loguru import logger
 
 
 def test_version():
     assert __version__ == "0.6.0"
+
+
+def test_log_capture(caplog):
+    logger.info("Log something")
+    assert len(caplog.records) == 1
+    assert "Log something" in caplog.text
 
 
 # @pytest.mark.xfail(reason="Demo of long string comparison")

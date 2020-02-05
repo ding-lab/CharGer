@@ -9,6 +9,8 @@
     "vim.textwidth": 120,
     "cSpell.words": [
         "conda",
+        "isidentifier",
+        "noqa",
         "pytest",
         "xfail"
     ],

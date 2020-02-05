@@ -6,6 +6,9 @@ authors = ["Liang-Bo Wang <liang-bo.wang@wustl.edu>"]
 license = "GPL-3.0-only"
 readme = "README.md"
 
+[tool.poetry.scripts]
+charger = 'charger.console:run'
+
 [tool.poetry.dependencies]
 python = ">=3.6"
 loguru = "^0.4"
