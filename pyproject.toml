@@ -12,6 +12,7 @@ charger = 'charger.console:run'
 [tool.poetry.dependencies]
 python = ">=3.6"
 loguru = "^0.4"
+attrs = "^19.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
