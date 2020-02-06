@@ -4,6 +4,8 @@ CharGer (Characterization of Germline variants) is a software tool for interpret
 import argparse
 from pathlib import Path
 import sys
+from typing import Optional
+import attr
 from loguru import logger
 from .argtype import PathType
 
@@ -17,6 +19,33 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 """  # noqa
 
 
+@attr.s(auto_attribs=True, kw_only=True, repr=False)
+class CharGerConfig:
+    """CharGer configuration."""
+
+    # Define all the config options and their types
+    input: Optional[Path] = None
+    output: Optional[Path] = None
+    disease_specific: bool = False
+    inheritance_gene_list: Optional[Path] = None
+    hotspot3d_cluster: Optional[Path] = None
+    pathogenic_variant: Optional[Path] = None
+    override_variant_info: bool = False
+    include_vcf_details: bool = False
+    PP2_gene_list: Optional[Path] = None
+    # annotation sources:
+    use_clinvar: bool = False
+    clinvar_src: Optional[Path] = None
+    rare_threshold: float = 0.0005
+    common_threshold: float = 0.005
+
+    def __repr__(self):
+        arg_strings = []
+        for name, value in attr.asdict(self).items():
+            arg_strings.append(f"    {name!s}={value!r},")
+        return "CharGerConfig(\n{}\n)".format("\n".join(arg_strings))
+
+
 def create_console_parser() -> argparse.ArgumentParser:
     """Create the CLI parser."""
 
@@ -24,6 +53,9 @@ def create_console_parser() -> argparse.ArgumentParser:
         argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
     ):
         pass
+
+    # Obtain the config defaults
+    defaults = CharGerConfig()
 
     parser = argparse.ArgumentParser(
         description=__doc__, epilog=epilog, formatter_class=ConsoleHelpFormatter
@@ -97,59 +129,23 @@ def create_console_parser() -> argparse.ArgumentParser:
         "--rare-threshold",
         type=float,
         metavar="FREQ",
-        default=0.0005,
+        default=defaults.rare_threshold,
         help="Maximal allele frequency to be a rare variant",
     )
     threshold_grp.add_argument(
         "--common-threshold",
         type=float,
         metavar="FREQ",
-        default=0.005,
+        default=defaults.common_threshold,
         help="Minimal allele frequency to be a common variant",
     )
     return parser
 
 
-class CharGerConfig(argparse.Namespace):
-    """CharGer configuration."""
-
-    # Define all the config options and their types
-    input: Path
-    output: Path
-    disease_specific: bool
-    inheritance_gene_list: Path
-    pathogenic_variant: Path
-    override_variant_info: bool
-    include_vcf_details: bool
-    PP2_gene_list: Path
-    # annotation sources:
-    use_clinvar: bool
-    clinvar_src: Path
-    rare_threshold: float
-    common_threshold: float
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def _get_kwargs(self):
-        # Don't sort the arguments alphabetically
-        return self.__dict__.items()
-
-    def __repr__(self):
-        # Modified from argparse._AttributeHolder.__repr__
-        type_name = type(self).__name__
-        arg_strings = []
-        star_args = {}
-        for arg in self._get_args():
-            arg_strings.append(f"    {repr(arg)}")
-        for name, value in self._get_kwargs():
-            if name.isidentifier():
-                arg_strings.append(f"    {name!s}={value!r}")
-            else:
-                star_args[name] = value
-        if star_args:
-            arg_strings.append(f"  **{repr(star_args)}")
-        return "%s(\n%s\n)" % (type_name, ",\n".join(arg_strings))
+def parse_console() -> CharGerConfig:
+    parser = create_console_parser()
+    config = parser.parse_args(namespace=CharGerConfig())
+    return config
 
 
 def run() -> None:
@@ -165,6 +161,5 @@ def run() -> None:
     )
     # By default all the logging messages are disabled
     logger.enable("charger")
-    parser = create_console_parser()
-    config = parser.parse_args(namespace=CharGerConfig())
-    logger.info(f"Charger config:\n{config!r}")
+    config = parse_console()
+    logger.info(f"Current config: {config!r}")
