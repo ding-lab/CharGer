@@ -2,12 +2,12 @@
 CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants.
 """  # noqa
 import argparse
-from pathlib import Path
 import sys
-from typing import Optional
-import attr
+
 from loguru import logger
+
 from .argtype import PathType
+from .config import CharGerConfig
 
 logger.disable("charger")
 
@@ -17,33 +17,6 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 
     Scott, A.D. et al. (2018). Bioinformatics. https://doi.org/10.1093/bioinformatics/bty649.
 """  # noqa
-
-
-@attr.s(auto_attribs=True, kw_only=True, repr=False)
-class CharGerConfig:
-    """CharGer configuration."""
-
-    # Define all the config options and their types
-    input: Optional[Path] = None
-    output: Optional[Path] = None
-    disease_specific: bool = False
-    inheritance_gene_list: Optional[Path] = None
-    hotspot3d_cluster: Optional[Path] = None
-    pathogenic_variant: Optional[Path] = None
-    override_variant_info: bool = False
-    include_vcf_details: bool = False
-    PP2_gene_list: Optional[Path] = None
-    # annotation sources:
-    use_clinvar: bool = False
-    clinvar_src: Optional[Path] = None
-    rare_threshold: float = 0.0005
-    common_threshold: float = 0.005
-
-    def __repr__(self):
-        arg_strings = []
-        for name, value in attr.asdict(self).items():
-            arg_strings.append(f"    {name!s}={value!r},")
-        return "CharGerConfig(\n{}\n)".format("\n".join(arg_strings))
 
 
 def create_console_parser() -> argparse.ArgumentParser:
@@ -138,6 +111,38 @@ def create_console_parser() -> argparse.ArgumentParser:
         metavar="FREQ",
         default=defaults.common_threshold,
         help="Minimal allele frequency to be a common variant",
+    )
+
+    cg_cls_threshold_grp = parser.add_argument_group(
+        "CharGer variant classiciation thresholds"
+    )
+    cg_cls_threshold_grp.add_argument(
+        "--min-pathogenic-score",
+        type=int,
+        metavar="INT",
+        default=defaults.min_pathogenic_score,
+        help="Minimal total score for a variant to be pathogenic",
+    )
+    cg_cls_threshold_grp.add_argument(
+        "--min-likely-pathogenic-score",
+        type=int,
+        metavar="INT",
+        default=defaults.min_likely_pathogenic_score,
+        help="Minimal total score for a variant to be likely pathogenic",
+    )
+    cg_cls_threshold_grp.add_argument(
+        "--max-likely-benign-score",
+        type=int,
+        metavar="INT",
+        default=defaults.max_likely_benign_score,
+        help="Maximal total score for a variant to be likely benign",
+    )
+    cg_cls_threshold_grp.add_argument(
+        "--max-benign-score",
+        type=int,
+        metavar="INT",
+        default=defaults.max_benign_score,
+        help="Maximal total score for a variant to be benign",
     )
     return parser
 

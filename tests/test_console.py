@@ -1,4 +1,5 @@
-from charger.console import CharGerConfig, create_console_parser
+from charger.config import CharGerConfig
+from charger.console import create_console_parser
 
 
 def test_empty_config_creation():

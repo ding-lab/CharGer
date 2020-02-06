@@ -8,8 +8,10 @@
     "python.linting.mypyEnabled": true,
     "vim.textwidth": 120,
     "cSpell.words": [
+        "ACMG",
         "conda",
         "isidentifier",
+        "itertools",
         "noqa",
         "pytest",
         "xfail"
