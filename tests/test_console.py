@@ -2,9 +2,9 @@ from charger.console import CharGerConfig, create_console_parser
 
 
 def test_empty_config_creation():
-    CharGerConfig()
-    assert CharGerConfig.input is None
-    assert CharGerConfig.output is None
+    config = CharGerConfig()
+    assert config.input is None
+    assert config.output is None
 
 
 def test_default_config():
