@@ -1,6 +1,3 @@
-"""
-CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants.
-"""  # noqa
 import argparse
 import sys
 from shlex import quote
@@ -10,7 +7,11 @@ from loguru import logger
 from .argtype import ModuleScoreOverrideType, PathType
 from .config import CharGerConfig
 
-logger.disable("charger")
+logger.disable("charger")  # Disable emit logs by default
+
+description = """
+CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants.
+"""  # noqa
 
 # Additional console help message text at the end
 epilog = """
@@ -21,7 +22,7 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 
 
 def create_console_parser() -> argparse.ArgumentParser:
-    """Create the CLI parser."""
+    """Create CharGer's commandline parser."""
 
     class ConsoleHelpFormatter(
         argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
@@ -32,7 +33,7 @@ def create_console_parser() -> argparse.ArgumentParser:
     defaults = CharGerConfig()
 
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=description,
         epilog=epilog,
         formatter_class=ConsoleHelpFormatter,
         allow_abbrev=False,
@@ -170,6 +171,7 @@ def create_console_parser() -> argparse.ArgumentParser:
 
 
 def parse_console(args=None) -> CharGerConfig:
+    """Create a CharGerConfig object based on the commandline arguments."""
     parser = create_console_parser()
     console_parameters = " ".join(map(quote, sys.argv[1:]))
     logger.info(f"Console parameters: {console_parameters}")
@@ -178,7 +180,10 @@ def parse_console(args=None) -> CharGerConfig:
 
 
 def run() -> None:
-    """Entry point of charger program."""
+    """Entry point of the program.
+
+    When user runs ``charger``, the script calls this function.
+    """
     # Set up stderr format
     logger.remove()
     logger.add(

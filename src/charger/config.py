@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import attr
 from loguru import logger
 
-logger.disable("charger")
+logger.disable("charger")  # Disable emit logs by default
 
 
 ACMG_MODULES: Dict[str, List[str]] = {
@@ -33,7 +33,7 @@ CHARGER_MODULES: Dict[str, List[str]] = {
 
 
 def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:
-    """Define the default scores for all modules."""
+    """Define the default scores for all ACMG and CharGer modules."""
     # Set up default module scores based on their type
     default_module_type_scores = {
         "p_very_strong": 8,
@@ -66,7 +66,15 @@ _default_acmg_scores, _default_charger_scores = _set_default_module_scores()
 
 @attr.s(auto_attribs=True, kw_only=True, repr=True)
 class CharGerConfig:
-    """CharGer configuration."""
+    """CharGer configuration.
+
+    CharGer can be configured programatically using this object.
+
+    Examples:
+
+        >>> config = CharGerConfig()
+        >>> charger = CharGer(config)
+    """
 
     # Define all the config options and their types
     input: Optional[Path] = None
