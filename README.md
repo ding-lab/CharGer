@@ -1,7 +1,11 @@
 ## Installation
 
-    conda create -n charger_py38 python=3.8 pip
+    conda create -n charger_py38 python=3.8 poetry pip
     poetry install
+
+## Usage
+
+    charger -h
 
 ## Development
 Run all the test by:
