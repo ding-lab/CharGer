@@ -2,7 +2,17 @@
 name = "charger"
 version = "0.6.0"
 description = ""
-authors = ["Liang-Bo Wang <liang-bo.wang@wustl.edu>"]
+authors = [
+    "Liang-Bo Wang <liang-bo.wang@wustl.edu>",
+    "Fernanda Martins Rodrigues <fernanda@wustl.edu>",
+    "Adam D Scott <adamscott@wustl.edu>",
+    "Kuan-lin Huang <kuan-lin.huang@wustl.edu>",
+    "Amila Weerasinghe <amila@wustl.edu>",
+]
+maintainers = [
+    "Liang-Bo Wang <liang-bo.wang@wustl.edu>",
+    "Fernanda Martins Rodrigues <fernanda@wustl.edu>",
+]
 license = "GPL-3.0-only"
 readme = "README.md"
 
