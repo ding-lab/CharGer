@@ -1,6 +1,8 @@
-from charger import __version__
 from textwrap import dedent
+
 from loguru import logger
+
+from charger import __version__
 
 
 def test_version():

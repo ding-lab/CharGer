@@ -1,6 +1,8 @@
 import argparse
+
 import pytest
-from charger.argtype import PathType, ModuleScoreOverrideType
+
+from charger.argtype import ModuleScoreOverrideType, PathType
 
 
 @pytest.fixture

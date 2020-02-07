@@ -7,7 +7,7 @@ from shlex import quote
 
 from loguru import logger
 
-from .argtype import PathType, ModuleScoreOverrideType
+from .argtype import ModuleScoreOverrideType, PathType
 from .config import CharGerConfig
 
 logger.disable("charger")

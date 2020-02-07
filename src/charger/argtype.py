@@ -1,6 +1,6 @@
 from argparse import ArgumentTypeError
 from pathlib import Path
-from typing import Union, Callable, Optional, Dict, List
+from typing import Callable, Dict, Optional, Union
 
 
 class PathType:
