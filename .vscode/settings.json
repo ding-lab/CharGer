@@ -9,9 +9,11 @@
     "vim.textwidth": 120,
     "cSpell.words": [
         "ACMG",
+        "PPAP",
         "conda",
         "isidentifier",
         "itertools",
+        "nargs",
         "noqa",
         "pytest",
         "xfail"

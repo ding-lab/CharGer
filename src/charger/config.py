@@ -64,7 +64,7 @@ def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:
 _default_acmg_scores, _default_charger_scores = _set_default_module_scores()
 
 
-@attr.s(auto_attribs=True, kw_only=True, repr=False)
+@attr.s(auto_attribs=True, kw_only=True, repr=True)
 class CharGerConfig:
     """CharGer configuration."""
 
@@ -86,8 +86,8 @@ class CharGerConfig:
     rare_threshold: float = 0.0005
     common_threshold: float = 0.005
 
-    acmg_module_scores: Dict[str, int] = _default_acmg_scores
-    charger_module_scores: Dict[str, int] = _default_charger_scores
+    acmg_module_scores: Dict[str, int] = attr.Factory(_default_acmg_scores.copy)
+    charger_module_scores: Dict[str, int] = attr.Factory(_default_charger_scores.copy)
 
     # CharGer variant classification thresholds
     min_pathogenic_score: int = 9
@@ -99,9 +99,3 @@ class CharGerConfig:
     PP2_gene_list: Optional[Path] = None
 
     # CharGer classification modules
-
-    def __repr__(self):
-        arg_strings = []
-        for name, value in attr.asdict(self).items():
-            arg_strings.append(f"    {name!s}={value!r},")
-        return "CharGerConfig(\n{}\n)".format("\n".join(arg_strings))

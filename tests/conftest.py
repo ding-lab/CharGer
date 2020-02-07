@@ -3,6 +3,8 @@ import pytest
 from _pytest.logging import caplog as _caplog  # noqa: F401
 from loguru import logger
 
+from charger.config import CharGerConfig
+
 
 @pytest.fixture
 def caplog(_caplog):  # noqa: F811
@@ -20,3 +22,9 @@ def caplog(_caplog):  # noqa: F811
     yield _caplog
     logger.remove(handler_id)
     logger.disable("charger")
+
+
+@pytest.fixture
+def default_config() -> CharGerConfig:
+    """Default CharGer config."""
+    return CharGerConfig()

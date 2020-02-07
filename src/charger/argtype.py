@@ -1,6 +1,6 @@
 from argparse import ArgumentTypeError
 from pathlib import Path
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, Dict, List
 
 
 class PathType:
@@ -64,3 +64,32 @@ class PathType:
             raise ArgumentTypeError(f"Path is invalid: {pth}")
 
         return p
+
+
+class ModuleScoreOverrideType:
+    """Integrate override arguments to new scores of all modules.
+
+    Examples:
+        >>> default_scores = {'A': 5, 'B': -2}
+        >>> override_score = ModuleScoreOverrideType(default_scores)
+        >>> override_score('A=7 B=-4')
+        {'A': 7, 'B': -4}
+    """
+
+    def __init__(self, defaults: Dict[str, int]):
+        self._defaults = defaults
+
+    def __call__(self, overrides: str) -> Dict[str, int]:
+        module_scores = self._defaults.copy()
+        for override in overrides.split(" "):
+            module, new_score_str = override.split("=", 1)
+            if module not in self._defaults:
+                raise ArgumentTypeError(f"Module does not exist: {module}")
+            try:
+                new_score = int(new_score_str)
+            except ValueError:
+                raise ArgumentTypeError(
+                    f"New score of module {module} is not an integer: {new_score_str}"
+                )
+            module_scores[module] = new_score
+        return module_scores

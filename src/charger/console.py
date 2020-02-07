@@ -3,10 +3,11 @@ CharGer (Characterization of Germline variants) is a software tool for interpret
 """  # noqa
 import argparse
 import sys
+from shlex import quote
 
 from loguru import logger
 
-from .argtype import PathType
+from .argtype import PathType, ModuleScoreOverrideType
 from .config import CharGerConfig
 
 logger.disable("charger")
@@ -31,7 +32,10 @@ def create_console_parser() -> argparse.ArgumentParser:
     defaults = CharGerConfig()
 
     parser = argparse.ArgumentParser(
-        description=__doc__, epilog=epilog, formatter_class=ConsoleHelpFormatter
+        description=__doc__,
+        epilog=epilog,
+        formatter_class=ConsoleHelpFormatter,
+        allow_abbrev=False,
     )
     parser.add_argument(
         "--input",
@@ -79,11 +83,29 @@ def create_console_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include the VCF details in the output",
     )
-    parser.add_argument(
+
+    acmg_grp = parser.add_argument_group("ACMG modules")
+    acmg_grp.add_argument(
         "--PP2-gene-list",
         type=PathType(exists=True),
         metavar="TXT",
         help="Path to PP2 gene list (list of gene symbols)",
+    )
+    acmg_grp.add_argument(
+        "--override-acmg-score",
+        metavar="'MODULE=SCORE MODULE=SCORE ...'",
+        type=ModuleScoreOverrideType(defaults=defaults.acmg_module_scores),
+        dest="acmg_module_scores",
+        help="Override the default scoring of ACMG modules",
+    )
+
+    charger_grp = parser.add_argument_group("CharGer modules")
+    charger_grp.add_argument(
+        "--override-charger-score",
+        metavar="'MODULE=SCORE MODULE=SCORE ...'",
+        type=ModuleScoreOverrideType(defaults=defaults.charger_module_scores),
+        dest="charger_module_scores",
+        help="Override the default scoring of CharGer modules",
     )
 
     anno_src_grp = parser.add_argument_group("annotation sources")
@@ -147,13 +169,16 @@ def create_console_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_console() -> CharGerConfig:
+def parse_console(args=None) -> CharGerConfig:
     parser = create_console_parser()
-    config = parser.parse_args(namespace=CharGerConfig())
+    console_parameters = " ".join(map(quote, sys.argv[1:]))
+    logger.info(f"Console parameters: {console_parameters}")
+    config = parser.parse_args(args, namespace=CharGerConfig())
     return config
 
 
 def run() -> None:
+    """Entry point of charger program."""
     # Set up stderr format
     logger.remove()
     logger.add(
@@ -167,4 +192,4 @@ def run() -> None:
     # By default all the logging messages are disabled
     logger.enable("charger")
     config = parse_console()
-    logger.info(f"Current config: {config!r}")
+    logger.debug(f"Current config: {config!r}")

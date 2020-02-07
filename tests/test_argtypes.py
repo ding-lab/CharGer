@@ -1,6 +1,6 @@
 import argparse
 import pytest
-from charger.argtype import PathType
+from charger.argtype import PathType, ModuleScoreOverrideType
 
 
 @pytest.fixture
@@ -88,3 +88,26 @@ def test_pathtype_custom_type_must_exist(example_folder):
     assert TxtPathType(str(exist_txt_pth)) == exist_txt_pth
     with pytest.raises(argparse.ArgumentTypeError):
         TxtPathType(str(notexist_txt_pth))
+
+
+@pytest.fixture
+def override_score():
+    return ModuleScoreOverrideType(defaults={"A": 0, "B": 10})
+
+
+def test_modulescoreoverridetype(override_score):
+    scores = override_score("A=3 B=10")
+    assert scores["A"] == 3
+    assert scores["B"] == 10
+
+
+def test_modulescoreoverridetype_invalid_module(override_score):
+    with pytest.raises(argparse.ArgumentTypeError, match="Module does not exist: PPAP"):
+        override_score("A=10 PPAP=999")
+
+
+def test_modulescoreoverridetype_invalid_score(override_score):
+    with pytest.raises(
+        argparse.ArgumentTypeError, match="New score of module A is not an integer:"
+    ):
+        override_score("A=0.99")
