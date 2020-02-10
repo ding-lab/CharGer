@@ -22,7 +22,7 @@ def test_config_module_score_override(default_config: CharGerConfig):
     c = CharGerConfig()
     c.acmg_module_scores["PS1"] = 9
     c.charger_module_scores["BSC1"] = -9
-    # Make sure each config has its own score dictionary
+    # Make sure each config has its own score dict
     assert c.acmg_module_scores is not default_config.acmg_module_scores
     assert c.charger_module_scores is not default_config.charger_module_scores
     assert c.acmg_module_scores["PS1"] != default_config.acmg_module_scores["PS1"]

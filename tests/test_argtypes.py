@@ -7,6 +7,11 @@ from charger.argtype import ModuleScoreOverrideType, PathType
 
 @pytest.fixture
 def example_folder(tmp_path):
+    """A example folder fixture to test file existence.
+
+    It creates one existing folder and file under the ``tmp_path`` directory. It returns a dict of existent and
+    non-existent paths.
+    """
     folder = tmp_path / "existing_folder"
     folder.mkdir()
     file = tmp_path / "existing_file.txt"
@@ -94,6 +99,7 @@ def test_pathtype_custom_type_must_exist(example_folder):
 
 @pytest.fixture
 def override_score():
+    """A fixture of default module scores."""
     return ModuleScoreOverrideType(defaults={"A": 0, "B": 10})
 
 
