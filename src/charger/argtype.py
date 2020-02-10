@@ -17,12 +17,15 @@ class PathType:
             Skip the check when None.
 
     Examples:
+
         >>> parser = argparse.ArgumentParser()
 
-        Add an argument that must be an existing file, but can also be specified as a dash ('-') in the command,
+        Add an argument that must be an existing file, but can also be specified as a dash (``-``) in the command,
+        
         >>> parser.add_argument('existing_file', type=PathType(exists=True, type='file'))
 
         Add an argument for a new path that must NOT exist, but the parent folder exists,
+        
         >>> from pathlib import Path
         >>> CreatablePathType = PathType(exists=False, type=lambda p: p.parent.is_dir())
         >>> parser.add_argument('non_existing_folder', type=CreatablePathType)
@@ -70,6 +73,7 @@ class ModuleScoreOverrideType:
     """Integrate override arguments to new scores of all modules.
 
     Examples:
+
         >>> default_scores = {'A': 5, 'B': -2}
         >>> override_score = ModuleScoreOverrideType(default_scores)
         >>> override_score('A=7 B=-4')
