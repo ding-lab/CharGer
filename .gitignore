@@ -15,4 +15,4 @@ __pycache__
 .mypy_cache/
 .pytest_cache/
 
-doc/_build/
+docs/_build/

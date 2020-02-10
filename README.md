@@ -20,3 +20,10 @@ The repo use isort to sort the import order, black to format the code, flake8 to
     mypy src
 
 The repo comes with VSCode settings. In VSCode, black, mypy and flake8 will be run on every file save.
+
+Build the documentation using Sphinx:
+
+    cd docs
+    make html
+
+And the documentation will be available under `docs/_build/html`.
