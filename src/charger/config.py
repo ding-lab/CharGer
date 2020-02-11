@@ -73,11 +73,12 @@ class CharGerConfig:
     Examples:
 
         >>> config = CharGerConfig()
-        >>> charger = CharGer(config)
     """
 
     # Define all the config options and their types
     input: Optional[Path] = None
+    """Path to the input VCF."""
+
     output: Optional[Path] = None
     disease_specific: bool = False
     inheritance_gene_list: Optional[Path] = None
