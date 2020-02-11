@@ -1,6 +1,6 @@
 from argparse import ArgumentTypeError
 from pathlib import Path
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Dict, Final, Optional, Union
 
 
 class PathType:
@@ -81,7 +81,7 @@ class ModuleScoreOverrideType:
     """
 
     def __init__(self, defaults: Dict[str, int]):
-        self._defaults = defaults
+        self._defaults: Final = defaults
 
     def __call__(self, overrides: str) -> Dict[str, int]:
         module_scores = self._defaults.copy()
