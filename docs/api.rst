@@ -1,10 +1,9 @@
 CharGer internals
 =================
+charger.config module
+---------------------
 
-charger.argtype module
-----------------------
-
-.. automodule:: charger.argtype
+.. automodule:: charger.config
    :members:
    :undoc-members:
    :show-inheritance:
@@ -17,18 +16,27 @@ charger.charger module
    :undoc-members:
    :show-inheritance:
 
-charger.config module
----------------------
+charger.variant module
+----------------------
 
-.. automodule:: charger.config
+.. automodule:: charger.variant
    :members:
    :undoc-members:
+   :private-members:
    :show-inheritance:
 
 charger.console module
 ----------------------
 
 .. automodule:: charger.console
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+charger.argtype module
+----------------------
+
+.. automodule:: charger.argtype
    :members:
    :undoc-members:
    :show-inheritance:
