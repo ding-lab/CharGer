@@ -2,7 +2,8 @@ from contextlib import closing
 from pathlib import Path
 from typing import Generator, Type, TypeVar
 
-from cyvcf2 import Variant as CyVCF2Variant, VCF
+from cyvcf2 import VCF
+from cyvcf2 import Variant as CyVCF2Variant
 
 # A type hint variable to annotated the Factory method
 # See https://github.com/python/typing/issues/58 for details

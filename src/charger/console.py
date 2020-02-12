@@ -15,7 +15,7 @@ CharGer (Characterization of Germline variants) is a software tool for interpret
 
 # Additional console help message text at the end
 epilog = """
-If you use CharGer, please cite our publication so we can continue to support CharGer development: 
+If you use CharGer, please cite our publication so we can continue to support CharGer development:
 
     Scott, A.D. et al. (2018). Bioinformatics. https://doi.org/10.1093/bioinformatics/bty649.
 """  # noqa
