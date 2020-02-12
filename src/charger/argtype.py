@@ -1,6 +1,12 @@
 from argparse import ArgumentTypeError
 from pathlib import Path
-from typing import Callable, Dict, Final, Optional, Union
+from typing import Callable, Dict, Optional, Union
+
+try:
+    from typing import Final
+except ImportError:
+    # Backport additional typings prior to python 3.8
+    from typing_extensions import Final  # type: ignore
 
 
 class PathType:

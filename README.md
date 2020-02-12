@@ -1,17 +1,18 @@
 ## Installation
 
-    conda create -n charger_py37 python=3.7 pip poetry pre-commit cyvcf2
+    conda create -n charger_py37 python=3.7 pip poetry cyvcf2
     conda activate charger_py37
-    poetry install
-    pre-commit install  # Enable style check
+    poetry install      # install charger and all its dependencies
+    pre-commit install  # enforce style check at every commit
 
 
 For python3.8, one needs to build the cyvcf2 manually from source:
 
-    conda create -n charger_py38 python=3.8 poetry pip cython
+    conda create -n charger_py38 python=3.8 poetry pip cython numpy
     conda activate charger_py38
-    # Install cyvcf2 from source
+    # (install cyvcf2 from source)
     poetry install
+    pre-commit install
 
 
 ## Usage
