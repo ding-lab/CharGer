@@ -8,7 +8,7 @@
 
 For python3.8, one needs to build the cyvcf2 manually from source:
 
-    conda create -n charger_py38 python=3.8 poetry pip cython numpy
+    conda create -n charger_py38 python=3.8 poetry pip numpy
     conda activate charger_py38
     # (install cyvcf2 from source)
     poetry install
