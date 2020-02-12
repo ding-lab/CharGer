@@ -1,6 +1,6 @@
 from contextlib import closing
 from pathlib import Path
-from typing import Generator, Type, TypeVar
+from typing import Any, Dict, Generator, Type, TypeVar
 
 from cyvcf2 import VCF
 from cyvcf2 import Variant as CyVCF2Variant
@@ -16,8 +16,66 @@ class AnnotatedVariant:
 
     For normal usage, consider using :py:meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
 
+    Args:
+        chrom: Chromosome
+        start_pos: Start position (1-based closed)
+        end_pos: End position (1-based closed)
+        ref_allele: Reference allele sequence
+        alt_allele: Alternative allele sequence (the variant must be biallelic)
+
     Examples:
     """
+
+    def __init__(self, chrom, start_pos, end_pos, ref_allele, alt_allele, raw_info):
+        self.chrom: str = chrom
+        self.start_pos: int = start_pos
+        self.end_pos: int = end_pos
+        self.ref_allele: str = ref_allele
+        self.alt_allele: str = alt_allele
+        self.raw_info: Dict[str, Any] = raw_info
+
+        if alt_allele == ".":
+            raise ValueError(
+                "alt_allele cannot be missing ('.'). Try normalize the variant."
+            )
+
+    __slots__ = [
+        "chrom",
+        "start_pos",
+        "end_pos",
+        "ref_allele",
+        "alt_allele",
+        "raw_info",
+    ]
+
+    @property
+    def is_snp(self) -> bool:
+        """True if the variant is a SNP."""
+        if len(self.ref_allele) > 1:
+            return False
+        elif self.alt_allele not in "ACGT":
+            return False
+        return True
+
+    @property
+    def is_sv(self) -> bool:
+        """True if the variant ia an SV."""
+        return "SVTYPE" in self.raw_info and self.raw_info["SVTYPE"] is not None
+
+    @property
+    def is_indel(self) -> bool:
+        """True if the variant ia an INDEL."""
+        is_sv = self.is_sv
+        if len(self.ref_allele) > 1 and not is_sv:
+            return True
+
+        if self.alt_allele == ".":
+            return False
+        elif len(self.alt_allele) != len(self.ref_allele) and not is_sv:
+            return True
+        return False
+
+    # TODO: define is_deletion
 
     @classmethod
     def _from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
@@ -25,7 +83,14 @@ class AnnotatedVariant:
         Create one AnnotatedVariant object from one
         :py:class:`cyvcf2.Variant <cyvcf2.cyvcf2.Variant>` VCF record.
         """
-        return cls()
+        return cls(
+            chrom=variant.CHROM,
+            start_pos=variant.start + 1,
+            end_pos=variant.end,
+            ref_allele=variant.REF,
+            alt_allele=variant.ALT[0],
+            raw_info=dict(variant.INFO),
+        )
 
     @classmethod
     def read_vcf(cls: Type[V], path: Path) -> Generator[V, None, None]:
@@ -38,5 +103,6 @@ class AnnotatedVariant:
         >>> next(vcf_reader)
         """
         with closing(VCF(str(path))) as vcf:
-            for variant in vcf:
+            lineno = vcf.raw_header.count("\n")
+            for lineno, variant in enumerate(vcf, start=lineno + 1):
                 yield cls._from_cyvcf2(variant)
