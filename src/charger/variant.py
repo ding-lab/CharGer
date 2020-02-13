@@ -1,18 +1,24 @@
+import re
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Dict, Generator, Optional, Type, TypeVar
+from typing import Any, Dict, Generator, List, Optional, Type, TypeVar
 
+import attr
 from cyvcf2 import VCF
 from cyvcf2 import Variant as CyVCF2Variant
+from loguru import logger
+
+logger.disable("charger")  # Disable emit logs by default
 
 # A type hint variable to annotated the Factory method
 # See https://github.com/python/typing/issues/58 for details
-V = TypeVar("V", bound="AnnotatedVariant")
+V = TypeVar("V", bound="Variant")
 
 
-class AnnotatedVariant:
+@attr.s(auto_attribs=True, repr=True, eq=False, order=False, slots=True)
+class Variant:
     """
-    Representation of VEP annotated VCF biallelic variant.
+    Biallelic variant.
 
     For normal usage, consider using :py:meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
 
@@ -26,38 +32,25 @@ class AnnotatedVariant:
     Examples:
     """
 
-    def __init__(
-        self, chrom, start_pos, end_pos, ref_allele, alt_allele, id=None, raw_info=None
-    ):
-        self.chrom: str = chrom
-        self.start_pos: int = start_pos
-        self.end_pos: int = end_pos
-        self.ref_allele: str = ref_allele
-        self.alt_allele: str = alt_allele
-        self.id: Optional[str] = id
-        if raw_info is None:
-            raw_info = {}
-        self.raw_info: Dict[str, Any] = raw_info
+    chrom: str
+    start_pos: int
+    end_pos: int
+    ref_allele: str
+    alt_allele: str
+    id: Optional[str] = None
+    filter: Optional[List[str]] = None
+    info: Dict[str, Any] = attr.Factory(dict)
 
+    def __attrs_post_init__(self):
         # Variant must be normalized
-        if ref_allele == ".":
+        if self.ref_allele == ".":
             raise ValueError(
                 "ref_allele cannot be missing ('.'). Try normalize the variant first."
             )
-        if alt_allele is None or alt_allele == ".":
+        if self.alt_allele is None or self.alt_allele == ".":
             raise ValueError(
                 "alt_allele cannot be missing ('.' or None). Try normalize the variant first."
             )
-
-    __slots__ = [
-        "chrom",
-        "start_pos",
-        "end_pos",
-        "ref_allele",
-        "alt_allele",
-        "id",
-        "raw_info",
-    ]
 
     @property
     def is_snp(self) -> bool:
@@ -71,7 +64,7 @@ class AnnotatedVariant:
     @property
     def is_sv(self) -> bool:
         """True if the variant ia an SV."""
-        return "SVTYPE" in self.raw_info and self.raw_info["SVTYPE"] is not None
+        return "SVTYPE" in self.info and self.info["SVTYPE"] is not None
 
     @property
     def is_indel(self) -> bool:
@@ -95,9 +88,9 @@ class AnnotatedVariant:
             return len(self.ref_allele) > len(self.alt_allele)
 
     @classmethod
-    def _from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
+    def from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
         """
-        Create one AnnotatedVariant object from one
+        Create one object based on
         :py:class:`cyvcf2.Variant <cyvcf2.cyvcf2.Variant>` VCF record.
         """
         return cls(
@@ -106,21 +99,54 @@ class AnnotatedVariant:
             end_pos=variant.end,
             ref_allele=variant.REF,
             alt_allele=variant.ALT[0],
-            id=variant.id,
-            raw_info=dict(variant.INFO),
+            id=variant.ID,
+            filter=variant.FILTER,
+            info=dict(variant.INFO),
         )
 
+    def _parse_csq(self, csq_columns: List[str]):
+        csq_values = self.info["CSQ"].split("|")
+        self.info["CSQ"] = dict(zip(csq_columns, csq_values))
+
     @classmethod
-    def read_vcf(cls: Type[V], path: Path) -> Generator[V, None, None]:
+    def get_vep_csq_columns(cls: Type[V], vcf: VCF):
+        vcf_raw_headers = vcf.raw_header.splitlines()
+        # Find VEP version
+        try:
+            vep_header = next(
+                l for l in reversed(vcf_raw_headers) if l.startswith("##VEP=")
+            )
+            vep_version = re.match(r"^##VEP=['\"]?v(\d+)['\"]?", vep_header).groups(1)  # type: ignore
+        except (StopIteration, AttributeError):
+            raise ValueError(f"Cannot find VEP information")
+
+        # Get CSQ spec
+        try:
+            csq_info = vcf.get_header_type("CSQ")
+            csq_format = re.search(r"Format: ([\w\|]+)['\"]$", csq_info["Description"]).group(1)  # type: ignore
+            csq_columns = csq_format.split("|")
+        except KeyError:
+            raise ValueError(f"Cannot find CSQ INFO line")
+
+        logger.debug(f"VEP version {vep_version} with CSQ format: {csq_format}")
+        return csq_columns
+
+    @classmethod
+    def read_vcf(cls: Type[V], path: Path, parse_csq=False) -> Generator[V, None, None]:
         """
-        Create AnnotatedVariant object per VCF record from `path`.
+        Create one object per VCF record from `path`.
 
         This function iterates the given VCF using :py:class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`.
 
-        >>> vcf_reader = AnnnotatedVariant.read_vcf('my.vcf')
+        >>> vcf_reader = Variant.read_vcf('my.vcf')
         >>> next(vcf_reader)
         """
         with closing(VCF(str(path))) as vcf:
+            if parse_csq:
+                csq_columns = cls.get_vep_csq_columns(vcf)
             lineno = vcf.raw_header.count("\n")
-            for lineno, variant in enumerate(vcf, start=lineno + 1):
-                yield cls._from_cyvcf2(variant)
+            for lineno, cy_variant in enumerate(vcf, start=lineno + 1):
+                variant = cls.from_cyvcf2(cy_variant)
+                if parse_csq:
+                    variant._parse_csq(csq_columns)
+                yield variant

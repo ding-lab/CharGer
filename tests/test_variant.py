@@ -1,28 +1,30 @@
+from pathlib import Path
+
 import pytest
 
-from charger.variant import AnnotatedVariant
+from charger.variant import Variant
+
+HERE = Path(__file__).parent
 
 
 @pytest.fixture()
 def snp(request):
-    return AnnotatedVariant("1", 42, 42, "A", "G")
+    return Variant("1", 42, 42, "A", "G")
 
 
 @pytest.fixture
 def insertion():
-    return AnnotatedVariant("1", 42, 42, "A", "ATAT")
+    return Variant("1", 42, 42, "A", "ATAT")
 
 
 @pytest.fixture
 def deletion():
-    return AnnotatedVariant("1", 42, 44, "ATA", "A")
+    return Variant("1", 42, 44, "ATA", "A")
 
 
 @pytest.fixture
 def sv():
-    return AnnotatedVariant(
-        "1", 2827693, 2827701, "CCCCTCGCA", "C", raw_info={"SVTYPE": "DEL"}
-    )
+    return Variant("1", 2827693, 2827701, "CCCCTCGCA", "C", info={"SVTYPE": "DEL"})
 
 
 def test_is_snp(snp, insertion, deletion, sv):
@@ -51,3 +53,23 @@ def test_is_deletion(snp, insertion, deletion, sv):
     assert not insertion.is_deletion
     assert deletion.is_deletion
     assert not sv.is_deletion
+
+
+def test_read_vcf_grch37():
+    variants = list(
+        Variant.read_vcf(
+            HERE / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
+        )
+    )
+    assert len(variants) == 5
+    assert variants[0].chrom == "19"
+    assert variants[0].start_pos == 45855804
+    assert variants[0].end_pos == 45855805
+    assert variants[0].ref_allele == "CT"
+    assert variants[0].alt_allele == "C"
+    assert variants[0].id is None
+    assert variants[0].filter is None
+    assert variants[0].is_indel
+    assert variants[0].is_deletion
+    assert not variants[0].is_snp
+    assert not variants[0].is_sv
