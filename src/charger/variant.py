@@ -211,9 +211,9 @@ class Variant:
         """
         with closing(VCF(str(path))) as vcf:
             if parse_csq:
+                # Get the CSQ field definition from the VCF header
                 csq_fields = cls.get_vep_csq_fields(vcf)
-            lineno = vcf.raw_header.count("\n")
-            for lineno, cy_variant in enumerate(vcf, start=lineno + 1):
+            for cy_variant in vcf:
                 variant = cls.from_cyvcf2(cy_variant)
                 if parse_csq:
                     variant._parse_csq(csq_fields)
