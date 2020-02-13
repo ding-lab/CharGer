@@ -144,7 +144,7 @@ class Variant:
         # Find VEP version
         try:
             vep_header = next(l for l in vcf_raw_headers if l.startswith("##VEP="))
-            vep_version = re.match(r"^##VEP=['\"]?v(\d+)['\"]?", vep_header).groups(1)  # type: ignore
+            vep_version = re.match(r"^##VEP=['\"]?v(\d+)['\"]?", vep_header).group(1)  # type: ignore
         except (StopIteration, AttributeError):
             logger.warning(f"Cannot find VEP version in the VCF header")
             vep_version = "UNKNOWN"
