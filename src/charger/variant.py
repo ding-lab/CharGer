@@ -1,7 +1,8 @@
 import re
+from collections import UserDict
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Type, TypeVar
+from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar, Union
 
 import attr
 from cyvcf2 import VCF
@@ -15,7 +16,7 @@ logger.disable("charger")  # Disable emit logs by default
 V = TypeVar("V", bound="Variant")
 
 
-@attr.s(auto_attribs=True, repr=True, eq=False, order=False, slots=True)
+@attr.s(auto_attribs=True, repr=False, eq=False, order=False, slots=True)
 class Variant:
     """
     Biallelic variant.
@@ -34,7 +35,7 @@ class Variant:
     filter: Optional[List[str]] = None
     info: Dict[str, Any] = attr.Factory(dict)
 
-    parsed_csq: Optional[List[Dict[str, Any]]] = None
+    parsed_csq: Optional[List["CSQ"]] = None
     """
     Store list of parsed CSQ annotation per feature(transcript) of the variant.
     Use :py:meth:`read_vcf(parse_csq=True) <read_vcf>` to automatically parse CSQ
@@ -56,7 +57,7 @@ class Variant:
         """True if the variant is a SNP."""
         if len(self.ref_allele) > 1:
             return False
-        elif self.alt_allele not in "ACGT":
+        elif self.alt_allele not in ("A", "C", "G", "T"):
             return False
         return True
 
@@ -96,9 +97,27 @@ class Variant:
                     f"Number of CSQ values (n={len(csq_values)}) and columns (n={len(csq_fields)})"
                     f"don't match. columns: {csq_fields!r}, values: {csq_values!r}"
                 )
-            parsed_csq_per_annotation.append(dict(zip(csq_fields, csq_values)))
+            parsed_csq_per_annotation.append(CSQ(dict(zip(csq_fields, csq_values))))
         self.parsed_csq = parsed_csq_per_annotation
         self.info["CSQ"] = self.parsed_csq
+
+    def __repr__(self):
+        def limit_seq_display(seq: str, limit: int = 5) -> str:
+            if len(seq) > limit:
+                seq = seq[:limit] + "…"
+            return seq
+
+        type_name = type(self).__name__
+        ref = limit_seq_display(self.ref_allele)
+        alt = limit_seq_display(self.alt_allele)
+
+        info_keys = set(self.info.keys())
+        if self.parsed_csq is not None:
+            info_keys.discard("CSQ")
+            info_keys.add(f"CSQ[{len(self.parsed_csq)} parsed]")
+        info_repr = f"info: {','.join(info_keys)}"
+
+        return f"{type_name}({self.chrom}:{self.start_pos}{ref}>{alt} {info_repr})"
 
     @classmethod
     def from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
@@ -175,7 +194,7 @@ class Variant:
 
             >>> vcf_reader = Variant.read_vcf('my.vcf', parsed_csq=True)
             >>> for variant in vcf_reader:
-            ...     print(variant.chrom, variant.parsed_csq['Allele'])
+            ...     print(variant.chrom, variant.parsed_csq[0]['Allele'])
         """
         with closing(VCF(str(path))) as vcf:
             if parse_csq:
@@ -186,3 +205,48 @@ class Variant:
                 if parse_csq:
                     variant._parse_csq(csq_fields)
                 yield variant
+
+
+class CSQ(UserDict):
+    """
+    Variant consequence of one feature(transcript).
+    """
+
+    #: Required CSQ fields
+    REQUIRED_FIELDS: Set[str] = set(
+        [
+            "Allele",
+            "Consequence",
+            "SYMBOL",
+            "Gene",
+            "Feature_type",
+            "Feature",
+            "BIOTYPE",
+            "HGVSc",
+            "HGVSp",
+            "cDNA_position",
+            "CDS_position",
+            "Protein_position",
+            "Amino_acids",
+            "Codons",
+            "Existing_variation",
+            "STRAND",
+        ]
+    )
+
+    data: Dict[str, Union[str, None, int, float]]
+
+    def __init__(self, dict=None, **kwargs):
+        super().__init__(dict, **kwargs)
+        missing_fields = self.REQUIRED_FIELDS - set(self.data.keys())
+        if missing_fields:
+            raise ValueError(
+                f"CSQ misses these required fields: {', '.join(missing_fields)}"
+            )
+
+    def __repr__(self):
+        fields = ["SYMBOL", "HGVSc", "Consequence"]
+        details = []
+        for f in fields:
+            details.append(f"{f}={self.data[f]!r}")
+        return f"CSQ({', '.join(details)}, …)"
