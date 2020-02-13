@@ -3,7 +3,7 @@ from typing import List
 from loguru import logger
 
 from .config import CharGerConfig
-from .variant import AnnotatedVariant
+from .variant import Variant
 
 logger.disable("charger")  # Disable emit logs by default
 
@@ -24,7 +24,7 @@ class CharGer:
 
     def __init__(self, config: CharGerConfig):
         self.config: CharGerConfig = config
-        self.user_variants: List[AnnotatedVariant] = []
+        self.user_variants: List[Variant] = []
 
     def read_input_variants(self):
         """Read the VEP-annotated variants from the input VCF.

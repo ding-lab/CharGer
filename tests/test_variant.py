@@ -28,39 +28,44 @@ def sv():
 
 
 def test_is_snp(snp, insertion, deletion, sv):
-    assert snp.is_snp
-    assert not insertion.is_snp
-    assert not deletion.is_snp
-    assert not sv.is_snp
+    assert snp.is_snp()
+    assert not insertion.is_snp()
+    assert not deletion.is_snp()
+    assert not sv.is_snp()
 
 
 def test_is_sv(snp, insertion, deletion, sv):
-    assert not snp.is_sv
-    assert not insertion.is_sv
-    assert not deletion.is_sv
-    assert sv.is_sv
+    assert not snp.is_sv()
+    assert not insertion.is_sv()
+    assert not deletion.is_sv()
+    assert sv.is_sv()
 
 
 def test_is_indel(snp, insertion, deletion, sv):
-    assert not snp.is_indel
-    assert insertion.is_indel
-    assert deletion.is_indel
-    assert not sv.is_indel
+    assert not snp.is_indel()
+    assert insertion.is_indel()
+    assert deletion.is_indel()
+    assert not sv.is_indel()
 
 
 def test_is_deletion(snp, insertion, deletion, sv):
-    assert not snp.is_deletion
-    assert not insertion.is_deletion
-    assert deletion.is_deletion
-    assert not sv.is_deletion
+    assert not snp.is_deletion()
+    assert not insertion.is_deletion()
+    assert deletion.is_deletion()
+    assert not sv.is_deletion()
 
 
-def test_read_vcf_grch37():
-    variants = list(
+@pytest.fixture
+def grch37_vep85_annotated_variants():
+    return list(
         Variant.read_vcf(
             HERE / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
         )
     )
+
+
+def test_read_vcf_grch37_vep85(grch37_vep85_annotated_variants):
+    variants = grch37_vep85_annotated_variants
     assert len(variants) == 5
     assert variants[0].chrom == "19"
     assert variants[0].start_pos == 45855804
@@ -69,7 +74,12 @@ def test_read_vcf_grch37():
     assert variants[0].alt_allele == "C"
     assert variants[0].id is None
     assert variants[0].filter is None
-    assert variants[0].is_indel
-    assert variants[0].is_deletion
-    assert not variants[0].is_snp
-    assert not variants[0].is_sv
+    assert variants[0].is_indel()
+    assert variants[0].is_deletion()
+    assert not variants[0].is_snp()
+    assert not variants[0].is_sv()
+
+    parsed_csq = variants[0].parsed_csq
+    assert len(parsed_csq) == 11
+    assert parsed_csq[10]["SYMBOL"] == "KLC3"
+    assert parsed_csq[10]["ENSP"] == "ENSP00000466974"
