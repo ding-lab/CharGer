@@ -10,17 +10,19 @@ except ImportError:
 
 
 class PathType:
-    """Parse file path arguments as a pathlib.Path object.
+    """Parse file path arguments as a :py:class:`pathlib.Path` object.
 
     Type factory for ArgumentParser.add_argument() that validates the file path arguments.
     Adapted from https://stackoverflow.com/a/33181083
 
     Args:
-        exists: The path must exist when True, and the path must not exist when False.
-            Skip the check when None.
-        type: ``file`` or ``dir`` will be checked by Path.is_file() and Path.is_dir(), respectively.
-            It also accepts a function that takes Path object and returns True for valid paths.
-            Skip the check when None.
+        exists: The path must exist when `True`, and the path must not exist when `False`.
+            Skip the check when `None`.
+        type: ``file`` will be checked by :py:meth:`~pathlib.Path.is_file`.
+            ``dir`` will be checked by :py:meth:`~pathlib.Path.is_dir`.
+            It also accepts a function that takes :py:class:`~pathlib.Path` object
+            and returns `True` for valid paths.
+            Skip the check when `None`.
 
     Examples:
 

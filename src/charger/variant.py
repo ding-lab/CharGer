@@ -26,14 +26,17 @@ class Variant:
     Examples:
     """
 
-    chrom: str  #: Chromosome
-    start_pos: int  #: Start position (1-based closed)
-    end_pos: int  #: End position (1-based closed)
-    ref_allele: str  #: Reference allele sequence
-    alt_allele: str  #: Alternative allele sequence (currently only allow one possible allele)
+    chrom: str  #: Chromosome.
+    start_pos: int  #: Start position (1-based closed). Same as POS in the VCF record.
+    end_pos: int  #: End position (1-based closed).
+    ref_allele: str  #: Reference allele sequence.
+    alt_allele: str  #: Alternative allele sequence (currently only allow one possible allele).
     id: Optional[str] = None
+    """ID in the VCF record. None when the original value is ``.``."""
     filter: Optional[List[str]] = None
+    """FILTER in the VCF record. None when the original value is ``PASS``."""
     info: Dict[str, Any] = attr.Factory(dict)
+    """INFO in the VCF record."""
 
     parsed_csq: Optional[List["CSQ"]] = None
     """
@@ -122,7 +125,7 @@ class Variant:
     @classmethod
     def from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
         """
-        Create one object based on
+        Create one Variant object based on the given
         :py:class:`cyvcf2.Variant <cyvcf2.cyvcf2.Variant>` VCF record.
         """
         return cls(
@@ -192,9 +195,19 @@ class Variant:
 
         Examples:
 
-            >>> vcf_reader = Variant.read_vcf('my.vcf', parsed_csq=True)
-            >>> for variant in vcf_reader:
-            ...     print(variant.chrom, variant.parsed_csq[0]['Allele'])
+            Read an annotated VCF::
+
+                >>> vcf_reader = Variant.read_vcf('my.vcf', parsed_csq=True)
+                >>> variant = next(vcf_reader)
+                >>> variant
+                Variant(14:45658326C>T info: CSQ[5 parsed])
+                >>> variants[4].parsed_csq[0]
+                CSQ(SYMBOL='FANCM', HGVSc='ENST00000267430.5:c.5101N>T', Consequence='stop_gained', …)
+
+            Iterate all the VCF variants records::
+
+                >>> for variant in vcf_reader:
+                ...     print(variant.chrom, variant.parsed_csq[0]['Allele'])
         """
         with closing(VCF(str(path))) as vcf:
             if parse_csq:
@@ -209,10 +222,24 @@ class Variant:
 
 class CSQ(UserDict):
     """
-    Variant consequence of one feature(transcript).
+    Consequence of a variant. Access each CSQ field like a `dict`.
+
+    The class is used to set the annotation records in a :py:class:`Variant` object.
+    List of CSQ per feature will be stored at :py:attr:`Variant.parsed_csq`.
+
+    Examples:
+
+        >>> csq = variant.parsed_csq[0]; csq
+        CSQ(SYMBOL='FANCM', HGVSc='ENST00000267430.5:c.5101N>T', Consequence='stop_gained', …)
+        >>> list(csq.keys())[:5]
+        ['Allele', 'Consequence', 'IMPACT', 'SYMBOL', 'Gene']
+        >>> list(csq.values())[:5]
+        ['T', 'stop_gained', 'HIGH', 'FANCM', 'ENSG00000187790']
+        >>> csq['HGVSc']
+        'ENST00000267430.5:c.5101N>T'
     """
 
-    #: Required CSQ fields
+    #: Required CSQ fields. Will raise a `ValueError` if any of the fields is missing.
     REQUIRED_FIELDS: Set[str] = set(
         [
             "Allele",
