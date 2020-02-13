@@ -1,6 +1,6 @@
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Dict, Generator, Type, TypeVar
+from typing import Any, Dict, Generator, Optional, Type, TypeVar
 
 from cyvcf2 import VCF
 from cyvcf2 import Variant as CyVCF2Variant
@@ -26,17 +26,27 @@ class AnnotatedVariant:
     Examples:
     """
 
-    def __init__(self, chrom, start_pos, end_pos, ref_allele, alt_allele, raw_info):
+    def __init__(
+        self, chrom, start_pos, end_pos, ref_allele, alt_allele, id=None, raw_info=None
+    ):
         self.chrom: str = chrom
         self.start_pos: int = start_pos
         self.end_pos: int = end_pos
         self.ref_allele: str = ref_allele
         self.alt_allele: str = alt_allele
+        self.id: Optional[str] = id
+        if raw_info is None:
+            raw_info = {}
         self.raw_info: Dict[str, Any] = raw_info
 
-        if alt_allele == ".":
+        # Variant must be normalized
+        if ref_allele == ".":
             raise ValueError(
-                "alt_allele cannot be missing ('.'). Try normalize the variant."
+                "ref_allele cannot be missing ('.'). Try normalize the variant first."
+            )
+        if alt_allele is None or alt_allele == ".":
+            raise ValueError(
+                "alt_allele cannot be missing ('.' or None). Try normalize the variant first."
             )
 
     __slots__ = [
@@ -45,6 +55,7 @@ class AnnotatedVariant:
         "end_pos",
         "ref_allele",
         "alt_allele",
+        "id",
         "raw_info",
     ]
 
@@ -75,7 +86,13 @@ class AnnotatedVariant:
             return True
         return False
 
-    # TODO: define is_deletion
+    @property
+    def is_deletion(self) -> bool:
+        """True if the variant is a deletion."""
+        if not self.is_indel:
+            return False
+        else:
+            return len(self.ref_allele) > len(self.alt_allele)
 
     @classmethod
     def _from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
@@ -89,6 +106,7 @@ class AnnotatedVariant:
             end_pos=variant.end,
             ref_allele=variant.REF,
             alt_allele=variant.ALT[0],
+            id=variant.id,
             raw_info=dict(variant.INFO),
         )
 
