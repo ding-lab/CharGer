@@ -5,6 +5,7 @@ from shlex import quote
 from loguru import logger
 
 from .argtype import ModuleScoreOverrideType, PathType
+from .charger import CharGer
 from .config import CharGerConfig
 
 logger.disable("charger")  # Disable emit logs by default
@@ -41,6 +42,7 @@ def create_console_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--input",
         metavar="VCF",
+        required=True,
         type=PathType(exists=True),
         help="Path to the input VCF to be annotated",
     )
@@ -198,3 +200,5 @@ def run() -> None:
     logger.enable("charger")
     config = parse_console()
     logger.debug(f"Current config: {config!r}")
+    charger = CharGer(config)
+    charger.read_input_data()

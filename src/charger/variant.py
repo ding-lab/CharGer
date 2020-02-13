@@ -169,7 +169,7 @@ class Variant:
         csq_fields = csq_format.split("|")
 
         logger.debug(
-            f"VEP version {vep_version} with CSQ format: {','.join(csq_fields)}"
+            f"VEP version {vep_version} with CSQ format [{len(csq_fields)} fields]: {','.join(csq_fields)}"
         )
         return csq_fields
 
