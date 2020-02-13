@@ -24,6 +24,24 @@ class Variant:
     For normal usage, consider using :py:meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
 
     Examples:
+
+        >>> variant = Variant('13', 32340300, 32340301, 'GT', 'G', id='rs80359550')
+        >>> variant
+        Variant(13:32340300GT>G info: )
+        >>> v.is_snp()
+        False
+        >>> v.is_sv()
+        False
+        >>> v.is_indel()
+        True
+        >>> v.is_deletion()
+        True
+
+        Annotate it with online VEP,
+
+            >>> v = next(Variant.read_vcf('rs80359550.vcf', parse_csq=True))
+            >>> v
+            Variant(13:32340300GT>G info: CSQ[4 parsed])
     """
 
     chrom: str  #: Chromosome.
