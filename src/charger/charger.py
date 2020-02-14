@@ -1,6 +1,7 @@
 from typing import List
 
 from loguru import logger
+from typing_extensions import Final
 
 from .config import CharGerConfig
 from .variant import Variant
@@ -18,25 +19,43 @@ class CharGer:
 
     Example:
 
-        >>> charger = CharGer(CharGerConfig())
-        >>> charger.read_input_data()
+        >>> config = CharGerConfig(...)
+        >>> charger = CharGer()
+        >>> charger.setup()
     """
 
     def __init__(self, config: CharGerConfig):
-        self.config: CharGerConfig = config
-        self.user_variants: List[Variant] = []
-        self.validate_config()
+        self.config: Final[CharGerConfig] = config
+        """Configuration as a :py:class:`~charger.config.CharGerConfig` object."""
+        self.input_variants: List[Variant] = []
+        """Parsed input variants."""
 
-    def validate_config(self):
-        """Validate the configuration."""
-        if not self.config.input.exists():
-            raise ValueError(f"Input file does not exist at {self.config.input}")
+    def setup(self) -> None:
+        """Setup all the intput data and annotation.
 
-    def read_input_data(self):
-        """Read the input data.
+        Sequentially it calls:
+
+            1. :py:meth:`_read_input_vcf`
+        """
+        logger.info(f"Validate the given config")
+        self._validate_config()
+        logger.info(f"Read input VCF from {self.config.input}")
+        self._read_input_vcf()
+        logger.info(
+            f"Read total {len(self.input_variants)} variants from the input VCF"
+        )
+
+    def _validate_config(self) -> None:
+        """Validate the configuration.
+
+        This method is automatically called when CharGer is created."""
+        logger.debug(f"Given config: {self.config!r}")
+
+    def _read_input_vcf(self) -> None:
+        """Read input VCF.
 
         Input VCF is read from :py:attr:`.CharGerConfig.input`.
         """
-        logger.debug(f"Read input VCF from {self.config.input}")
-        self.user_variants = list(Variant.read_vcf(self.config.input, parse_csq=True))
-        logger.info(f"Read total {len(self.user_variants)} variants from the input VCF")
+        if self.config.input is None:
+            raise ValueError(f"No input file is given in the config")
+        self.input_variants = list(Variant.read_vcf(self.config.input, parse_csq=True))

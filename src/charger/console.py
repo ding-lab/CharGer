@@ -188,17 +188,18 @@ def run() -> None:
     """
     # Set up stderr format
     logger.remove()
+    logger.level("INFO", color="<white>")
+    logger.level("DEBUG", color="<d><white>")
     logger.add(
         sys.stderr,
         format=(
             # "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
-            "<level>{level: <8}</level> "
+            "<b><level>{level: <8}</level></b> "
             "| <level>{message}</level>"
         ),
     )
     # By default all the logging messages are disabled
     logger.enable("charger")
     config = parse_console()
-    logger.debug(f"Current config: {config!r}")
     charger = CharGer(config)
-    charger.read_input_data()
+    charger.setup()
