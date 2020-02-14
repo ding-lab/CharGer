@@ -1,5 +1,6 @@
 import argparse
 import sys
+from os import environ
 from shlex import quote
 
 from loguru import logger
@@ -186,18 +187,18 @@ def run() -> None:
 
     When user runs ``charger``, the script calls this function.
     """
-    # Set up stderr format
-    logger.remove()
-    logger.level("INFO", color="<white>")
-    logger.level("DEBUG", color="<d><white>")
-    logger.add(
-        sys.stderr,
-        format=(
-            # "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
-            "<b><level>{level: <8}</level></b> "
-            "| <level>{message}</level>"
-        ),
+    # Set up stderr logging format
+    logger.remove()  # Remove the default setting
+    # Set up the preferred logging colors and format unless overridden by its environment variable
+    logger.level("INFO", color=environ.get("LOGURU_INFO_COLOR") or "<white>")
+    logger.level("DEBUG", color=environ.get("LOGURU_DEBUG_COLOR") or "<d><white>")
+    log_format = environ.get("LOGURU_FORMAT") or (
+        # "<green>{time:YYYY-MM-DD HH:mm:ss}</green> "
+        "<b><level>{level: <8}</level></b> "
+        "| <level>{message}</level>"
     )
+    logger.add(sys.stderr, format=log_format)
+
     # By default all the logging messages are disabled
     logger.enable("charger")
     config = parse_console()
