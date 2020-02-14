@@ -1,16 +1,11 @@
-.. CharGer documentation master file, created by
-   sphinx-quickstart on Sun Feb  9 19:39:33 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to CharGer's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
 
-   api
+   internals/index
 
 
 Indices and tables
