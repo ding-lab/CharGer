@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from charger.variant import Variant
+from charger.variant import Variant, limit_seq_display
 
 HERE = Path(__file__).parent
 
@@ -158,3 +158,9 @@ def test_variant_parse_csq_grch37(grch37_vep85_annotated_variants):
         assert csq["GMAF"] == "T:0.0008"
         assert csq["ExAC_MAF"] == "T:0.0006"
         assert csq["ExAC_Adj_MAF"] == "T:8.649e-05"
+
+
+def test_limit_seq_display():
+    assert limit_seq_display("ATATCCG") == "ATATC…"
+    assert limit_seq_display("ATA") == "ATA"
+    assert limit_seq_display("ATA", limit=1) == "A…"

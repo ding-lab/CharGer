@@ -123,11 +123,6 @@ class Variant:
         self.info["CSQ"] = self.parsed_csq
 
     def __repr__(self):
-        def limit_seq_display(seq: str, limit: int = 5) -> str:
-            if len(seq) > limit:
-                seq = seq[:limit] + "…"
-            return seq
-
         type_name = type(self).__name__
         ref = limit_seq_display(self.ref_allele)
         alt = limit_seq_display(self.alt_allele)
@@ -295,3 +290,20 @@ class CSQ(UserDict):
         for f in fields:
             details.append(f"{f}={self.data[f]!r}")
         return f"CSQ({', '.join(details)}, …)"
+
+
+def limit_seq_display(seq: str, limit: int = 5) -> str:
+    """Limit the display of the sequence.
+
+    Examples:
+
+    >>> limit_seq_display('ATATCCG')
+    'ATATC…'
+    >>> limit_seq_display('ATA')
+    'ATA'
+    >>> limit_seq_display('ATA', limit=1)
+    'A…'
+    """
+    if len(seq) > limit:
+        seq = seq[:limit] + "…"
+    return seq
