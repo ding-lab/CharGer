@@ -81,7 +81,30 @@ class CharGerConfig:
 
     output: Optional[Path] = None
     disease_specific: bool = False
+    """Whether to enable disease specific detection for :py:attr:`inheritance_gene_list`."""
+
     inheritance_gene_list: Optional[Path] = None
+    """Path to a TSV table of inheritance genes.
+
+    The table columns must have these three columns in order: ``gene``, ``diseases``, ``modes_of_inheritance``.
+    The first row is header and will be ignored.
+
+        - gene: Gene symbol.
+        - diseases: Name of the diseases seperated by space.
+        - modes_of_inheritance: Name of the inheritance modes seperated by space. Possible modes:
+          ``autosomal recessive``, ``autosomal dominant``,
+          ``Y-linked``, ``X-linked recessive``, ``X-link dominant``,
+          ``unknown``.
+
+    .. csv-table:: Example table of ``inheritance_gene_list``
+        :header-rows: 1
+        :delim: |
+
+        gene  | diseases     | modes_of_inheritance
+        BRCA2 | BRCA, OV     | autosomal recessive, autosomal dominant
+        NF1   | Neurofibroma | autosomal dominant
+    """
+
     hotspot3d_cluster: Optional[Path] = None
     pathogenic_variant: Optional[Path] = None
     override_variant_info: bool = False
