@@ -6,4 +6,5 @@ CharGer internals
    config
    charger
    variant
+   io
    console
