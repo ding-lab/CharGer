@@ -7,7 +7,10 @@ from loguru import logger
 
 from charger.config import CharGerConfig
 
-HERE = Path(__file__).parent
+
+@pytest.fixture(scope="session")
+def test_root():
+    return Path(__file__).parent
 
 
 @pytest.fixture
@@ -35,5 +38,5 @@ def default_config() -> CharGerConfig:
 
 
 @pytest.fixture(scope="session")
-def example_input_vcf() -> Path:
-    return HERE.joinpath("examples/grch38_vep95_50_variants.vcf.gz")
+def example_input_vcf(test_root) -> Path:
+    return test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz")

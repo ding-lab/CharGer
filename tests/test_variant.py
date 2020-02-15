@@ -1,10 +1,6 @@
-from pathlib import Path
-
 import pytest
 
 from charger.variant import Variant, limit_seq_display
-
-HERE = Path(__file__).parent
 
 
 @pytest.fixture()
@@ -56,28 +52,29 @@ def test_variant_is_deletion(snp, insertion, deletion, sv):
 
 
 @pytest.fixture(scope="module")
-def grch37_vep85_annotated_variants():
+def grch37_vep85_annotated_variants(test_root):
     return list(
         Variant.read_vcf(
-            HERE / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
+            test_root / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
         )
     )
 
 
 @pytest.fixture(scope="module")
-def grch38_vep95_annotated_variants():
+def grch38_vep95_annotated_variants(test_root):
     return list(
         Variant.read_vcf(
-            HERE.joinpath("examples/grch38_vep95_50_variants.vcf.gz"), parse_csq=True,
+            test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz"),
+            parse_csq=True,
         )
     )
 
 
 @pytest.fixture(scope="module")
-def grch38_vep95_annotated_variants_info_fixed():
+def grch38_vep95_annotated_variants_info_fixed(test_root):
     return list(
         Variant.read_vcf(
-            HERE.joinpath("examples/grch38_vep95_50_variants.info_fixed.vcf.gz"),
+            test_root.joinpath("examples/grch38_vep95_50_variants.info_fixed.vcf.gz"),
             parse_csq=True,
         )
     )
@@ -92,8 +89,8 @@ def grch38_vep95_annotated_variants_info_fixed():
         ("examples/grch37_vep85_5_variants.vcf", 85),
     ],
 )
-def test_read_vcf_detect_vep_version(caplog, vcf_pth, vep_ver):
-    reader = Variant.read_vcf(HERE.joinpath(vcf_pth), parse_csq=True)
+def test_read_vcf_detect_vep_version(test_root, caplog, vcf_pth, vep_ver):
+    reader = Variant.read_vcf(test_root.joinpath(vcf_pth), parse_csq=True)
     next(reader)
     assert f"VEP version {vep_ver}" in caplog.text
 
