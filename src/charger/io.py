@@ -26,6 +26,20 @@ def read_tsv(
     When `as_dict` is `True`, return each row as a `dict` mapping from the column name to the corresponding value
     using :py:class:`csv.DictReader`. `columns` will be used as the column names. If `columns` is omitted, the first
     row will be treated as the column names.
+
+    Examples:
+
+        >>> tsv_pth = Path('inheritance_gene_list.tsv.gz')
+        >>> reader = read_tsv(tsv_pth)
+        >>> header = next(reader); header
+        ['gene', 'disease', 'modes_of_inheritance']
+        >>> row = next(reader); row[-1]
+        'autosomal recessive, autosomal dominant'
+
+        >>> reader = read_tsv(tsv_pth, as_dict=True)
+        >>> row_d = next(reader)
+        >>> row_d['gene']
+        'SDHA'
     """
     if path.suffix == ".gz":
         file_obj = gzip.open(path, "rt")
