@@ -19,21 +19,28 @@ For python3.8, one needs to build the cyvcf2 manually from source:
 
     charger -h
 
+Visit CharGer's documentations for its detailed usage.
+
+
 ## Development
-Run all the tests and type checks by:
 
-    pytest -v
-    mypy --pretty src
+### Pass tests before commit
+Style checks are enforced before any git commit (after running `pre-commit install` once).
+To run the style checks at any time, run the following command:
 
-Style checks are enforced before any git commit using pre-commit. Run the style checks at any time by:
-
-    pre-commit -a
+    pre-commit run -a
 
 Otherwise, run the style checks manually by:
 
     isort               # Sort the import order
     black src tests     # Format the code
     flake8              # Check coding style
+
+Functional tests and type checks are not run automatically for every commit,
+but it's recommended to run and pass all the tests and type checks by:
+
+    pytest -v
+    mypy --pretty src
 
 The repo should always pass all the tests described above.
 
