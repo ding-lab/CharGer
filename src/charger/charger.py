@@ -78,7 +78,18 @@ class CharGer:
             raise ValueError(f"No input file is given in the config")
 
         logger.info(f"Read input VCF from {self.config.input}")
-        self.input_variants = list(Variant.read_vcf(self.config.input, parse_csq=True))
+        # TODO: Skip variants with filter, or with high allele frequency
+        # num_skipped_variants: Dict[str, int] = {"has_filter": 0}
+        for variant in Variant.read_vcf(self.config.input, parse_csq=True):
+            # # Skip the variant with filter (not PASS)
+            # if variant.filter:
+            #     logger.warning(
+            #         f"{variant} has filter {','.join(variant.filter)}. Skipped"
+            #     )
+            #     num_skipped_variants["has_filter"] += 1
+            #     continue
+            self.input_variants.append(variant)
+
         logger.info(
             f"Read total {len(self.input_variants)} variants from the input VCF"
         )
