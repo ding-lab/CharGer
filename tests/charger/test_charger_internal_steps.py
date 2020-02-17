@@ -29,3 +29,16 @@ def test_read_inheritance_gene_list(grch38):
         grch38.inheritance_genes["TERT"]
         == VariantInheritanceMode.AUTO_DOMINANT | VariantInheritanceMode.AUTO_RECESSIVE
     )
+
+
+def test_read_inheritance_gene_list_disease_specific(test_root):
+    charger = CharGer(
+        CharGerConfig(
+            disease_specific=True,
+            inheritance_gene_list=test_root.joinpath(
+                "examples/annotations/inheritance_gene_list.tsv.gz"
+            ),
+        )
+    )
+    with pytest.raises(NotImplementedError):
+        charger._read_inheritance_gene_list()
