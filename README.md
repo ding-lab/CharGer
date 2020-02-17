@@ -88,3 +88,34 @@ Set up the the debug configuration `.vscode/launch.json`:
     ]
 }
 ```
+
+Set up the documentation build as a task in `.vscode/tasks.json`:
+
+```json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build document",
+            "type": "process",
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            },
+            "command": "${config:python.pythonPath}",
+            "args": ["-m", "sphinx", "-b", "html", ".", "_build"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        }
+    ]
+}
+```
