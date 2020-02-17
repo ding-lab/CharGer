@@ -33,6 +33,9 @@ class CharGer:
         self.input_variants: List[Variant] = []
         """Parsed input variants."""
 
+        self.pathogenic_variants: List[Variant] = []
+        """Known pathogenic variants."""
+
         self.inheritance_genes: Dict[str, Optional[VariantInheritanceMode]] = {}
         """Variant inheritance dominance mode of the genes for PVS1 module."""
 
@@ -61,25 +64,26 @@ class CharGer:
 
         Sequentially it calls:
 
-            1. :meth:`_read_input_vcf`
-            2. :meth:`_read_inheritance_gene_list`
-            3. :meth:`_read_pp2_gene_list`
-            4. :meth:`_read_bp1_gene_list`
+            1. :meth:`_validate_config`
+            2. :meth:`_read_input_variants`
+            3. :meth:`_read_pathogenic_variants`
+            4. :meth:`_read_inheritance_gene_list`
+            5. :meth:`_read_pp2_gene_list`
+            6. :meth:`_read_bp1_gene_list`
         """
         self._validate_config()
-        self._read_input_vcf()
+        self._read_input_variants()
+        self._read_pathogenic_variants()
         self._read_inheritance_gene_list()
         self._read_pp2_gene_list()
         self._read_bp1_gene_list()
 
     def _validate_config(self) -> None:
-        """Validate the configuration.
-
-        This method is automatically called when the `CharGer` object is created."""
+        """Validate the configuration."""
         logger.info(f"Validate the given config")
         logger.debug(f"Given config: {self.config!r}")
 
-    def _read_input_vcf(self) -> None:
+    def _read_input_variants(self) -> None:
         """Read input VCF.
 
         Load :attr:`input_variants` from :attr:`self.config.input <.CharGerConfig.input>`.
@@ -102,6 +106,22 @@ class CharGer:
 
         logger.info(
             f"Read total {len(self.input_variants)} variants from the input VCF"
+        )
+
+    def _read_pathogenic_variants(self) -> None:
+        """Read known pathogenic variants.
+
+        Load :attr:`pathogenic_variants`
+        from :attr:`self.config.pathogenic_variant <.CharGerConfig.pathogenic_variant>`.
+        """
+        if self.config.pathogenic_variant is None:
+            return
+        logger.info(f"Read pathogenic VCF from {self.config.pathogenic_variant}")
+        self.pathogenic_variants = list(
+            Variant.read_vcf(self.config.pathogenic_variant, parse_csq=True)
+        )
+        logger.info(
+            f"Read total {len(self.pathogenic_variants)} pathogenic variants from the VCF"
         )
 
     def _read_inheritance_gene_list(self) -> None:

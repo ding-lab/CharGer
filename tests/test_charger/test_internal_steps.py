@@ -8,9 +8,12 @@ from charger.variant import VariantInheritanceMode
 
 
 @pytest.fixture
-def grch38(test_root):
+def grch38(test_root) -> CharGer:
     config = CharGerConfig(
         input=test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz"),
+        pathogenic_variant=test_root.joinpath(
+            "examples/annotations/grch37_pathogenic_variants.vcf.gz"
+        ),
         inheritance_gene_list=test_root.joinpath(
             "examples/annotations/inheritance_gene_list.tsv.gz"
         ),
@@ -19,9 +22,14 @@ def grch38(test_root):
     return CharGer(config)
 
 
-def test_read_input(grch38: CharGer):
-    grch38._read_input_vcf()
+def test_read_input_variants(grch38: CharGer):
+    grch38._read_input_variants()
     assert len(grch38.input_variants) == 50
+
+
+def test_read_pathogenic_variants(grch38: CharGer):
+    grch38._read_pathogenic_variants()
+    assert len(grch38.pathogenic_variants) == 1819
 
 
 def test_read_inheritance_gene_list(grch38: CharGer):

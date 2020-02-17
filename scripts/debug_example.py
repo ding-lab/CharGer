@@ -8,7 +8,10 @@ REPO_ROOT = Path(__file__).parent.parent
 
 setup_logger()
 config = CharGerConfig(
-    input=REPO_ROOT.joinpath("tests/examples/grch38_vep95_50_variants.vcf.gz"),
+    input=REPO_ROOT.joinpath("tests/examples/grch37_vep85_5_variants.vcf"),
+    pathogenic_variant=REPO_ROOT.joinpath(
+        "tests/examples/annotations/grch37_pathogenic_variants.vcf.gz"
+    ),
     inheritance_gene_list=REPO_ROOT.joinpath(
         "tests/examples/annotations/inheritance_gene_list.tsv.gz"
     ),
