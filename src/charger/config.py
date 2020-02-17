@@ -80,6 +80,31 @@ class CharGerConfig:
     """Path to the input VCF."""
 
     output: Optional[Path] = None
+    """Path to the CharGer output."""
+
+    hotspot3d_cluster: Optional[Path] = None
+    pathogenic_variant: Optional[Path] = None
+    override_variant_info: bool = False
+    include_vcf_details: bool = False
+
+    # Annotation sources:
+    use_clinvar: bool = False
+    clinvar_src: Optional[Path] = None
+
+    # Thresholds
+    rare_threshold: float = 0.0005
+    common_threshold: float = 0.005
+
+    acmg_module_scores: Dict[str, int] = attr.Factory(_default_acmg_scores.copy)
+    charger_module_scores: Dict[str, int] = attr.Factory(_default_charger_scores.copy)
+
+    # CharGer variant classification thresholds
+    min_pathogenic_score: int = 9
+    min_likely_pathogenic_score: int = 5
+    max_likely_benign_score: int = -4
+    max_benign_score: int = -8
+
+    # ACMG classifcation modules
     disease_specific: bool = False
     """Whether to enable disease specific detection for :attr:`inheritance_gene_list`."""
 
@@ -105,29 +130,16 @@ class CharGerConfig:
         NF1   | Neurofibroma | autosomal dominant
     """
 
-    hotspot3d_cluster: Optional[Path] = None
-    pathogenic_variant: Optional[Path] = None
-    override_variant_info: bool = False
-    include_vcf_details: bool = False
-
-    # Annotation sources:
-    use_clinvar: bool = False
-    clinvar_src: Optional[Path] = None
-
-    # Thresholds
-    rare_threshold: float = 0.0005
-    common_threshold: float = 0.005
-
-    acmg_module_scores: Dict[str, int] = attr.Factory(_default_acmg_scores.copy)
-    charger_module_scores: Dict[str, int] = attr.Factory(_default_charger_scores.copy)
-
-    # CharGer variant classification thresholds
-    min_pathogenic_score: int = 9
-    min_likely_pathogenic_score: int = 5
-    max_likely_benign_score: int = -4
-    max_benign_score: int = -8
-
-    # ACMG classifcation modules
     PP2_gene_list: Optional[Path] = None
+    """Path to the list of genes for PP2 module.
+
+    The given file has one gene symbol per line.
+    """
+
+    BP1_gene_list: Optional[Path] = None
+    """Path to the list of genes for BP1 module.
+
+    The given file has one gene symbol per line.
+    """
 
     # CharGer classification modules

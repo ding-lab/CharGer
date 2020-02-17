@@ -60,3 +60,13 @@ read_csv.__doc__ = """
 
     See :func:`read_tsv` for its usage.
     """
+
+
+def read_lines(path: Path) -> List[str]:
+    """Read a plain-text or gzip compressed text per line."""
+    if path.suffix == ".gz":
+        file_obj = gzip.open(path, "rt")
+    else:
+        file_obj = open(path, "rt")
+    with closing(file_obj) as f:
+        return f.read().splitlines()

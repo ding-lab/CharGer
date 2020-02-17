@@ -14,6 +14,7 @@ def grch38(test_root):
         inheritance_gene_list=test_root.joinpath(
             "examples/annotations/inheritance_gene_list.tsv.gz"
         ),
+        PP2_gene_list=test_root.joinpath("examples/annotations/pp2_gene_list.txt.gz"),
     )
     return CharGer(config)
 
@@ -50,3 +51,10 @@ def test_read_inheritance_gene_list_disease_specific(test_root: Path):
     )
     with pytest.raises(NotImplementedError):
         charger._read_inheritance_gene_list()
+
+
+def test_read_pp2_gene_list(grch38: CharGer):
+    grch38._read_pp2_gene_list()
+    assert len(grch38.pp2_genes) == 152
+    assert "RET" in grch38.pp2_genes
+    assert "BRCA1" in grch38.pp2_genes

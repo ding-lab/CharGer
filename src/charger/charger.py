@@ -1,11 +1,11 @@
 from enum import Enum, auto
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from loguru import logger
 from typing_extensions import Final
 
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
-from .io import read_tsv
+from .io import read_lines, read_tsv
 from .variant import Variant, VariantInheritanceMode
 
 logger.disable("charger")  # Disable emit logs by default
@@ -34,7 +34,13 @@ class CharGer:
         """Parsed input variants."""
 
         self.inheritance_genes: Dict[str, Optional[VariantInheritanceMode]] = {}
-        """Given variant inheritance dominance mode of the genes."""
+        """Variant inheritance dominance mode of the genes for PVS1 module."""
+
+        self.pp2_genes: Set[str] = set()
+        """Genes marked for PP2 module."""
+
+        self.bp1_genes: Set[str] = set()
+        """Genes marked for BP1 module."""
 
         self._acmg_module_availability: Dict[str, ModuleAvailability] = {
             m: ModuleAvailability.ACTIVE
@@ -57,10 +63,14 @@ class CharGer:
 
             1. :meth:`_read_input_vcf`
             2. :meth:`_read_inheritance_gene_list`
+            3. :meth:`_read_pp2_gene_list`
+            4. :meth:`_read_bp1_gene_list`
         """
         self._validate_config()
         self._read_input_vcf()
         self._read_inheritance_gene_list()
+        self._read_pp2_gene_list()
+        self._read_bp1_gene_list()
 
     def _validate_config(self) -> None:
         """Validate the configuration.
@@ -128,6 +138,48 @@ class CharGer:
             modes = VariantInheritanceMode.parse(modes_of_inheritance)
             self.inheritance_genes[gene] = modes
         logger.info(f"Loaded inheritance mode of {len(self.inheritance_genes)} genes")
+
+    def _read_pp2_gene_list(self) -> None:
+        """Read gene list for PP2 module.
+
+        Load :attr:`pp2_genes`
+        from :attr:`self.config.PP2_gene_list <.CharGerConfig.PP2_gene_list>`.
+        Skip PP2 module if not provided.
+        """
+        gene_list_pth = self.config.PP2_gene_list
+        # Disable PP2 module if no list is provided
+        if gene_list_pth is None:
+            logger.warning(
+                "CharGer cannot make PP2 calls without the given gene list. "
+                "Disable PP2 module"
+            )
+            self._acmg_module_availability["PP2"] = ModuleAvailability.INVALID_SETUP
+            return
+
+        logger.info(f"Read PP2 gene list from {gene_list_pth}")
+        self.pp2_genes = set(l.strip() for l in read_lines(gene_list_pth))
+        logger.info(f"Marked {len(self.pp2_genes)} genes for PP2")
+
+    def _read_bp1_gene_list(self) -> None:
+        """Read gene list for BP1 module.
+
+        Load :attr:`bp1_genes`
+        from :attr:`self.config.BP1_gene_list <.CharGerConfig.PP2_gene_list>`.
+        Skip PP2 module if not provided.
+        """
+        gene_list_pth = self.config.BP1_gene_list
+        # Disable BP1 module if no list is provided
+        if gene_list_pth is None:
+            logger.warning(
+                "CharGer cannot make BP1 calls without the given gene list. "
+                "Disable BP1 module"
+            )
+            self._acmg_module_availability["BP1"] = ModuleAvailability.INVALID_SETUP
+            return
+
+        logger.info(f"Read BP1 gene list from {gene_list_pth}")
+        self.bp1_genes = set(l.strip() for l in read_lines(gene_list_pth))
+        logger.info(f"Marked {len(self.bp1_genes)} genes for BP1")
 
 
 class ModuleAvailability(Enum):

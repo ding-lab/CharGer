@@ -12,6 +12,7 @@ config = CharGerConfig(
     inheritance_gene_list=REPO_ROOT.joinpath(
         "tests/examples/annotations/inheritance_gene_list.tsv.gz"
     ),
+    PP2_gene_list=REPO_ROOT.joinpath("tests/examples/annotations/pp2_gene_list.txt.gz"),
 )
 charger = CharGer(config)
 charger.setup()

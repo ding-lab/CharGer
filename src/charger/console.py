@@ -96,6 +96,12 @@ def create_console_parser() -> argparse.ArgumentParser:
         help="Path to PP2 gene list (list of gene symbols)",
     )
     acmg_grp.add_argument(
+        "--BP1-gene-list",
+        type=PathType(exists=True),
+        metavar="TXT",
+        help="Path to BP1 gene list (list of gene symbols)",
+    )
+    acmg_grp.add_argument(
         "--override-acmg-score",
         metavar="'MODULE=SCORE MODULE=SCORE ...'",
         type=ModuleScoreOverrideType(defaults=defaults.acmg_module_scores),
