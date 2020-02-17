@@ -56,7 +56,7 @@ class CharGer:
         Sequentially it calls:
 
             1. :py:meth:`_read_input_vcf`
-            2. :py:meth`_read_inheritance_gene_list`
+            2. :py:meth:`_read_inheritance_gene_list`
         """
         self._validate_config()
         self._read_input_vcf()
