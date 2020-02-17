@@ -54,10 +54,13 @@ And the documentation will be available under `docs/_build/html`.
 
 
 ### Developing using VS Code
-The following VSCode workspace settings will run black, mypy and flake8 at every file save:
+Set up the workspace settings `.vscode/settings.json`:
 
 ```json
 {
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/src/",
+    ],
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
     "editor.wordWrapColumn": 120,
@@ -68,5 +71,20 @@ The following VSCode workspace settings will run black, mypy and flake8 at every
     "python.testing.pytestArgs": ["-o", "junit_family=xunit1"],
 }
 ```
+VS Code will run black, mypy and flake8 at every file save.
 
+Set up the the debug configuration `.vscode/launch.json`:
 
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run CharGer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/debug_example.py"
+        }
+    ]
+}
+```
