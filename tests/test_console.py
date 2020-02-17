@@ -26,7 +26,7 @@ def test_default_config(default_config, required_args):
     assert config_d == default_config_d
 
 
-def test_console_score_override(required_args):
+def test_console_score_override(required_args, caplog):
     config = parse_console(
         required_args
         + [
@@ -38,6 +38,8 @@ def test_console_score_override(required_args):
     assert config.acmg_module_scores["PS2"] == 3
     assert config.charger_module_scores["PSC1"] == 5
     assert config.charger_module_scores["PMC1"] == 3
+    assert "Console parameters:" in caplog.text
+    assert "--override-acmg-score=PS1=9 PS2=3" in caplog.text
 
 
 def test_console_score_override_invalid_module(required_args):

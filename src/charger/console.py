@@ -176,19 +176,16 @@ def create_console_parser() -> argparse.ArgumentParser:
 def parse_console(args=None) -> CharGerConfig:
     """Create a CharGerConfig object based on the commandline arguments."""
     parser = create_console_parser()
-    console_parameters = " ".join(map(quote, sys.argv[1:]))
+    console_parameters = " ".join(map(quote, args or sys.argv[1:]))
     logger.info(f"Console parameters: {console_parameters}")
     config = parser.parse_args(args, namespace=CharGerConfig())
     return config
 
 
-def run() -> None:
-    """Entry point of the program.
-
-    When user runs ``charger``, the script calls this function.
-    """
-    # Set up stderr logging format
+def setup_logger() -> None:
+    """Set up stderr logging format."""
     logger.remove()  # Remove the default setting
+
     # Set up the preferred logging colors and format unless overridden by its environment variable
     logger.level("INFO", color=environ.get("LOGURU_INFO_COLOR") or "<white>")
     logger.level("DEBUG", color=environ.get("LOGURU_DEBUG_COLOR") or "<d><white>")
@@ -201,6 +198,14 @@ def run() -> None:
 
     # By default all the logging messages are disabled
     logger.enable("charger")
+
+
+def run() -> None:
+    """Entry point of the program.
+
+    When user runs ``charger``, the script calls this function.
+    """
+    setup_logger()
     config = parse_console()
     charger = CharGer(config)
     charger.setup()
