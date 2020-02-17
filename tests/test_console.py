@@ -6,7 +6,8 @@ from charger.console import create_console_parser, parse_console
 
 
 @pytest.fixture
-def required_args(example_input_vcf):
+def required_args(test_root):
+    example_input_vcf = test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz")
     return [f"--input={example_input_vcf}"]
 
 
