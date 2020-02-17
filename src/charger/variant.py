@@ -22,7 +22,7 @@ class Variant:
     """
     Biallelic variant.
 
-    For normal usage, consider using :py:meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
+    For normal usage, consider using :meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
 
     Examples:
 
@@ -60,7 +60,7 @@ class Variant:
     parsed_csq: Optional[List["CSQ"]] = None
     """
     Store list of parsed CSQ annotation per feature(transcript) of the variant.
-    Use :py:meth:`read_vcf(parse_csq=True) <read_vcf>` to automatically parse CSQ
+    Use :meth:`read_vcf(parse_csq=True) <read_vcf>` to automatically parse CSQ
     while reading an annotated VCF.
     """
 
@@ -140,7 +140,7 @@ class Variant:
     def from_cyvcf2(cls: Type[V], variant: CyVCF2Variant) -> V:
         """
         Create one Variant object based on the given
-        :py:class:`cyvcf2.Variant <cyvcf2.cyvcf2.Variant>` VCF record.
+        :class:`cyvcf2.Variant <cyvcf2.cyvcf2.Variant>` VCF record.
         """
         return cls(
             chrom=variant.CHROM,
@@ -195,14 +195,14 @@ class Variant:
         Create one object per VCF record from `path`.
 
         This function walks through each variant record in the given VCF
-        using :py:class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`,
-        and yields the record as a :py:class:`Variant` object.
+        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`,
+        and yields the record as a :class:`Variant` object.
 
         Args:
             path: Path to the VCF.
             parse_csq: whether to parse the VEP annotated CSQ annotations.
                 If `True`, the parsed CSQ will be stored in the generated
-                :py:attr:`Variant.parsed_csq`.
+                :attr:`Variant.parsed_csq`.
 
         Returns:
             An generator walking through all variants per record.
@@ -238,8 +238,8 @@ class CSQ(UserDict):
     """
     Consequence of a variant. Access each CSQ field like a `dict`.
 
-    The class is used to set the annotation records in a :py:class:`Variant` object.
-    List of CSQ per feature will be stored at :py:attr:`Variant.parsed_csq`.
+    The class is used to set the annotation records in a :class:`Variant` object.
+    List of CSQ per feature will be stored at :attr:`Variant.parsed_csq`.
 
     Examples:
 
@@ -313,7 +313,7 @@ def limit_seq_display(seq: str, limit: int = 5) -> str:
 class VariantInheritanceMode(Flag):
     """The possible modes of the variant inheritance dominance.
 
-    Used by :py:attr:`~charger.config.CharGerConfig.inheritance_gene_list`."""
+    Used by :attr:`~charger.config.CharGerConfig.inheritance_gene_list`."""
 
     AUTO_DOMINANT = auto()
     AUTO_RECESSIVE = auto()

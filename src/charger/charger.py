@@ -17,7 +17,7 @@ class CharGer:
 
     Args:
         config: CharGer's configurations.
-            See :py:class:`~charger.config.CharGerConfig` for details to set it up.
+            See :class:`~charger.config.CharGerConfig` for details to set it up.
 
     Example:
 
@@ -28,7 +28,7 @@ class CharGer:
 
     def __init__(self, config: CharGerConfig):
         self.config: Final[CharGerConfig] = config
-        """Configuration as a :py:class:`~charger.config.CharGerConfig` object."""
+        """Configuration as a :class:`~charger.config.CharGerConfig` object."""
 
         self.input_variants: List[Variant] = []
         """Parsed input variants."""
@@ -55,8 +55,8 @@ class CharGer:
 
         Sequentially it calls:
 
-            1. :py:meth:`_read_input_vcf`
-            2. :py:meth:`_read_inheritance_gene_list`
+            1. :meth:`_read_input_vcf`
+            2. :meth:`_read_inheritance_gene_list`
         """
         self._validate_config()
         self._read_input_vcf()
@@ -72,7 +72,7 @@ class CharGer:
     def _read_input_vcf(self) -> None:
         """Read input VCF.
 
-        Input VCF is read from :py:attr:`.CharGerConfig.input`.
+        Input VCF is read from :attr:`.CharGerConfig.input`.
         """
         if self.config.input is None:
             raise ValueError(f"No input file is given in the config")
@@ -117,7 +117,7 @@ class CharGer:
 class ModuleAvailability(Enum):
     """Availability of the ACMG and CharGer modules.
 
-    Used by :py:attr:`CharGer._acmg_module_availability` and :py:attr:`CharGer._charger_module_availability`
+    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`
     """
 
     ACTIVE = auto()

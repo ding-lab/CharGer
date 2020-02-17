@@ -81,7 +81,7 @@ class CharGerConfig:
 
     output: Optional[Path] = None
     disease_specific: bool = False
-    """Whether to enable disease specific detection for :py:attr:`inheritance_gene_list`."""
+    """Whether to enable disease specific detection for :attr:`inheritance_gene_list`."""
 
     inheritance_gene_list: Optional[Path] = None
     """Path to a TSV table of inheritance genes.

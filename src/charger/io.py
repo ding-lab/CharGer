@@ -7,7 +7,7 @@ from typing import Dict, Iterator, List, Union
 
 
 class unix_tab(csv.excel):
-    """The :py:class:`csv.Dialect` to read TSV."""
+    """The :class:`csv.Dialect` to read TSV."""
 
     delimiter = "\t"
     lineterminator = "\n"
@@ -21,11 +21,13 @@ def read_tsv(
 ) -> Union[Iterator[List[str]], Iterator[Dict[str, str]]]:
     """Read a plain-text or gzip compressed TSV table.
 
-    When `as_dict` is False, return each row as a list using :py:func:`csv.reader`.
+    When `as_dict` is `False`, return each row as a list using :func:`csv.reader`.
 
     When `as_dict` is `True`, return each row as a `dict` mapping from the column name to the corresponding value
-    using :py:class:`csv.DictReader`. `columns` will be used as the column names. If `columns` is omitted, the first
+    using :class:`csv.DictReader`. `columns` will be used as the column names. If `columns` is omitted, the first
     row will be treated as the column names.
+
+    Additional arguments ``kwargs`` are passed to the underlying function.
 
     Examples:
 
@@ -56,5 +58,5 @@ read_csv = functools.partial(read_tsv, dialect="excel")
 read_csv.__doc__ = """
     Read a plain-text or gzip compressed CSV table.
 
-    See :py:func:`read_tsv` for its usage.
+    See :func:`read_tsv` for its usage.
     """
