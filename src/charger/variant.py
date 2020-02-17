@@ -1,6 +1,7 @@
 import re
 from collections import UserDict
 from contextlib import closing
+from enum import Flag, auto
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar, Union
 
@@ -307,3 +308,59 @@ def limit_seq_display(seq: str, limit: int = 5) -> str:
     if len(seq) > limit:
         seq = seq[:limit] + "…"
     return seq
+
+
+class VariantInheritanceMode(Flag):
+    """The possible modes of the variant inheritance dominance.
+
+    Used by :py:attr:`~charger.config.CharGerConfig.inheritance_gene_list`."""
+
+    AUTO_DOMINANT = auto()
+    AUTO_RECESSIVE = auto()
+    X_LINKED_DOMINANT = auto()
+    X_LINKED_RECESSIVE = auto()
+    Y_LINKED = auto()
+
+    @classmethod
+    def parse(
+        cls: Type["VariantInheritanceMode"], value: str
+    ) -> Optional["VariantInheritanceMode"]:
+        """Parse the inheritance modes from the given string. Multiple modes are separated by ``,``.
+
+        >>> m = VariantInheritanceMode.parse("autosomal dominant, autosomal recessive")
+        >>> m
+        <VariantInheritanceMode.AUTO_RECESSIVE|AUTO_DOMINANT: 3>
+
+        >>> bool(m & VariantInheritanceMode.AUTO_RECESSIVE)
+        True
+        >>> bool(m & VariantInheritanceMode.Y_LINKED)
+        False
+        """
+        MODE_TO_FLAG = {
+            "autosomal dominant": cls.AUTO_DOMINANT,
+            "autosomal recessive": cls.AUTO_RECESSIVE,
+            "x-linked dominant": cls.X_LINKED_DOMINANT,
+            "x-linked recessive": cls.X_LINKED_RECESSIVE,
+            "y-linked": cls.Y_LINKED,
+        }
+        mode_flags = []
+        # Convert the input value to be lower case only
+        for mode in value.lower().split(","):
+            mode = mode.strip()
+            if mode == "unknown":
+                # Unknown has no flag
+                continue
+            try:
+                mode_flags.append(MODE_TO_FLAG[mode])
+            except KeyError as e:
+                raise ValueError(
+                    f"Invalid variant inheritance mode {mode} from {value}"
+                ) from e
+        if mode_flags:
+            # Combined all the flags
+            combined_mode = mode_flags[0]
+            for flag in mode_flags[1:]:
+                combined_mode |= flag
+            return combined_mode
+        else:
+            return None

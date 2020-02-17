@@ -1,6 +1,6 @@
 import pytest
 
-from charger.variant import Variant, limit_seq_display
+from charger.variant import Variant, VariantInheritanceMode, limit_seq_display
 
 
 @pytest.fixture()
@@ -161,3 +161,24 @@ def test_limit_seq_display():
     assert limit_seq_display("ATATCCG") == "ATATC…"
     assert limit_seq_display("ATA") == "ATA"
     assert limit_seq_display("ATA", limit=1) == "A…"
+
+
+def test_variantinheritancemode_parse():
+    assert (
+        VariantInheritanceMode.parse("X-linked recessive")
+        == VariantInheritanceMode.X_LINKED_RECESSIVE
+    )
+
+    m = VariantInheritanceMode.parse("autosomal recessive, autosomal dominant, unknown")
+    assert m & (
+        VariantInheritanceMode.AUTO_DOMINANT | VariantInheritanceMode.AUTO_RECESSIVE
+    )
+    assert not m & VariantInheritanceMode.X_LINKED_DOMINANT
+
+
+def test_variantinheritance_parse_invalid():
+    with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
+        VariantInheritanceMode.parse("y-linked recessive")
+
+    with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
+        VariantInheritanceMode.parse("autosomal recessive, y-linked recessive")
