@@ -1,6 +1,6 @@
 import pytest
 
-from charger.charger import CharGer
+from charger.charger import CharGer, ModuleAvailability
 from charger.config import CharGerConfig
 from charger.variant import VariantInheritanceMode
 
@@ -29,6 +29,12 @@ def test_read_inheritance_gene_list(grch38):
         grch38.inheritance_genes["TERT"]
         == VariantInheritanceMode.AUTO_DOMINANT | VariantInheritanceMode.AUTO_RECESSIVE
     )
+
+
+def test_no_inheritance_gene_list(grch38):
+    grch38.config.inheritance_gene_list = None
+    grch38._read_inheritance_gene_list()
+    assert grch38._acmg_module_availability["PVS1"] is ModuleAvailability.INVALID_SETUP
 
 
 def test_read_inheritance_gene_list_disease_specific(test_root):
