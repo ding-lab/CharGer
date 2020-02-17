@@ -58,9 +58,7 @@ Set up the workspace settings `.vscode/settings.json`:
 
 ```json
 {
-    "python.autoComplete.extraPaths": [
-        "${workspaceFolder}/src/",
-    ],
+    "python.autoComplete.extraPaths": ["src"],
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
     "editor.wordWrapColumn": 120,
