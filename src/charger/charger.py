@@ -164,8 +164,8 @@ class CharGer:
         """Read gene list for BP1 module.
 
         Load :attr:`bp1_genes`
-        from :attr:`self.config.BP1_gene_list <.CharGerConfig.PP2_gene_list>`.
-        Skip PP2 module if not provided.
+        from :attr:`self.config.BP1_gene_list <.CharGerConfig.BP1_gene_list>`.
+        Skip BP1 module if not provided.
         """
         gene_list_pth = self.config.BP1_gene_list
         # Disable BP1 module if no list is provided
