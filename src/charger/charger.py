@@ -19,7 +19,7 @@ class CharGer:
         config: CharGer's configurations.
             See :class:`~charger.config.CharGerConfig` for details to set it up.
 
-    Example:
+    Examples:
 
         >>> config = CharGerConfig(...)
         >>> charger = CharGer()
@@ -48,7 +48,7 @@ class CharGer:
             for module_type, modules in CHARGER_MODULES.items()
             for m in modules
         }
-        """The availability of all CharGer modules. By default all modules are active"""
+        """The availability of all CharGer modules. By default all modules are active."""
 
     def setup(self) -> None:
         """Setup all the intput data and annotation.
@@ -65,14 +65,14 @@ class CharGer:
     def _validate_config(self) -> None:
         """Validate the configuration.
 
-        This method is automatically called when CharGer is created."""
+        This method is automatically called when the `CharGer` object is created."""
         logger.info(f"Validate the given config")
         logger.debug(f"Given config: {self.config!r}")
 
     def _read_input_vcf(self) -> None:
         """Read input VCF.
 
-        Input VCF is read from :attr:`.CharGerConfig.input`.
+        Load :attr:`input_variants` from :attr:`self.config.input <.CharGerConfig.input>`.
         """
         if self.config.input is None:
             raise ValueError(f"No input file is given in the config")
@@ -84,7 +84,12 @@ class CharGer:
         )
 
     def _read_inheritance_gene_list(self) -> None:
-        """Read inheritance gene list"""
+        """Read inheritance gene list for PVS1 module.
+
+        Load :attr:`inheritance_genes`
+        from :attr:`self.config.inheritance_gene_list <.CharGerConfig.inheritance_gene_list>`.
+        Skip PVS1 module if it's not provided.
+        """
         tsv_pth = self.config.inheritance_gene_list
         # Disable PVS1 module if no list is provided
         if tsv_pth is None:
@@ -117,7 +122,14 @@ class CharGer:
 class ModuleAvailability(Enum):
     """Availability of the ACMG and CharGer modules.
 
-    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`
+    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`.
+
+    Examples:
+
+        Skip PVS1 module by:
+
+        >>> charger = CharGer(CharGerConfig())
+        >>> charger._acmg_module_availability = ModuleAvailability.USER_DISABLED
     """
 
     ACTIVE = auto()
