@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 
 import pytest
-from _pytest.logging import caplog as _caplog  # noqa: F401
+from _pytest.logging import caplog as _caplog  # type: ignore # noqa: F401
 from loguru import logger
 
 from charger.config import CharGerConfig

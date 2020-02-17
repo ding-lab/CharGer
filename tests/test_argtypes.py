@@ -1,4 +1,6 @@
 import argparse
+from pathlib import Path
+from typing import Dict
 
 import pytest
 
@@ -24,7 +26,7 @@ def example_folder(tmp_path):
     }
 
 
-def test_pathtype_must_exist(example_folder):
+def test_pathtype_must_exist(example_folder: Dict[str, Dict[str, Path]]):
     MustExistPathType = PathType(exists=True)
     for pthtype, pth in example_folder["exist"].items():
         assert MustExistPathType(str(pth)) == pth
@@ -36,7 +38,7 @@ def test_pathtype_must_exist(example_folder):
         assert str(pth) in excinfo.value.args[0]
 
 
-def test_pathtype_must_not_exist(example_folder):
+def test_pathtype_must_not_exist(example_folder: Dict[str, Dict[str, Path]]):
     MustNotExistPathType = PathType(exists=False)
     for pthtype, pth in example_folder["not_exist"].items():
         assert MustNotExistPathType(str(pth)) == pth
@@ -48,7 +50,7 @@ def test_pathtype_must_not_exist(example_folder):
         assert str(pth) in excinfo.value.args[0]
 
 
-def test_pathtype_type_requirement(example_folder):
+def test_pathtype_type_requirement(example_folder: Dict[str, Dict[str, Path]]):
     FileOnlyPathType = PathType(type="file", exists=True)
     DirOnlyPathType = PathType(type="dir", exists=True)
     exist_paths = example_folder["exist"]
@@ -66,7 +68,7 @@ def test_pathtype_type_requirement(example_folder):
     assert excinfo.value.args[0].startswith("Path is not a dir")
 
 
-def test_pathtype_invalid_type(example_folder):
+def test_pathtype_invalid_type(example_folder: Dict[str, Dict[str, Path]]):
     PipeOnlyPathType = PathType(type="pipe")
     with pytest.raises(ValueError):
         PipeOnlyPathType(str(example_folder["exist"]["folder"]))
@@ -74,7 +76,7 @@ def test_pathtype_invalid_type(example_folder):
         PipeOnlyPathType(str(example_folder["exist"]["file"]))
 
 
-def test_pathtype_custom_type(example_folder):
+def test_pathtype_custom_type(example_folder: Dict[str, Dict[str, Path]]):
     TxtPathType = PathType(type=lambda p: p.suffix == ".txt")
     exist_txt_pth = example_folder["exist"]["file"]
     notexist_txt_pth = example_folder["exist"]["folder"] / "new.txt"
@@ -83,11 +85,11 @@ def test_pathtype_custom_type(example_folder):
     assert TxtPathType(str(notexist_txt_pth)) == notexist_txt_pth
 
     with pytest.raises(argparse.ArgumentTypeError) as excinfo:
-        TxtPathType(example_folder["not_exist"]["file"])
+        TxtPathType(str(example_folder["not_exist"]["file"]))
     assert excinfo.value.args[0].startswith("Path is invalid")
 
 
-def test_pathtype_custom_type_must_exist(example_folder):
+def test_pathtype_custom_type_must_exist(example_folder: Dict[str, Dict[str, Path]]):
     TxtPathType = PathType(exists=True, type=lambda p: p.suffix == ".txt")
     exist_txt_pth = example_folder["exist"]["file"]
     notexist_txt_pth = example_folder["exist"]["folder"] / "new.txt"
@@ -103,18 +105,20 @@ def override_score():
     return ModuleScoreOverrideType(defaults={"A": 0, "B": 10})
 
 
-def test_modulescoreoverridetype(override_score):
+def test_modulescoreoverridetype(override_score: ModuleScoreOverrideType):
     scores = override_score("A=3 B=10")
     assert scores["A"] == 3
     assert scores["B"] == 10
 
 
-def test_modulescoreoverridetype_invalid_module(override_score):
+def test_modulescoreoverridetype_invalid_module(
+    override_score: ModuleScoreOverrideType,
+):
     with pytest.raises(argparse.ArgumentTypeError, match="Module does not exist: PPAP"):
         override_score("A=10 PPAP=999")
 
 
-def test_modulescoreoverridetype_invalid_score(override_score):
+def test_modulescoreoverridetype_invalid_score(override_score: ModuleScoreOverrideType):
     with pytest.raises(
         argparse.ArgumentTypeError, match="New score of module A is not an integer:"
     ):

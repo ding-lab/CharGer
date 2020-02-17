@@ -1,3 +1,5 @@
+from typing import List
+
 import attr
 import pytest
 
@@ -11,7 +13,7 @@ def required_args(test_root):
     return [f"--input={example_input_vcf}"]
 
 
-def test_default_config(default_config, required_args):
+def test_default_config(default_config: CharGerConfig, required_args: List[str]):
     # Make sure we can launch CharGer with default settings
     parser = create_console_parser()
     config = parser.parse_args(required_args, namespace=CharGerConfig())
@@ -26,7 +28,7 @@ def test_default_config(default_config, required_args):
     assert config_d == default_config_d
 
 
-def test_console_score_override(required_args, caplog):
+def test_console_score_override(required_args: List[str], caplog):
     config = parse_console(
         required_args
         + [
@@ -42,7 +44,7 @@ def test_console_score_override(required_args, caplog):
     assert "--override-acmg-score=PS1=9 PS2=3" in caplog.text
 
 
-def test_console_score_override_invalid_module(required_args):
+def test_console_score_override_invalid_module(required_args: List[str]):
     with pytest.raises(SystemExit) as excinfo:
         parse_console(required_args + ["--override-acmg-score=PPAP=999"])
         assert "Module does not exist: PPAP" in excinfo.value.message

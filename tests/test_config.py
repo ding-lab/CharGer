@@ -1,7 +1,7 @@
 from charger.config import CharGerConfig
 
 
-def test_empty_config_creation():
+def test_empty_config_creation() -> None:
     # Make sure we can always create an empty config
     config = CharGerConfig()
     assert config.input is None
@@ -10,7 +10,7 @@ def test_empty_config_creation():
     assert config.charger_module_scores["BSC1"] == -6
 
 
-def test_config_module_score_override(default_config: CharGerConfig):
+def test_config_module_score_override(default_config: CharGerConfig) -> None:
     c = CharGerConfig()
     c.acmg_module_scores["PS1"] = 9
     c.charger_module_scores["BSC1"] = -9

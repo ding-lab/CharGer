@@ -40,7 +40,7 @@ Functional tests and type checks are not run automatically for every commit,
 but it's recommended to run and pass all the tests and type checks by:
 
     pytest -v
-    mypy --pretty src
+    mypy --pretty src tests
 
 The repo should always pass all the tests described above.
 
@@ -67,6 +67,7 @@ Set up the workspace settings `.vscode/settings.json`:
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.mypyEnabled": true,
+    "python.linting.mypyArgs": ["--follow-imports=normal", "--show-column-numbers"],
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": ["-o", "junit_family=xunit1"],
 }

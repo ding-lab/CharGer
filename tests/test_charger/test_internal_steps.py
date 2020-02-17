@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from charger.charger import CharGer, ModuleAvailability
@@ -16,12 +18,12 @@ def grch38(test_root):
     return CharGer(config)
 
 
-def test_read_input(grch38):
+def test_read_input(grch38: CharGer):
     grch38._read_input_vcf()
     assert len(grch38.input_variants) == 50
 
 
-def test_read_inheritance_gene_list(grch38):
+def test_read_inheritance_gene_list(grch38: CharGer):
     grch38._read_inheritance_gene_list()
     assert len(grch38.inheritance_genes) == 152
     assert grch38.inheritance_genes["BRCA1"] == VariantInheritanceMode.AUTO_DOMINANT
@@ -31,13 +33,13 @@ def test_read_inheritance_gene_list(grch38):
     )
 
 
-def test_no_inheritance_gene_list(grch38):
+def test_no_inheritance_gene_list(grch38: CharGer):
     grch38.config.inheritance_gene_list = None
     grch38._read_inheritance_gene_list()
     assert grch38._acmg_module_availability["PVS1"] is ModuleAvailability.INVALID_SETUP
 
 
-def test_read_inheritance_gene_list_disease_specific(test_root):
+def test_read_inheritance_gene_list_disease_specific(test_root: Path):
     charger = CharGer(
         CharGerConfig(
             disease_specific=True,

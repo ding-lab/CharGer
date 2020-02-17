@@ -1,50 +1,61 @@
+from pathlib import Path
+from typing import List
+
 import pytest
 
 from charger.variant import Variant, VariantInheritanceMode, limit_seq_display
 
 
 @pytest.fixture()
-def snp(request):
+def snp() -> Variant:
     return Variant("1", 42, 42, "A", "G")
 
 
 @pytest.fixture
-def insertion():
+def insertion() -> Variant:
     return Variant("1", 42, 42, "A", "ATAT")
 
 
 @pytest.fixture
-def deletion():
+def deletion() -> Variant:
     return Variant("1", 42, 44, "ATA", "A")
 
 
 @pytest.fixture
-def sv():
+def sv() -> Variant:
     return Variant("1", 2827693, 2827701, "CCCCTCGCA", "C", info={"SVTYPE": "DEL"})
 
 
-def test_variant_is_snp(snp, insertion, deletion, sv):
+def test_variant_is_snp(
+    snp: Variant, insertion: Variant, deletion: Variant, sv: Variant
+):
     assert snp.is_snp()
     assert not insertion.is_snp()
     assert not deletion.is_snp()
     assert not sv.is_snp()
 
 
-def test_variant_is_sv(snp, insertion, deletion, sv):
+def test_variant_is_sv(
+    snp: Variant, insertion: Variant, deletion: Variant, sv: Variant
+):
     assert not snp.is_sv()
     assert not insertion.is_sv()
     assert not deletion.is_sv()
     assert sv.is_sv()
 
 
-def test_variant_is_indel(snp, insertion, deletion, sv):
+def test_variant_is_indel(
+    snp: Variant, insertion: Variant, deletion: Variant, sv: Variant
+):
     assert not snp.is_indel()
     assert insertion.is_indel()
     assert deletion.is_indel()
     assert not sv.is_indel()
 
 
-def test_variant_is_deletion(snp, insertion, deletion, sv):
+def test_variant_is_deletion(
+    snp: Variant, insertion: Variant, deletion: Variant, sv: Variant
+):
     assert not snp.is_deletion()
     assert not insertion.is_deletion()
     assert deletion.is_deletion()
@@ -52,7 +63,7 @@ def test_variant_is_deletion(snp, insertion, deletion, sv):
 
 
 @pytest.fixture(scope="module")
-def grch37_vep85_annotated_variants(test_root):
+def grch37_vep85_annotated_variants(test_root: Path):
     return list(
         Variant.read_vcf(
             test_root / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
@@ -61,7 +72,7 @@ def grch37_vep85_annotated_variants(test_root):
 
 
 @pytest.fixture(scope="module")
-def grch38_vep95_annotated_variants(test_root):
+def grch38_vep95_annotated_variants(test_root: Path) -> List[Variant]:
     return list(
         Variant.read_vcf(
             test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz"),
@@ -71,7 +82,7 @@ def grch38_vep95_annotated_variants(test_root):
 
 
 @pytest.fixture(scope="module")
-def grch38_vep95_annotated_variants_info_fixed(test_root):
+def grch38_vep95_annotated_variants_info_fixed(test_root: Path) -> List[Variant]:
     return list(
         Variant.read_vcf(
             test_root.joinpath("examples/grch38_vep95_50_variants.info_fixed.vcf.gz"),
@@ -89,13 +100,15 @@ def grch38_vep95_annotated_variants_info_fixed(test_root):
         ("examples/grch37_vep85_5_variants.vcf", 85),
     ],
 )
-def test_read_vcf_detect_vep_version(test_root, caplog, vcf_pth, vep_ver):
+def test_read_vcf_detect_vep_version(
+    test_root: Path, caplog, vcf_pth: Path, vep_ver: int
+):
     reader = Variant.read_vcf(test_root.joinpath(vcf_pth), parse_csq=True)
     next(reader)
     assert f"VEP version {vep_ver}" in caplog.text
 
 
-def test_read_vcf_grch37(grch37_vep85_annotated_variants):
+def test_read_vcf_grch37(grch37_vep85_annotated_variants: List[Variant]):
     variants = grch37_vep85_annotated_variants
     assert len(variants) == 5
     assert variants[0].chrom == "19"
@@ -111,7 +124,7 @@ def test_read_vcf_grch37(grch37_vep85_annotated_variants):
     assert not variants[0].is_sv()
 
 
-def test_read_vcf_grch38(grch38_vep95_annotated_variants):
+def test_read_vcf_grch38(grch38_vep95_annotated_variants: List[Variant]):
     assert len(grch38_vep95_annotated_variants) == 50
     v = grch38_vep95_annotated_variants[42]
     assert v.info["AC"] == 2
@@ -126,8 +139,9 @@ def test_read_vcf_grch38(grch38_vep95_annotated_variants):
     assert not v.is_sv()
 
 
-def test_variant_parse_csq_grch38(grch38_vep95_annotated_variants):
+def test_variant_parse_csq_grch38(grch38_vep95_annotated_variants: List[Variant]):
     v = grch38_vep95_annotated_variants[42]
+    assert v.parsed_csq is not None
     assert len(v.parsed_csq) == 2
     csq0, csq1 = v.parsed_csq
     assert csq0["HGVSc"] == "ENST00000378785.6:c.414C>T"
@@ -143,13 +157,15 @@ def test_variant_parse_csq_grch38(grch38_vep95_annotated_variants):
     assert csq1["gnomAD_AF"] == "0.3084"
 
 
-def test_variant_parse_csq_grch37(grch37_vep85_annotated_variants):
+def test_variant_parse_csq_grch37(grch37_vep85_annotated_variants: List[Variant]):
     parsed_csq = grch37_vep85_annotated_variants[0].parsed_csq
+    assert parsed_csq is not None
     assert len(parsed_csq) == 11
     assert parsed_csq[10]["SYMBOL"] == "KLC3"
     assert parsed_csq[10]["ENSP"] == "ENSP00000466974"
 
     v = grch37_vep85_annotated_variants[4]
+    assert v.parsed_csq is not None
     assert len(v.parsed_csq) == 5
     for csq in v.parsed_csq:
         assert csq["GMAF"] == "T:0.0008"
@@ -157,7 +173,7 @@ def test_variant_parse_csq_grch37(grch37_vep85_annotated_variants):
         assert csq["ExAC_Adj_MAF"] == "T:8.649e-05"
 
 
-def test_limit_seq_display():
+def test_limit_seq_display() -> None:
     assert limit_seq_display("ATATCCG") == "ATATC…"
     assert limit_seq_display("ATA") == "ATA"
     assert limit_seq_display("ATA", limit=1) == "A…"
