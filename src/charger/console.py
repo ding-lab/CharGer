@@ -52,20 +52,6 @@ def create_console_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--disease-specific",
-        action="store_true",
-        help="Enable disease specific inheritance-gene-list detection",
-    )
-    parser.add_argument(
-        "--inheritance-gene-list",
-        type=PathType(exists=True),
-        metavar="TSV",
-        help=(
-            "Path to inheritance gene tab separated table. "
-            "Table columns must be: gene, disease, mode_of_inheritance"
-        ),
-    )
-    parser.add_argument(
         "--pathogenic-variant",
         metavar="VCF",
         type=PathType(exists=True),
@@ -89,6 +75,20 @@ def create_console_parser() -> argparse.ArgumentParser:
     )
 
     acmg_grp = parser.add_argument_group("ACMG modules")
+    acmg_grp.add_argument(
+        "--inheritance-gene-list",
+        type=PathType(exists=True),
+        metavar="TSV",
+        help=(
+            "Path to inheritance gene tab separated table and enable PVS1 module. "
+            "Table columns must be: gene, disease, mode_of_inheritance."
+        ),
+    )
+    acmg_grp.add_argument(
+        "--disease-specific",
+        action="store_true",
+        help="Enable disease specific inheritance-gene-list detection",
+    )
     acmg_grp.add_argument(
         "--PP2-gene-list",
         type=PathType(exists=True),
