@@ -24,7 +24,10 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 
 
 def create_console_parser() -> argparse.ArgumentParser:
-    """Create CharGer's commandline parser."""
+    """Create CharGer's commandline parser.
+
+    See :class:`~charger.config.CharGerConfig` for the detailed specification of each parameter.
+    """
 
     class ConsoleHelpFormatter(
         argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter
@@ -180,7 +183,10 @@ def create_console_parser() -> argparse.ArgumentParser:
 
 
 def parse_console(args=None) -> CharGerConfig:
-    """Create a CharGerConfig object based on the commandline arguments."""
+    """
+    Create a :class:`~charger.config.CharGerConfig` object
+    based on the command-line arguments or the given `args`.
+    """
     parser = create_console_parser()
     console_parameters = " ".join(map(quote, args or sys.argv[1:]))
     logger.info(f"Console parameters: {console_parameters}")

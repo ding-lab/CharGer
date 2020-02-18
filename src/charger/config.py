@@ -114,9 +114,10 @@ class CharGerConfig:
     The table columns must have these three columns in order: ``gene``, ``diseases``, ``modes_of_inheritance``.
     The first row is header and will be ignored.
 
-        - gene: Gene symbol.
-        - diseases: Name of the diseases seperated by space.
-        - modes_of_inheritance: Name of the inheritance modes seperated by space. Possible modes:
+        - ``gene``: Gene symbol.
+        - ``diseases``: Name of the diseases seperated by comma.
+        - ``modes_of_inheritance``: Name of the inheritance modes seperated by comma.
+          Possible modes:
           ``autosomal recessive``, ``autosomal dominant``,
           ``Y-linked``, ``X-linked recessive``, ``X-link dominant``,
           ``unknown``.

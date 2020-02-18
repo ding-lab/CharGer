@@ -246,7 +246,7 @@ class ModuleDecision(Enum):
 
         Skip PVS1 classification:
 
-        >>> result = CharGerResult(Variant(19, 45855804, 45855804, 'CT', 'C'))
+        >>> result = CharGerResult(Variant('19', 45855804, 45855804, 'CT', 'C'))
         >>> result.acmg_decisions['PVS1'] = ModuleDecision.SKIPPED
     """
 
