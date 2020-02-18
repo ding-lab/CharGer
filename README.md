@@ -10,7 +10,19 @@ For python3.8, one needs to build the cyvcf2 manually from source:
 
     conda create -n charger_py38 python=3.8 poetry pip numpy
     conda activate charger_py38
-    # (install cyvcf2 from source)
+    # Install cyvcf2 from source, can skip once bioconda builds python3.8 cyvcf
+    # conda create -n cyvcf python=3.8 cython numpy wheel
+    # conda activate cyvcf
+    # git clone --recursive https://github.com/brentp/cyvcf2
+    # cd cyvcf2
+    # autoheader
+    # autoconf
+    # ./configure --enable-libcurl
+    # make
+    # cd ..
+    # python setup.py bdist_wheel
+    # a .whl cyvcf2 package will should be available under dist/; can be re-used
+    pip install dist/cyvcf2-0.11.5-cp38-cp38-macosx_10_9_x86_64.whl
     poetry install
     pre-commit install
 
