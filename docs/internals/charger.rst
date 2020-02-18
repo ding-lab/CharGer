@@ -1,7 +1,7 @@
-charger.charger module
+charger.classifier module
 ======================
 
-.. automodule:: charger.charger
+.. automodule:: charger.classifier
    :members:
    :undoc-members:
    :private-members:

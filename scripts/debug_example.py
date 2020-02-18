@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from charger.charger import CharGer
+from charger.classifier import CharGer
 from charger.config import CharGerConfig
 from charger.console import setup_logger
 

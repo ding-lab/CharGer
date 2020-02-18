@@ -6,7 +6,7 @@ from shlex import quote
 from loguru import logger
 
 from .argtype import ModuleScoreOverrideType, PathType
-from .charger import CharGer
+from .classifier import CharGer
 from .config import CharGerConfig
 
 logger.disable("charger")  # Disable emit logs by default

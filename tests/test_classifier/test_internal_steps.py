@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from charger.charger import CharGer, ModuleAvailability
+from charger.classifier import CharGer, ModuleAvailability
 from charger.config import CharGerConfig
 from charger.variant import VariantInheritanceMode
 
