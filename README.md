@@ -12,58 +12,7 @@ Adam D Scott, Kuan-Lin Huang, Amila Weerasinghe, R Jay Mashl, Qingsong Gao, Fern
 * virtualenv (RECOMMENDED; assumed below)
 * git / wget / unzip / curl (depending on the approach taken)
 
-### Standard installation
-
-(1) Set up a python virtual environment:
-```sh
- mkdir -p /path/to/workdir
- cd /path/to/workdir
- virtualenv mycharger --python=python2.7
- cd mycharger
- . bin/activate
-```
-
-(2) Prepare for CharGer
-```sh
- pip --version
-```
-If the indicated version of pip is < 10.x, you will first need to upgrade your pip because python.org has ended its support for the TLSv1.0 and TLSv1.1 protocols:
-```sh
- curl https://bootstrap.pypa.io/get-pip.py | python
-```
-
-(3) Select one of the following installation methods:
-
-* Binary modules option (i.e., the easy approach via <a href="https://pypi.org">PyPI</a>)
-```sh
-  pip install charger
-```
-&nbsp; &nbsp; &nbsp; &nbsp;This command downloads and installs CharGer and its dependencies. The charger executable is placed into your mycharger/bin directory and should be ready for use. Proceed to the Run section below.
-
-* Source code option
-
-&nbsp; &nbsp; &nbsp; &nbsp; Download the CharGer source using one of the following:
-```sh
-  git clone https://github.com/ding-lab/CharGer.git
-```
-&nbsp; &nbsp; &nbsp; &nbsp; or
-```sh
-  wget -O CharGer.zip https://github.com/ding-lab/CharGer/archive/master.zip
-  unzip CharGer.zip
-  mv CharGer-master CharGer
-```
-&nbsp; &nbsp; &nbsp; &nbsp;Then install CharGer and its dependencies:
-
-```sh
-  cd CharGer
-  pip install .
-
-  # Update your PATH environment variable
-  # It is suggested also to append this line to your ~/.bash_profile or ~/.bashrc
-  export PATH="/path/to/workdir/mycharger/CharGer/bin:${PATH}"
-```
-
-## Installation using conda
+### Installation using conda
 
 In case you do not have python 2.7.x installed in your machine or the installation process above does not run smoothly for you, please follow the installation steps below using conda:
 
