@@ -113,7 +113,7 @@ Set up the documentation build as a task in `.vscode/tasks.json`:
                 "cwd": "${workspaceFolder}/docs"
             },
             "command": "${config:python.pythonPath}",
-            "args": ["-m", "sphinx", "-b", "html", ".", "_build"],
+            "args": ["-m", "sphinx", "-b", "html", ".", "_build/html"],
             "group": {
                 "kind": "build",
                 "isDefault": true
