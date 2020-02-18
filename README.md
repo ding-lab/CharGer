@@ -1,10 +1,10 @@
 ## Installation
+Make sure the conda is available and set up [bioconda]. Create a new conda environment (for example, `charger_py37`):
 
     conda create -n charger_py37 python=3.7 pip poetry cyvcf2
     conda activate charger_py37
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
-
 
 For python3.8, one needs to build the cyvcf2 manually from source:
 
@@ -26,6 +26,7 @@ For python3.8, one needs to build the cyvcf2 manually from source:
     poetry install
     pre-commit install
 
+[bioconda]: https://bioconda.github.io/
 
 ## Usage
 
@@ -65,8 +66,14 @@ CharGer's documentation is powered by sphinx under `docs`. Build a new version b
 And the documentation will be available under `docs/_build/html`.
 
 
-### Developing using VS Code
-Set up the workspace settings `.vscode/settings.json`:
+### Developing using Visual Studio Code
+Here are some additional setup that utilize [Visual Studio Code]'s IDE:
+
+- Run style checks (black, mypy and flake8) at every file save
+- The default build task will build the documentation
+- A debug shortcut to check CharGer internals using `scripts/debug_example.py`
+
+Add the following workspace settings `.vscode/settings.json`:
 
 ```json
 {
@@ -80,23 +87,6 @@ Set up the workspace settings `.vscode/settings.json`:
     "python.linting.mypyArgs": ["--follow-imports=normal", "--show-column-numbers"],
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": ["-o", "junit_family=xunit1"],
-}
-```
-VS Code will run black, mypy and flake8 at every file save.
-
-Set up the the debug configuration `.vscode/launch.json`:
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Run CharGer",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/scripts/debug_example.py"
-        }
-    ]
 }
 ```
 
@@ -130,3 +120,21 @@ Set up the documentation build as a task in `.vscode/tasks.json`:
     ]
 }
 ```
+
+Set up the the debug configuration `.vscode/launch.json`:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run CharGer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/debug_example.py"
+        }
+    ]
+}
+```
+
+[Visual Studio Code]: https://code.visualstudio.com/
