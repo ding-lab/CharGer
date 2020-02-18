@@ -26,6 +26,7 @@ loguru = "~0.4"
 attrs = "~19.3"
 cyvcf2 = "~0.11"
 typing-extensions = {version = "~3.7", python = "<3.8"}
+pysam = "^0.15.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "~5.3"
