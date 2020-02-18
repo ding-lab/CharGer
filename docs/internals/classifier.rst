@@ -1,5 +1,5 @@
 charger.classifier module
-======================
+=========================
 
 .. automodule:: charger.classifier
    :members:

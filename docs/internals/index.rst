@@ -4,7 +4,7 @@ CharGer internals
 .. toctree::
 
    config
-   charger
+   classifier
    variant
    io
    console
