@@ -179,7 +179,7 @@ def test_limit_seq_display() -> None:
     assert limit_seq_display("ATA", limit=1) == "A…"
 
 
-def test_variantinheritancemode_parse():
+def test_geneinheritancemode_parse():
     assert (
         GeneInheritanceMode.parse("X-linked recessive")
         == GeneInheritanceMode.X_LINKED_RECESSIVE
@@ -190,7 +190,12 @@ def test_variantinheritancemode_parse():
     assert not m & GeneInheritanceMode.X_LINKED_DOMINANT
 
 
-def test_variantinheritance_parse_invalid():
+def test_geneinheritancemode_parse_unkonwn():
+    assert GeneInheritanceMode.parse("unknown") is None
+    assert GeneInheritanceMode.parse("unknown,Unknown") is None
+
+
+def test_geneinheritancemode_parse_invalid():
     with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
         GeneInheritanceMode.parse("y-linked recessive")
 
