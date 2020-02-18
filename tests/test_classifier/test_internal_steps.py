@@ -4,7 +4,7 @@ import pytest
 
 from charger.classifier import CharGer, ModuleAvailability
 from charger.config import CharGerConfig
-from charger.variant import VariantInheritanceMode
+from charger.variant import GeneInheritanceMode
 
 
 @pytest.fixture
@@ -38,10 +38,10 @@ def test_read_pathogenic_variants(grch38: CharGer):
 def test_read_inheritance_gene_list(grch38: CharGer):
     grch38._read_inheritance_gene_list()
     assert len(grch38.inheritance_genes) == 152
-    assert grch38.inheritance_genes["BRCA1"] == VariantInheritanceMode.AUTO_DOMINANT
+    assert grch38.inheritance_genes["BRCA1"] == GeneInheritanceMode.AUTO_DOMINANT
     assert (
         grch38.inheritance_genes["TERT"]
-        == VariantInheritanceMode.AUTO_DOMINANT | VariantInheritanceMode.AUTO_RECESSIVE
+        == GeneInheritanceMode.AUTO_DOMINANT | GeneInheritanceMode.AUTO_RECESSIVE
     )
 
 

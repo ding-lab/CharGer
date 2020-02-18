@@ -310,31 +310,34 @@ def limit_seq_display(seq: str, limit: int = 5) -> str:
     return seq
 
 
-class VariantInheritanceMode(Flag):
-    """The possible modes of the variant inheritance dominance.
+class GeneInheritanceMode(Flag):
+    """The possible modes of the gene inheritance dominance.
 
     Used by :attr:`~charger.config.CharGerConfig.inheritance_gene_list`."""
 
-    AUTO_DOMINANT = auto()
-    AUTO_RECESSIVE = auto()
-    X_LINKED_DOMINANT = auto()
-    X_LINKED_RECESSIVE = auto()
-    Y_LINKED = auto()
+    AUTO_DOMINANT = auto()  #: The gene is autosomal dominant.
+    AUTO_RECESSIVE = auto()  #: The gene is autosomal recessive.
+    X_LINKED_DOMINANT = auto()  #: The gene is X-linked dominant.
+    X_LINKED_RECESSIVE = auto()  #: The gene is X-linked recessive.
+    Y_LINKED = auto()  #: The gene is Y-linked.
 
     @classmethod
     def parse(
-        cls: Type["VariantInheritanceMode"], value: str
-    ) -> Optional["VariantInheritanceMode"]:
-        """Parse the inheritance modes from the given string. Multiple modes are separated by ``,``.
+        cls: Type["GeneInheritanceMode"], value: str
+    ) -> Optional["GeneInheritanceMode"]:
+        """Parse the inheritance modes from the given string. Multiple modes are comma separated.
 
-        >>> m = VariantInheritanceMode.parse("autosomal dominant, autosomal recessive")
+        >>> m = GeneInheritanceMode.parse("autosomal dominant, autosomal recessive")
         >>> m
-        <VariantInheritanceMode.AUTO_RECESSIVE|AUTO_DOMINANT: 3>
+        <GeneInheritanceMode.AUTO_RECESSIVE|AUTO_DOMINANT: 3>
 
-        >>> bool(m & VariantInheritanceMode.AUTO_RECESSIVE)
+        >>> bool(m & GeneInheritanceMode.AUTO_RECESSIVE)
         True
-        >>> bool(m & VariantInheritanceMode.Y_LINKED)
+        >>> bool(m & GeneInheritanceMode.Y_LINKED)
         False
+
+        >>> GeneInheritanceMode.parse("unknown") is None
+        True
         """
         MODE_TO_FLAG = {
             "autosomal dominant": cls.AUTO_DOMINANT,

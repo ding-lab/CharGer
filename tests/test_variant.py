@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from charger.variant import Variant, VariantInheritanceMode, limit_seq_display
+from charger.variant import GeneInheritanceMode, Variant, limit_seq_display
 
 
 @pytest.fixture()
@@ -181,20 +181,18 @@ def test_limit_seq_display() -> None:
 
 def test_variantinheritancemode_parse():
     assert (
-        VariantInheritanceMode.parse("X-linked recessive")
-        == VariantInheritanceMode.X_LINKED_RECESSIVE
+        GeneInheritanceMode.parse("X-linked recessive")
+        == GeneInheritanceMode.X_LINKED_RECESSIVE
     )
 
-    m = VariantInheritanceMode.parse("autosomal recessive, autosomal dominant, unknown")
-    assert m & (
-        VariantInheritanceMode.AUTO_DOMINANT | VariantInheritanceMode.AUTO_RECESSIVE
-    )
-    assert not m & VariantInheritanceMode.X_LINKED_DOMINANT
+    m = GeneInheritanceMode.parse("autosomal recessive, autosomal dominant, unknown")
+    assert m & (GeneInheritanceMode.AUTO_DOMINANT | GeneInheritanceMode.AUTO_RECESSIVE)
+    assert not m & GeneInheritanceMode.X_LINKED_DOMINANT
 
 
 def test_variantinheritance_parse_invalid():
     with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
-        VariantInheritanceMode.parse("y-linked recessive")
+        GeneInheritanceMode.parse("y-linked recessive")
 
     with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
-        VariantInheritanceMode.parse("autosomal recessive, y-linked recessive")
+        GeneInheritanceMode.parse("autosomal recessive, y-linked recessive")

@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Type
 
 import attr
 from loguru import logger
@@ -7,7 +7,7 @@ from typing_extensions import Final
 
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
-from .variant import Variant, VariantInheritanceMode
+from .variant import GeneInheritanceMode, Variant
 
 logger.disable("charger")  # Disable emit logs by default
 
@@ -37,7 +37,7 @@ class CharGer:
         self.pathogenic_variants: List[Variant] = []
         """Known pathogenic variants."""
 
-        self.inheritance_genes: Dict[str, Optional[VariantInheritanceMode]] = {}
+        self.inheritance_genes: Dict[str, Optional[GeneInheritanceMode]] = {}
         """Variant inheritance dominance mode of the genes for PVS1 module."""
 
         self.pp2_genes: Set[str] = set()
@@ -166,7 +166,7 @@ class CharGer:
             )
             raise ValueError(f"Invalid table format in {tsv_pth}")
         for (gene, diseases, modes_of_inheritance, *_) in reader:
-            modes = VariantInheritanceMode.parse(modes_of_inheritance)
+            modes = GeneInheritanceMode.parse(modes_of_inheritance)
             self.inheritance_genes[gene] = modes
         logger.info(f"Loaded inheritance mode of {len(self.inheritance_genes)} genes")
 
@@ -238,9 +238,16 @@ class ModuleAvailability(Enum):
 
 
 class ModuleDecision(Enum):
-    """The decision of a ACMG or CharGer module on one variant.
+    """The decision of a ACMG or CharGer module of one variant.
 
-    Used by :attr:`CharGerResult.acmg_decisions` and :attr:`CharGerResult.charger_decisions`
+    Used by :attr:`CharGerResult.acmg_decisions` and :attr:`CharGerResult.charger_decisions`.
+
+    Examples:
+
+        Skip PVS1 classification:
+
+        >>> result = CharGerResult(Variant(19, 45855804, 45855804, 'CT', 'C'))
+        >>> result.acmg_decisions['PVS1'] = ModuleDecision.SKIPPED
     """
 
     PASSED = auto()
@@ -252,9 +259,12 @@ class ModuleDecision(Enum):
 
     @classmethod
     def _gen_decision_template(
-        cls, available_modules: Dict[str, List[str]]
+        cls: Type["ModuleDecision"], available_modules: Dict[str, List[str]]
     ) -> Callable[[], Dict[str, Optional["ModuleDecision"]]]:
-        """Generate the decision template for all the available modules."""
+        """
+        Generate the decision template for all the available modules
+        during the initiation of :class:`CharGerResult`.
+        """
 
         def gen_template():
             decisions = {}
@@ -268,19 +278,27 @@ class ModuleDecision(Enum):
 
 @attr.s(auto_attribs=True, eq=False, order=False, slots=True)
 class CharGerResult:
-    """Result of the CharGer classification."""
+    """CharGer classification result of one variant.
+
+    Examples:
+
+        >>> variant = Variant(19, 45855804, 45855804, 'CT', 'C')
+        >>> result = CharGerResult(variant)
+        >>> result.acmg_decisions['PVS1'] is None
+        True
+    """
 
     variant: Variant
-    """The input variant."""
+    """The input variant of this result."""
 
     clinvar: Dict[str, Any] = attr.Factory(dict)
-    """Clinvar annotation."""
+    """ClinVar annotation of this variant."""
 
     acmg_decisions: Dict[str, Optional[ModuleDecision]] = attr.Factory(
         ModuleDecision._gen_decision_template(ACMG_MODULES)
     )
     """
-    The decision of each ACMG module of the variant.
+    The classification decision per ACMG module of this variant.
 
     `None` if the module is not run. See :class:`ModuleDecision` for the possible decisions.
     """
@@ -289,7 +307,7 @@ class CharGerResult:
         ModuleDecision._gen_decision_template(CHARGER_MODULES)
     )
     """
-    The decision of each CharGer module of the variant.
+    The classification decision of each CharGer module of this variant.
 
     Same usage as :attr:`acmg_decisions`.
     """
