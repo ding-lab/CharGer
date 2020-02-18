@@ -25,6 +25,9 @@ def grch38(test_root) -> CharGer:
 def test_read_input_variants(grch38: CharGer):
     grch38._read_input_variants()
     assert len(grch38.input_variants) == 50
+    assert len(grch38.input_variants) == len(grch38.results)
+    for v, result in zip(grch38.input_variants, grch38.results):
+        assert v is result.variant
 
 
 def test_read_pathogenic_variants(grch38: CharGer):
@@ -66,3 +69,9 @@ def test_read_pp2_gene_list(grch38: CharGer):
     assert len(grch38.pp2_genes) == 152
     assert "RET" in grch38.pp2_genes
     assert "BRCA1" in grch38.pp2_genes
+
+
+def test_no_bp1_gene_list(grch38: CharGer, caplog):
+    grch38._read_bp1_gene_list()
+    assert grch38._acmg_module_availability["BP1"] is ModuleAvailability.INVALID_SETUP
+    assert "Disable BP1 module" in caplog.text

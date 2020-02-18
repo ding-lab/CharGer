@@ -1,6 +1,7 @@
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
+import attr
 from loguru import logger
 from typing_extensions import Final
 
@@ -45,6 +46,12 @@ class CharGer:
         self.bp1_genes: Set[str] = set()
         """Genes marked for BP1 module."""
 
+        self.results: List[CharGerResult] = []
+        """
+        Classification results of the input variants.
+        The length and order should always be the same as :attr:`input_variants`.
+        """
+
         self._acmg_module_availability: Dict[str, ModuleAvailability] = {
             m: ModuleAvailability.ACTIVE
             for module_type, modules in ACMG_MODULES.items()
@@ -84,9 +91,10 @@ class CharGer:
         logger.debug(f"Given config: {self.config!r}")
 
     def _read_input_variants(self) -> None:
-        """Read input VCF.
+        """Read input VCF and set up the result template
 
         Load :attr:`input_variants` from :attr:`self.config.input <.CharGerConfig.input>`.
+        Also populate :attr:`results` matching the input variant.
         """
         if self.config.input is None:
             raise ValueError(f"No input file is given in the config")
@@ -103,6 +111,9 @@ class CharGer:
             #     num_skipped_variants["has_filter"] += 1
             #     continue
             self.input_variants.append(variant)
+
+            # We also create the result template
+            self.results.append(CharGerResult(variant))
 
         logger.info(
             f"Read total {len(self.input_variants)} variants from the input VCF"
@@ -203,7 +214,7 @@ class CharGer:
 
 
 class ModuleAvailability(Enum):
-    """Availability of the ACMG and CharGer modules.
+    """Availability of a  ACMG or CharGer modules.
 
     Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`.
 
@@ -223,4 +234,62 @@ class ModuleAvailability(Enum):
     """
     The module has invalid setup, such as no additional annotation provided.
     The module will be skipped.
+    """
+
+
+class ModuleDecision(Enum):
+    """The decision of a ACMG or CharGer module on one variant.
+
+    Used by :attr:`CharGerResult.acmg_decisions` and :attr:`CharGerResult.charger_decisions`
+    """
+
+    PASSED = auto()
+    """The variant matched the criteria of the module."""
+    FAILED = auto()
+    """The variant didn't match the criteria of the module."""
+    SKIPPED = auto()
+    """The module was skipped."""
+
+    @classmethod
+    def _gen_decision_template(
+        cls, available_modules: Dict[str, List[str]]
+    ) -> Callable[[], Dict[str, Optional["ModuleDecision"]]]:
+        """Generate the decision template for all the available modules."""
+
+        def gen_template():
+            decisions = {}
+            for module_type, modules in available_modules.items():
+                for m in modules:
+                    decisions[m] = None
+            return decisions
+
+        return gen_template
+
+
+@attr.s(auto_attribs=True, eq=False, order=False, slots=True)
+class CharGerResult:
+    """Result of the CharGer classification."""
+
+    variant: Variant
+    """The input variant."""
+
+    clinvar: Dict[str, Any] = attr.Factory(dict)
+    """Clinvar annotation."""
+
+    acmg_decisions: Dict[str, Optional[ModuleDecision]] = attr.Factory(
+        ModuleDecision._gen_decision_template(ACMG_MODULES)
+    )
+    """
+    The decision of each ACMG module of the variant.
+
+    `None` if the module is not run. See :class:`ModuleDecision` for the possible decisions.
+    """
+
+    charger_decisions: Dict[str, Optional[ModuleDecision]] = attr.Factory(
+        ModuleDecision._gen_decision_template(CHARGER_MODULES)
+    )
+    """
+    The decision of each CharGer module of the variant.
+
+    Same usage as :attr:`acmg_decisions`.
     """
