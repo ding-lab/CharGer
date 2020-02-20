@@ -313,8 +313,8 @@ def limit_seq_display(seq: str, limit: int = 5) -> str:
 class GeneInheritanceMode(Flag):
     """The possible modes of the gene inheritance dominance.
 
-    Used by :attr:`CharGerConfig.inheritance_gene_list
-    <charger.config.CharGerConfig.inheritance_gene_list>`.
+    Used by :attr:`CharGerConfig.inheritance_gene_table
+    <charger.config.CharGerConfig.inheritance_gene_table>`.
     """
 
     AUTO_DOMINANT = auto()  #: The gene is autosomal dominant.

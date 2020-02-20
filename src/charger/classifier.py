@@ -74,14 +74,14 @@ class CharGer:
             1. :meth:`_validate_config`
             2. :meth:`_read_input_variants`
             3. :meth:`_read_pathogenic_variants`
-            4. :meth:`_read_inheritance_gene_list`
+            4. :meth:`_read_inheritance_gene_table`
             5. :meth:`_read_pp2_gene_list`
             6. :meth:`_read_bp1_gene_list`
         """
         self._validate_config()
         self._read_input_variants()
         self._read_pathogenic_variants()
-        self._read_inheritance_gene_list()
+        self._read_inheritance_gene_table()
         self._read_pp2_gene_list()
         self._read_bp1_gene_list()
 
@@ -135,33 +135,33 @@ class CharGer:
             f"Read total {len(self.pathogenic_variants)} pathogenic variants from the VCF"
         )
 
-    def _read_inheritance_gene_list(self) -> None:
-        """Read inheritance gene list for PVS1 module.
+    def _read_inheritance_gene_table(self) -> None:
+        """Read inheritance gene table for PVS1 module.
 
         Load :attr:`inheritance_genes`
-        from :attr:`self.config.inheritance_gene_list <.CharGerConfig.inheritance_gene_list>`.
+        from :attr:`self.config.inheritance_gene_table <.CharGerConfig.inheritance_gene_table>`.
         Skip PVS1 module if it's not provided.
         """
-        tsv_pth = self.config.inheritance_gene_list
+        tsv_pth = self.config.inheritance_gene_table
         # Disable PVS1 module if no list is provided
         if tsv_pth is None:
             logger.warning(
-                "CharGer cannot make PVS1 calls without inheritance gene list. "
+                "CharGer cannot make PVS1 calls without inheritance gene table. "
                 "Disable PVS1 module"
             )
             self._acmg_module_availability["PVS1"] = ModuleAvailability.INVALID_SETUP
             return
         if self.config.disease_specific:
             raise NotImplementedError(
-                "Cannot read disease specific inheritance gene list"
+                "Cannot read disease specific inheritance gene table"
             )
 
-        logger.info(f"Read inheritance gene list from {tsv_pth}")
+        logger.info(f"Read inheritance gene table from {tsv_pth}")
         reader = read_tsv(tsv_pth, as_dict=False)
         header = next(reader)
         if len(header) < 3:
             logger.error(
-                f"Expect inheritance gene list to have at least three columns; "
+                f"Expect inheritance gene table to have at least three columns; "
                 f"only got {', '.join(header)}"
             )
             raise ValueError(f"Invalid table format in {tsv_pth}")

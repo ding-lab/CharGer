@@ -12,8 +12,8 @@ config = CharGerConfig(
     pathogenic_variant=REPO_ROOT.joinpath(
         "tests/examples/annotations/grch37_pathogenic_variants.vcf.gz"
     ),
-    inheritance_gene_list=REPO_ROOT.joinpath(
-        "tests/examples/annotations/inheritance_gene_list.tsv.gz"
+    inheritance_gene_table=REPO_ROOT.joinpath(
+        "tests/examples/annotations/inheritance_gene_table.tsv.gz"
     ),
     PP2_gene_list=REPO_ROOT.joinpath("tests/examples/annotations/pp2_gene_list.txt.gz"),
 )

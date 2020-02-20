@@ -79,7 +79,7 @@ def create_console_parser() -> argparse.ArgumentParser:
 
     acmg_grp = parser.add_argument_group("ACMG modules")
     acmg_grp.add_argument(
-        "--inheritance-gene-list",
+        "--inheritance-gene-table",
         type=PathType(exists=True),
         metavar="TSV",
         help=(
@@ -90,7 +90,7 @@ def create_console_parser() -> argparse.ArgumentParser:
     acmg_grp.add_argument(
         "--disease-specific",
         action="store_true",
-        help="Enable disease specific inheritance-gene-list detection",
+        help="Enable disease specific inheritance-gene-table detection",
     )
     acmg_grp.add_argument(
         "--PP2-gene-list",

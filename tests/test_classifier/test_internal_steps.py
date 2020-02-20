@@ -14,8 +14,8 @@ def grch38(test_root) -> CharGer:
         pathogenic_variant=test_root.joinpath(
             "examples/annotations/grch37_pathogenic_variants.vcf.gz"
         ),
-        inheritance_gene_list=test_root.joinpath(
-            "examples/annotations/inheritance_gene_list.tsv.gz"
+        inheritance_gene_table=test_root.joinpath(
+            "examples/annotations/inheritance_gene_table.tsv.gz"
         ),
         PP2_gene_list=test_root.joinpath("examples/annotations/pp2_gene_list.txt.gz"),
     )
@@ -35,8 +35,8 @@ def test_read_pathogenic_variants(grch38: CharGer):
     assert len(grch38.pathogenic_variants) == 1819
 
 
-def test_read_inheritance_gene_list(grch38: CharGer):
-    grch38._read_inheritance_gene_list()
+def test_read_inheritance_gene_table(grch38: CharGer):
+    grch38._read_inheritance_gene_table()
     assert len(grch38.inheritance_genes) == 152
     assert grch38.inheritance_genes["BRCA1"] == GeneInheritanceMode.AUTO_DOMINANT
     assert (
@@ -45,23 +45,23 @@ def test_read_inheritance_gene_list(grch38: CharGer):
     )
 
 
-def test_no_inheritance_gene_list(grch38: CharGer):
-    grch38.config.inheritance_gene_list = None
-    grch38._read_inheritance_gene_list()
+def test_no_inheritance_gene_table(grch38: CharGer):
+    grch38.config.inheritance_gene_table = None
+    grch38._read_inheritance_gene_table()
     assert grch38._acmg_module_availability["PVS1"] is ModuleAvailability.INVALID_SETUP
 
 
-def test_read_inheritance_gene_list_disease_specific(test_root: Path):
+def test_read_inheritance_gene_table_disease_specific(test_root: Path):
     charger = CharGer(
         CharGerConfig(
             disease_specific=True,
-            inheritance_gene_list=test_root.joinpath(
-                "examples/annotations/inheritance_gene_list.tsv.gz"
+            inheritance_gene_table=test_root.joinpath(
+                "examples/annotations/inheritance_gene_table.tsv.gz"
             ),
         )
     )
     with pytest.raises(NotImplementedError):
-        charger._read_inheritance_gene_list()
+        charger._read_inheritance_gene_table()
 
 
 def test_read_pp2_gene_list(grch38: CharGer):

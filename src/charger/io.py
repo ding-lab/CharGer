@@ -31,7 +31,7 @@ def read_tsv(
 
     Examples:
 
-        >>> tsv_pth = Path('inheritance_gene_list.tsv.gz')
+        >>> tsv_pth = Path('inheritance_gene_table.tsv.gz')
         >>> reader = read_tsv(tsv_pth)
         >>> header = next(reader); header
         ['gene', 'disease', 'modes_of_inheritance']

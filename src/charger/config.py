@@ -106,9 +106,9 @@ class CharGerConfig:
 
     # ACMG classifcation modules
     disease_specific: bool = False
-    """Whether to enable disease specific detection for :attr:`inheritance_gene_list`."""
+    """Whether to enable disease specific detection for :attr:`inheritance_gene_table`."""
 
-    inheritance_gene_list: Optional[Path] = None
+    inheritance_gene_table: Optional[Path] = None
     """Path to a TSV table of inheritance genes.
 
     The table columns must have these three columns in order: ``gene``, ``diseases``, ``modes_of_inheritance``.
@@ -122,7 +122,7 @@ class CharGerConfig:
           ``Y-linked``, ``X-linked recessive``, ``X-link dominant``,
           ``unknown``.
 
-    .. csv-table:: Example table of ``inheritance_gene_list``
+    .. csv-table:: Example table of ``inheritance_gene_table``
         :header-rows: 1
         :delim: |
 
