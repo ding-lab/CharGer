@@ -3,6 +3,7 @@ Make sure the conda is available and set up [bioconda]. Create a new conda envir
 
     conda create -n charger_py37 python=3.7 pip poetry cyvcf2
     conda activate charger_py37
+    git clone https://github.com/ding-lab/LightCharGer
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
 
@@ -10,6 +11,7 @@ For python3.8, one needs to build the cyvcf2 manually from source:
 
     conda create -n charger_py38 python=3.8 poetry pip numpy
     conda activate charger_py38
+    git clone https://github.com/ding-lab/LightCharGer
     # Install cyvcf2 from source, can skip once bioconda builds python3.8 cyvcf
     # conda create -n cyvcf python=3.8 cython numpy wheel
     # conda activate cyvcf
@@ -21,7 +23,7 @@ For python3.8, one needs to build the cyvcf2 manually from source:
     # make
     # cd ..
     # python setup.py bdist_wheel
-    # a .whl cyvcf2 package will should be available under dist/; can be re-used
+    # a .whl cyvcf2 package will be available under dist/; can be re-used
     pip install dist/cyvcf2-0.11.5-cp38-cp38-macosx_10_9_x86_64.whl
     poetry install
     pre-commit install
@@ -38,7 +40,7 @@ Visit CharGer's documentations for its detailed usage.
 ## Development
 
 ### Pass tests before commit
-Style checks are enforced before any git commit (after running `pre-commit install` once).
+Style checks are enforced to pass before any git commit (by running `pre-commit install` once).
 To run the style checks at any time, run the following command:
 
     pre-commit run -a
@@ -58,7 +60,7 @@ but it's recommended to run and pass all the tests and type checks by:
 The repo should always pass all the tests described above.
 
 ### Build documentation
-CharGer's documentation is powered by sphinx under `docs`. Build a new version by:
+CharGer's documentation is powered by [sphinx] under `docs`. Build a new version by:
 
     cd docs
     make html
@@ -69,9 +71,9 @@ And the documentation will be available under `docs/_build/html`.
 ### Developing using Visual Studio Code
 Here are some additional setup that utilize [Visual Studio Code]'s IDE:
 
-- Run style checks (black, mypy and flake8) at every file save
-- The default build task will build the documentation
-- A debug shortcut to check CharGer internals using `scripts/debug_example.py`
+- Run style checks ([black], [mypy] and [flake8]) at every file save
+- The default build task will call [sphinx] to build the documentation
+- A debug shortcut to go into CharGer internals using a startup script `scripts/debug_example.py`
 
 Add the following workspace settings `.vscode/settings.json`:
 
@@ -121,7 +123,7 @@ Set up the documentation build as a task in `.vscode/tasks.json`:
 }
 ```
 
-Set up the the debug configuration `.vscode/launch.json`:
+Set up the the debug shortcut in `.vscode/launch.json`:
 
 ```json
 {
@@ -137,4 +139,8 @@ Set up the the debug configuration `.vscode/launch.json`:
 }
 ```
 
+[black]: https://github.com/psf/black
+[mypy]: http://www.mypy-lang.org/
+[flake8]: https://flake8.pycqa.org/
+[sphinx]: https://www.sphinx-doc.org/
 [Visual Studio Code]: https://code.visualstudio.com/
