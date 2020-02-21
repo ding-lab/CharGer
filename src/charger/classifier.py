@@ -138,7 +138,7 @@ class CharGer:
         self.pathogenic_variants = list(
             Variant.read_vcf(self.config.pathogenic_variant, parse_csq=True)
         )
-        logger.success(
+        logger.info(
             f"Read total {len(self.pathogenic_variants):,d} pathogenic variants from the VCF"
         )
 
@@ -225,9 +225,18 @@ class CharGer:
     def _match_clinvar_one_variant(
         variant: Variant, tabix: TabixFile, cols: List[str]
     ) -> Optional[Dict[str, str]]:
-        for row in tabix.fetch(
-            region=f"{variant.chrom}:{variant.start_pos}-{variant.end_pos}"
-        ):
+        try:
+            # TabixFile.fetch will raise ValueError if the given region is out of bound
+            row_iter = tabix.fetch(
+                region=f"{variant.chrom}:{variant.start_pos}-{variant.end_pos}"
+            )
+        except ValueError as e:
+            # Do nothing if it's querying for a chromosome not in the ClinVar table
+            if "could not create iterator for region" not in e.args[0]:
+                logger.opt(exception=e).debug(f"Tabix fetch ClinVar failed: {e}")
+            return None
+
+        for row in row_iter:
             record = dict(zip(cols, row.split("\t")))
             if (
                 int(record["start"]) == variant.start_pos
@@ -261,7 +270,7 @@ class CharGer:
                     result.clinvar = clinvar_record
                     clinvar_match_num += 1
         logger.success(
-            f"Match {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"
+            f"Matched {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"
         )
 
 
