@@ -88,8 +88,14 @@ class CharGerConfig:
     include_vcf_details: bool = False
 
     # Annotation sources:
-    use_clinvar: bool = False
-    clinvar_src: Optional[Path] = None
+    clinvar_table: Optional[Path] = None
+    """Path the the Tabix indexed ClinVar database table.
+
+
+    .. code-block:: shell
+
+        $
+    """
 
     # Thresholds
     rare_threshold: float = 0.0005

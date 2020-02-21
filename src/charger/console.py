@@ -123,13 +123,10 @@ def create_console_parser() -> argparse.ArgumentParser:
 
     anno_src_grp = parser.add_argument_group("annotation sources")
     anno_src_grp.add_argument(
-        "--use-clinvar", action="store_true", help="Use ClinVar",
-    )
-    anno_src_grp.add_argument(
-        "--clinvar-src",
-        metavar="TSV",
+        "--clinvar-table",
+        metavar="TABIX",
         type=PathType(exists=True),
-        help="Path to the ClinVar database to look up input variants",
+        help=("Path to the Tabix indexed ClinVar table"),
     )
 
     threshold_grp = parser.add_argument_group("thresholds")
