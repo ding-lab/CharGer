@@ -225,3 +225,4 @@ def run() -> None:
     config = parse_console()
     charger = CharGer(config)
     charger.setup()
+    charger.match_clinvar()

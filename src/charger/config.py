@@ -89,13 +89,7 @@ class CharGerConfig:
 
     # Annotation sources:
     clinvar_table: Optional[Path] = None
-    """Path the the Tabix indexed ClinVar database table.
-
-
-    .. code-block:: shell
-
-        $
-    """
+    """Path the the Tabix indexed ClinVar database table."""
 
     # Thresholds
     rare_threshold: float = 0.0005

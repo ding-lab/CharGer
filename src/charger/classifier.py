@@ -3,11 +3,18 @@ from typing import Any, Callable, Dict, List, Optional, Set, Type
 
 import attr
 from loguru import logger
-from typing_extensions import Final
+from pysam import TabixFile
 
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
 from .variant import GeneInheritanceMode, Variant
+
+try:
+    from typing import Final
+except ImportError:
+    # Backport additional typings prior to python 3.8
+    from typing_extensions import Final  # type: ignore
+
 
 logger.disable("charger")  # Disable emit logs by default
 
@@ -115,8 +122,8 @@ class CharGer:
             # We also create the result template
             self.results.append(CharGerResult(variant))
 
-        logger.info(
-            f"Read total {len(self.input_variants)} variants from the input VCF"
+        logger.success(
+            f"Read total {len(self.input_variants):,d} variants from the input VCF"
         )
 
     def _read_pathogenic_variants(self) -> None:
@@ -131,8 +138,8 @@ class CharGer:
         self.pathogenic_variants = list(
             Variant.read_vcf(self.config.pathogenic_variant, parse_csq=True)
         )
-        logger.info(
-            f"Read total {len(self.pathogenic_variants)} pathogenic variants from the VCF"
+        logger.success(
+            f"Read total {len(self.pathogenic_variants):,d} pathogenic variants from the VCF"
         )
 
     def _read_inheritance_gene_table(self) -> None:
@@ -168,7 +175,9 @@ class CharGer:
         for (gene, diseases, modes_of_inheritance, *_) in reader:
             modes = GeneInheritanceMode.parse(modes_of_inheritance)
             self.inheritance_genes[gene] = modes
-        logger.info(f"Loaded inheritance mode of {len(self.inheritance_genes)} genes")
+        logger.info(
+            f"Loaded inheritance mode of {len(self.inheritance_genes):,d} genes"
+        )
 
     def _read_pp2_gene_list(self) -> None:
         """Read gene list for PP2 module.
@@ -189,7 +198,7 @@ class CharGer:
 
         logger.info(f"Read PP2 gene list from {gene_list_pth}")
         self.pp2_genes = set(l.strip() for l in read_lines(gene_list_pth))
-        logger.info(f"Marked {len(self.pp2_genes)} genes for PP2")
+        logger.info(f"Marked {len(self.pp2_genes):,d} genes for PP2")
 
     def _read_bp1_gene_list(self) -> None:
         """Read gene list for BP1 module.
@@ -210,7 +219,50 @@ class CharGer:
 
         logger.info(f"Read BP1 gene list from {gene_list_pth}")
         self.bp1_genes = set(l.strip() for l in read_lines(gene_list_pth))
-        logger.info(f"Marked {len(self.bp1_genes)} genes for BP1")
+        logger.info(f"Marked {len(self.bp1_genes):,d} genes for BP1")
+
+    @staticmethod
+    def _match_clinvar_one_variant(
+        variant: Variant, tabix: TabixFile, cols: List[str]
+    ) -> Optional[Dict[str, str]]:
+        for row in tabix.fetch(
+            region=f"{variant.chrom}:{variant.start_pos}-{variant.end_pos}"
+        ):
+            record = dict(zip(cols, row.split("\t")))
+            if (
+                int(record["start"]) == variant.start_pos
+                and int(record["stop"]) == variant.end_pos
+                and record["alt"] == variant.alt_allele
+            ):
+                if record["ref"] != variant.ref_allele:
+                    logger.warning(
+                        f"{variant!r} got a clinvar match but their reference alleles are different: "
+                        f"{variant.ref_allele!r} != {record['ref']!r}"
+                    )
+                return record
+        return None
+
+    def match_clinvar(self) -> None:
+        """Match the input variant with the ClinVar table."""
+        if self.config.clinvar_table is None:
+            logger.info("Skip matching ClinVar")
+            return
+        logger.info(
+            f"Match input variants with ClinVar table at {self.config.clinvar_table}"
+        )
+        clinvar_match_num = 0
+        with TabixFile(str(self.config.clinvar_table), encoding="utf8") as tabix:
+            cols = tabix.header[0][len("#") :].split("\t")
+            for result in self.results:
+                clinvar_record = self._match_clinvar_one_variant(
+                    result.variant, tabix, cols
+                )
+                if clinvar_record is not None:
+                    result.clinvar = clinvar_record
+                    clinvar_match_num += 1
+        logger.success(
+            f"Match {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"
+        )
 
 
 class ModuleAvailability(Enum):
