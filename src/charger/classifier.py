@@ -7,7 +7,7 @@ from pysam import TabixFile
 
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
-from .variant import GeneInheritanceMode, Variant
+from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
 
 try:
     from typing import Final
@@ -32,6 +32,7 @@ class CharGer:
         >>> config = CharGerConfig(...)
         >>> charger = CharGer()
         >>> charger.setup()
+        >>> charger.match_clinvar()
     """
 
     def __init__(self, config: CharGerConfig):
@@ -224,7 +225,19 @@ class CharGer:
     @staticmethod
     def _match_clinvar_one_variant(
         variant: Variant, tabix: TabixFile, cols: List[str]
-    ) -> Optional[Dict[str, str]]:
+    ) -> Optional[Dict[str, Any]]:
+        """Match the variant to the given ClinVar tabix table.
+
+        Args:
+            variant: Variant to be matched
+            tabix: Tabix indexed CliVar table
+            cols: All ClinVar columns in the table
+
+        Returns:
+            None if no ClinVar match. When matched, returns a `dict` of the clinvar record,
+            where the key ``final_clinical_significance`` stores the final clinical significance type
+            in :class:`ClinicalSignificance`.
+        """
         try:
             # TabixFile.fetch will raise ValueError if the given region is out of bound
             row_iter = tabix.fetch(
@@ -248,11 +261,19 @@ class CharGer:
                         f"{variant!r} got a clinvar match but their reference alleles are different: "
                         f"{variant.ref_allele!r} != {record['ref']!r}"
                     )
+                # Parse the clinical significance of the record
+                record[
+                    "final_clinical_significance"
+                ] = ClinicalSignificance.parse_clinvar_record(record)
                 return record
         return None
 
     def match_clinvar(self) -> None:
-        """Match the input variant with the ClinVar table."""
+        """Match the input variant with the ClinVar table.
+
+        Update :attr:`CharGerResult.clinvar` the variant matches a ClinVar record
+        by calling :meth:`_match_clinvar_one_variant`.
+        """
         if self.config.clinvar_table is None:
             logger.info("Skip matching ClinVar")
             return
@@ -263,11 +284,9 @@ class CharGer:
         with TabixFile(str(self.config.clinvar_table), encoding="utf8") as tabix:
             cols = tabix.header[0][len("#") :].split("\t")
             for result in self.results:
-                clinvar_record = self._match_clinvar_one_variant(
-                    result.variant, tabix, cols
-                )
-                if clinvar_record is not None:
-                    result.clinvar = clinvar_record
+                record = self._match_clinvar_one_variant(result.variant, tabix, cols)
+                if record is not None:
+                    result.clinvar = record
                     clinvar_match_num += 1
         logger.success(
             f"Matched {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"

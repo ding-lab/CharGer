@@ -1,7 +1,7 @@
 import re
 from collections import UserDict
 from contextlib import closing
-from enum import Flag, auto
+from enum import Enum, Flag, auto
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar, Union
 
@@ -311,7 +311,7 @@ def limit_seq_display(seq: str, limit: int = 5) -> str:
 
 
 class GeneInheritanceMode(Flag):
-    """The possible modes of the gene inheritance dominance.
+    """All possible modes of the gene inheritance dominance.
 
     Used by :attr:`CharGerConfig.inheritance_gene_table
     <charger.config.CharGerConfig.inheritance_gene_table>`.
@@ -369,3 +369,62 @@ class GeneInheritanceMode(Flag):
             return combined_mode
         else:
             return None
+
+
+class ClinicalSignificance(Enum):
+    """All possible clinical significance types of a variant."""
+
+    PATHOGENIC = "Pathogenic"
+    LIKELY_PATHOGENIC = "Likely Pathogenic"
+    LIKELY_BENIGN = "Likely Benign"
+    BENIGN = "Benign"
+    UNCERTAIN = "Uncertain Significance"
+
+    @classmethod
+    def parse_clinvar_record(
+        cls: Type["ClinicalSignificance"], record: Dict[str, str]
+    ) -> "ClinicalSignificance":
+        """Determine the pathogenicity of a ClinVar record."""
+        # The default pathogenicity
+        clin_sig = cls.UNCERTAIN
+
+        is_pathogenic = (
+            int(record["pathogenic"]) > 0 or int(record["likely_pathogenic"]) > 0
+        )
+        is_benign = int(record["benign"]) > 0 or int(record["likely_benign"]) > 0
+
+        if int(record["conflicted"]):
+            # Conflicted record has uncertain clinical significance
+            return cls.UNCERTAIN
+
+        # There may be multiple assertions
+        all_clin_sig_assertions = record["clinical_significance"].lower().split("/")
+        if is_benign and is_pathogenic:
+            # Fix parsing of conflicting ClinVar assertion
+            # by checking the ClinVar assertion
+            for assertion in all_clin_sig_assertions:
+                if "likely benign" in assertion:
+                    clin_sig = cls.LIKELY_BENIGN
+                elif "likely pathogenic" in assertion:
+                    clin_sig = cls.LIKELY_PATHOGENIC
+                elif "benign" in assertion:
+                    clin_sig = cls.BENIGN
+                    break
+                elif "pathogenic" in assertion:
+                    clin_sig = cls.PATHOGENIC
+                    break
+        elif is_benign:
+            for assertion in all_clin_sig_assertions:
+                if "likely benign" in assertion:
+                    clin_sig = cls.LIKELY_BENIGN
+                elif "benign" in assertion:
+                    clin_sig = cls.BENIGN
+                    break
+        elif is_pathogenic:
+            for assertion in all_clin_sig_assertions:
+                if "likely pathogenic" in assertion:
+                    clin_sig = cls.LIKELY_PATHOGENIC
+                elif "pathogenic" in assertion:
+                    clin_sig = cls.PATHOGENIC
+                    break
+        return clin_sig

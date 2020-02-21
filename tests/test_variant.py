@@ -3,7 +3,12 @@ from typing import List
 
 import pytest
 
-from charger.variant import GeneInheritanceMode, Variant, limit_seq_display
+from charger.variant import (
+    ClinicalSignificance,
+    GeneInheritanceMode,
+    Variant,
+    limit_seq_display,
+)
 
 
 @pytest.fixture()
@@ -201,3 +206,83 @@ def test_geneinheritancemode_parse_invalid():
 
     with pytest.raises(ValueError, match="Invalid variant inheritance mode"):
         GeneInheritanceMode.parse("autosomal recessive, y-linked recessive")
+
+
+@pytest.mark.parametrize(
+    "clinvar_record,correct_result",
+    [
+        (
+            ("0", "0", "2", "0", "0", "Likely benign"),
+            ClinicalSignificance.LIKELY_BENIGN,
+        ),
+        (("0", "0", "0", "1", "0", "Benign"), ClinicalSignificance.BENIGN),
+        (
+            ("0", "0", "3", "2", "0", "Benign/Likely benign"),
+            ClinicalSignificance.BENIGN,
+        ),
+        (("3", "0", "0", "0", "0", "Pathogenic"), ClinicalSignificance.PATHOGENIC),
+        (
+            ("0", "2", "0", "0", "0", "Likely pathogenic"),
+            ClinicalSignificance.LIKELY_PATHOGENIC,
+        ),
+        (
+            ("1", "1", "0", "0", "0", "Pathogenic/Likely pathogenic"),
+            ClinicalSignificance.PATHOGENIC,
+        ),
+        (
+            ("1", "0", "1", "0", "1", "Conflicting interpretations of pathogenicity"),
+            ClinicalSignificance.UNCERTAIN,
+        ),
+        (
+            ("0", "1", "1", "1", "1", "Conflicting interpretations of pathogenicity"),
+            ClinicalSignificance.UNCERTAIN,
+        ),
+    ],
+)
+def test_clinical_significance_from_clinvar(clinvar_record, correct_result):
+    record_cols = [
+        "pathogenic",
+        "likely_pathogenic",
+        "likely_benign",
+        "benign",
+        "conflicted",
+        "clinical_significance",
+    ]
+    record = dict(zip(record_cols, clinvar_record))
+    assert ClinicalSignificance.parse_clinvar_record(record) is correct_result
+
+
+@pytest.mark.parametrize(
+    "clinvar_record,correct_result",
+    [
+        (
+            ("1", "2", "1", "1", "0", "Likely benign"),
+            ClinicalSignificance.LIKELY_BENIGN,
+        ),
+        (
+            ("1", "2", "1", "1", "0", "Benign/Likely benign"),
+            ClinicalSignificance.BENIGN,
+        ),
+        (
+            ("1", "2", "1", "1", "0", "Likely pathogenic"),
+            ClinicalSignificance.LIKELY_PATHOGENIC,
+        ),
+        (
+            ("1", "2", "1", "1", "0", "Pathogenic/Likely pathogenic"),
+            ClinicalSignificance.PATHOGENIC,
+        ),
+    ],
+)
+def test_clinical_significance_from_conflicting_clinvar_record(
+    clinvar_record, correct_result
+):
+    record_cols = [
+        "pathogenic",
+        "likely_pathogenic",
+        "likely_benign",
+        "benign",
+        "conflicted",
+        "clinical_significance",
+    ]
+    record = dict(zip(record_cols, clinvar_record))
+    assert ClinicalSignificance.parse_clinvar_record(record) is correct_result
