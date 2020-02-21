@@ -5,6 +5,7 @@ import attr
 from loguru import logger
 from pysam import TabixFile
 
+from .acmg_modules import run_pvs1_module
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
 from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
@@ -154,10 +155,11 @@ class CharGer:
         # Disable PVS1 module if no list is provided
         if tsv_pth is None:
             logger.warning(
-                "CharGer cannot make PVS1 calls without inheritance gene table. "
-                "Disable PVS1 module"
+                "CharGer cannot make PVS1 or PM4 calls without inheritance gene table. "
+                "Disable PVS1 and PM4 modules"
             )
             self._acmg_module_availability["PVS1"] = ModuleAvailability.INVALID_SETUP
+            self._acmg_module_availability["PM4"] = ModuleAvailability.INVALID_SETUP
             return
         if self.config.disease_specific:
             raise NotImplementedError(
@@ -291,6 +293,16 @@ class CharGer:
         logger.success(
             f"Matched {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"
         )
+
+    def run_acmg_modules(self) -> None:
+        logger.info("Run all ACMG modules")
+        # PVS1
+        if self._acmg_module_availability["PVS1"] is ModuleAvailability.ACTIVE:
+            logger.info("Run PVS1 module")
+            for result in self.results:
+                run_pvs1_module(result)
+        else:
+            logger.info("Skipped PVS1 module")
 
 
 class ModuleAvailability(Enum):
