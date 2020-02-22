@@ -5,6 +5,7 @@ from shlex import quote
 
 from loguru import logger
 
+from . import __version__
 from .argtype import ModuleScoreOverrideType, PathType
 from .classifier import CharGer
 from .config import CharGerConfig
@@ -42,6 +43,9 @@ def create_console_parser() -> argparse.ArgumentParser:
         epilog=epilog,
         formatter_class=ConsoleHelpFormatter,
         allow_abbrev=False,
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"CharGer v{__version__}"
     )
     parser.add_argument(
         "--input",
@@ -185,9 +189,9 @@ def parse_console(args=None) -> CharGerConfig:
     based on the command-line arguments or the given `args`.
     """
     parser = create_console_parser()
-    console_parameters = " ".join(map(quote, args or sys.argv[1:]))
-    logger.info(f"Console parameters: {console_parameters}")
     config = parser.parse_args(args, namespace=CharGerConfig())
+    console_parameters = " ".join(map(quote, args or sys.argv[1:]))
+    logger.info(f"Running CharGer v{__version__} with parameters: {console_parameters}")
     return config
 
 
