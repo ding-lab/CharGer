@@ -5,6 +5,7 @@ import attr
 from loguru import logger
 from pysam import TabixFile
 
+from .acmg_modules import run_pvs1_module
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
 from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
@@ -295,7 +296,6 @@ class CharGer:
 
     def run_acmg_modules(self) -> None:
         logger.info("Run all ACMG modules")
-        from .acmg_modules import run_pvs1_module
 
         # PVS1
         if self._acmg_module_availability["PVS1"] is ModuleAvailability.ACTIVE:
