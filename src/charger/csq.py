@@ -121,16 +121,20 @@ class CSQ(UserDict):
                 f"CSQ misses these required fields: {', '.join(missing_fields)}"
             )
 
+    @property
+    def consequence_types(self) -> List[str]:
+        """Get all the consequence types separated."""
+        return self.data["Consequence"].split("&")
+
     def rank_consequence_type(self) -> int:
         """Rank the severeness of its consequence type (CSQ column ``Consequence``).
 
         Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
-        :data:`ALL_VEP_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
+        :attr:`ALL_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
         smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.
         """
-        consequence_types: List[str] = self.data["Consequence"].split("&")
         ranks: List[int] = []
-        for ct in consequence_types:
+        for ct in self.consequence_types:
             try:
                 rank = ALL_CONSEQUENCE_TYPES.index(ct)
             except ValueError:
@@ -145,10 +149,18 @@ class CSQ(UserDict):
         return min(ranks)
 
     def is_truncation_type(self) -> bool:
-        """Whether the consequence type is truncation."""
+        """Whether the consequence type is truncation.
 
-        consequence_types = self.data["Consequence"].split("&")
-        return any(ct in ALL_TRUNCATION_TYPES for ct in consequence_types)
+        See :attr:`ALL_TRUNCATION_TYPES` for the full list of consequence types.
+        """
+        return any(ct in ALL_TRUNCATION_TYPES for ct in self.consequence_types)
+
+    def is_inframe_type(self) -> bool:
+        """Whether the consequence type is inframe.
+
+        See :attr:`ALL_INFRAME_TYPES` for the full list of consequence types.
+        """
+        return any(ct in ALL_INFRAME_TYPES for ct in self.consequence_types)
 
     def __repr__(self):
         fields = ["SYMBOL", "HGVSc", "Consequence"]
