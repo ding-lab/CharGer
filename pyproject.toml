@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "charger"
-version = "0.6.0"
+version = "0.6.0b0"
 description = "Characterization of germline variants"
 authors = [
     "Liang-Bo Wang <liang-bo.wang@wustl.edu>",
