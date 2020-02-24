@@ -5,7 +5,6 @@ import attr
 from loguru import logger
 from pysam import TabixFile
 
-from .acmg_modules import run_pvs1_module
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
 from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
@@ -18,6 +17,22 @@ except ImportError:
 
 
 logger.disable("charger")  # Disable emit logs by default
+
+
+ALL_TRUNCATION_CONSEQUENCE_TYPES: List[str] = [
+    "transcript_ablation",
+    "splice_acceptor_variant",
+    "splice_donor_variant",
+    "stop_gained",
+    "frameshift_variant",
+    "start_lost",
+]
+
+ALL_INFRAME_CONSEQUENCE_TYPES: List[str] = [
+    "inframe_insertion",
+    "inframe_deletion",
+    "stop_lost",
+]
 
 
 class CharGer:
@@ -155,11 +170,15 @@ class CharGer:
         # Disable PVS1 module if no list is provided
         if tsv_pth is None:
             logger.warning(
-                "CharGer cannot make PVS1 or PM4 calls without inheritance gene table. "
-                "Disable PVS1 and PM4 modules"
+                "Inheritance gene table is not provided, CharGer cannot make ACMG PVS1/PM4 calls "
+                "or CharGer PSC1/PMC1/PPC1/PPC2 calls. Disable all these modules"
             )
             self._acmg_module_availability["PVS1"] = ModuleAvailability.INVALID_SETUP
             self._acmg_module_availability["PM4"] = ModuleAvailability.INVALID_SETUP
+            self._charger_module_availability["PSC1"] = ModuleAvailability.INVALID_SETUP
+            self._charger_module_availability["PMC1"] = ModuleAvailability.INVALID_SETUP
+            self._charger_module_availability["PPC1"] = ModuleAvailability.INVALID_SETUP
+            self._charger_module_availability["PPC2"] = ModuleAvailability.INVALID_SETUP
             return
         if self.config.disease_specific:
             raise NotImplementedError(
@@ -298,12 +317,32 @@ class CharGer:
         logger.info("Run all ACMG modules")
 
         # PVS1
-        if self._acmg_module_availability["PVS1"] is ModuleAvailability.ACTIVE:
-            logger.info("Run PVS1 module")
-            for result in self.results:
-                run_pvs1_module(result)
-        else:
+        if self._acmg_module_availability["PVS1"] is not ModuleAvailability.ACTIVE:
             logger.info("Skipped PVS1 module")
+        else:
+            logger.info("Running PVS1 module")
+            for result in self.results:
+                self.run_acmg_pvs1_module(result)
+
+    def run_charger_modules(self) -> None:
+        logger.info("Run all CharGer modules")
+
+    def run_acmg_pvs1_module(self, result: "CharGerResult") -> None:
+        """Run ACMG PVS1 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        gene_symbol = most_servere_csq["SYMBOL"]
+        consequence_types = most_servere_csq["Consequence"].split("&")
+        is_truncation = any(
+            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
+        )
+        if is_truncation and gene_symbol in self.inheritance_genes:
+            mode = self.inheritance_genes[gene_symbol]
+            # Gene is autosomal dominant
+            if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
+                result.acmg_decisions["PVS1"] = ModuleDecision.PASSED
+                # TODO: Check the expression effect if it's given
+                return
+        result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
 
 
 class ModuleAvailability(Enum):
@@ -347,8 +386,6 @@ class ModuleDecision(Enum):
     """The variant matched the criteria of the module."""
     FAILED = auto()
     """The variant didn't match the criteria of the module."""
-    SKIPPED = auto()
-    """The module was skipped."""
 
     @classmethod
     def _gen_decision_template(

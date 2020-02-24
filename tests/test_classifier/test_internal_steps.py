@@ -48,8 +48,18 @@ def test_read_inheritance_gene_table(grch38: CharGer):
 def test_no_inheritance_gene_table(grch38: CharGer):
     grch38.config.inheritance_gene_table = None
     grch38._read_inheritance_gene_table()
-    assert grch38._acmg_module_availability["PVS1"] is ModuleAvailability.INVALID_SETUP
-    assert grch38._acmg_module_availability["PM4"] is ModuleAvailability.INVALID_SETUP
+
+    all_disabled_acmg_modules = ["PVS1", "PM4"]
+    all_disabled_charger_modules = ["PSC1", "PMC1", "PPC1", "PPC2"]
+    for module in all_disabled_acmg_modules:
+        assert (
+            grch38._acmg_module_availability[module] is ModuleAvailability.INVALID_SETUP
+        )
+    for module in all_disabled_charger_modules:
+        assert (
+            grch38._charger_module_availability[module]
+            is ModuleAvailability.INVALID_SETUP
+        )
 
 
 def test_read_inheritance_gene_table_disease_specific(test_root: Path):

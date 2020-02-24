@@ -3,7 +3,7 @@ from collections import UserDict
 from contextlib import closing
 from enum import Enum, Flag, auto
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar
 
 import attr
 from cyvcf2 import VCF
@@ -11,6 +11,7 @@ from cyvcf2 import Variant as CyVCF2Variant
 from loguru import logger
 
 logger.disable("charger")  # Disable emit logs by default
+
 
 # A type hint variable to annotated the Factory method
 # See https://github.com/python/typing/issues/58 for details
