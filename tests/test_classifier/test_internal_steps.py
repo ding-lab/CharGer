@@ -37,6 +37,12 @@ def test_read_pathogenic_variants(grch38: CharGer):
 
 def test_read_inheritance_gene_table(grch38: CharGer):
     grch38._read_inheritance_gene_table()
+    assert (
+        grch38._charger_module_availability["PMC1"] is ModuleAvailability.INVALID_SETUP
+    )
+    assert (
+        grch38._charger_module_availability["PPC2"] is ModuleAvailability.INVALID_SETUP
+    )
     assert len(grch38.inheritance_genes) == 152
     assert grch38.inheritance_genes["BRCA1"] == GeneInheritanceMode.AUTO_DOMINANT
     assert (
@@ -50,7 +56,7 @@ def test_no_inheritance_gene_table(grch38: CharGer):
     grch38._read_inheritance_gene_table()
 
     all_disabled_acmg_modules = ["PVS1", "PM4"]
-    all_disabled_charger_modules = ["PSC1", "PMC1", "PPC1", "PPC2"]
+    all_disabled_charger_modules = ["PSC1", "PPC1"]
     for module in all_disabled_acmg_modules:
         assert (
             grch38._acmg_module_availability[module] is ModuleAvailability.INVALID_SETUP

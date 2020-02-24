@@ -49,6 +49,8 @@ class CharGer:
         >>> charger = CharGer()
         >>> charger.setup()
         >>> charger.match_clinvar()
+        >>> charger.run_acmg_modules()
+        >>> charger.run_charger_modules()
     """
 
     def __init__(self, config: CharGerConfig):
@@ -171,15 +173,19 @@ class CharGer:
         if tsv_pth is None:
             logger.warning(
                 "Inheritance gene table is not provided, CharGer cannot make ACMG PVS1/PM4 calls "
-                "or CharGer PSC1/PMC1/PPC1/PPC2 calls. Disable all these modules"
+                "or CharGer PSC1/PPC1 calls. Disable all these modules"
             )
-            self._acmg_module_availability["PVS1"] = ModuleAvailability.INVALID_SETUP
-            self._acmg_module_availability["PM4"] = ModuleAvailability.INVALID_SETUP
-            self._charger_module_availability["PSC1"] = ModuleAvailability.INVALID_SETUP
-            self._charger_module_availability["PMC1"] = ModuleAvailability.INVALID_SETUP
-            self._charger_module_availability["PPC1"] = ModuleAvailability.INVALID_SETUP
-            self._charger_module_availability["PPC2"] = ModuleAvailability.INVALID_SETUP
+            for m in ["PVS1", "PM4"]:
+                self._acmg_module_availability[m] = ModuleAvailability.INVALID_SETUP
+            for m in ["PSC1", "PPC1"]:
+                self._charger_module_availability[m] = ModuleAvailability.INVALID_SETUP
             return
+        else:
+            logger.info(
+                "Disable CharGer PMC1/PPC2 modules when inheritance gene table is provided"
+            )
+            for m in ["PMC1", "PPC2"]:
+                self._charger_module_availability[m] = ModuleAvailability.INVALID_SETUP
         if self.config.disease_specific:
             raise NotImplementedError(
                 "Cannot read disease specific inheritance gene table"
@@ -330,12 +336,21 @@ class CharGer:
         # PVS1
         if self._run_or_skip_module("PVS1", self._acmg_module_availability["PVS1"]):
             for result in self.results:
-                self.run_acmg_pvs1_module(result)
+                self.run_acmg_pvs1(result)
 
     def run_charger_modules(self) -> None:
         logger.info("Run all CharGer modules")
+        # PSC1
+        if self._run_or_skip_module("PSC1", self._charger_module_availability["PSC1"]):
+            for result in self.results:
+                self.run_charger_psc1(result)
 
-    def run_acmg_pvs1_module(self, result: "CharGerResult") -> None:
+        # PMC1
+        if self._run_or_skip_module("PMC1", self._charger_module_availability["PMC1"]):
+            for result in self.results:
+                self.run_charger_pmc1(result)
+
+    def run_acmg_pvs1(self, result: "CharGerResult") -> None:
         """Run ACMG PVS1 module per variant."""
         most_servere_csq = result.variant.get_most_servere_csq()
         gene_symbol = most_servere_csq["SYMBOL"]
@@ -352,8 +367,33 @@ class CharGer:
                 return
         result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
 
-    def run_charger_psc1_pmc1_modules(self, result: "CharGerResult") -> None:
-        pass
+    def run_charger_psc1(self, result: "CharGerResult") -> None:
+        """Run CharGer PSC1 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        gene_symbol = most_servere_csq["SYMBOL"]
+        consequence_types = most_servere_csq["Consequence"].split("&")
+        is_truncation = any(
+            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
+        )
+        if is_truncation and gene_symbol in self.inheritance_genes:
+            mode = self.inheritance_genes[gene_symbol]
+            # Gene is autosomal dominant
+            if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
+                result.charger_decisions["PSC1"] = ModuleDecision.PASSED
+                return
+        result.charger_decisions["PSC1"] = ModuleDecision.FAILED
+
+    def run_charger_pmc1(self, result: "CharGerResult") -> None:
+        """Run CharGer PMC1 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        consequence_types = most_servere_csq["Consequence"].split("&")
+        is_truncation = any(
+            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
+        )
+        if is_truncation:
+            result.charger_decisions["PMC1"] = ModuleDecision.PASSED
+        else:
+            result.charger_decisions["PMC1"] = ModuleDecision.FAILED
 
 
 class ModuleAvailability(Enum):
