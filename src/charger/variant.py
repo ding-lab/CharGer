@@ -106,6 +106,34 @@ class Variant:
         else:
             return len(self.ref_allele) > len(self.alt_allele)
 
+    def get_most_servere_csq(self) -> "CSQ":
+        """Get the most severe CSQ based on the consequence type.
+
+        If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.
+        """
+        if self.parsed_csq is None:
+            raise ValueError(
+                "Variant {self!r} may not have annotation or its CSQ is not parsed."
+            )
+
+        rank_and_canonical_per_csq = []
+        for csq_ix, csq in enumerate(self.parsed_csq):
+            # Severe consequence have smaller rank
+            rank_consequence_type = csq.rank_consequence_type()
+            # Canonical transcript wins whenever there is a tie in the ranks of consequence type.
+            try:
+                if csq["CANONICAL"] == "YES":
+                    rank_canonical = 0
+                else:
+                    rank_canonical = 1
+            except KeyError:
+                rank_canonical = 1
+            rank_and_canonical_per_csq.append(
+                (rank_consequence_type, rank_canonical, csq_ix)
+            )
+        rank_ct, rank_canonical, csq_ix = min(rank_and_canonical_per_csq)
+        return self.parsed_csq[csq_ix]
+
     def _parse_csq(self, csq_fields: List[str]):
         """Parse the CSQ info string based on the CSQ field spec.
 
@@ -275,7 +303,50 @@ class CSQ(UserDict):
         ]
     )
 
-    data: Dict[str, Union[str, None, int, float]]
+    ALL_CONSEQUENCE_TYPES: List[str] = [
+        "transcript_ablation",
+        "splice_acceptor_variant",
+        "splice_donor_variant",
+        "stop_gained",
+        "frameshift_variant",
+        "stop_lost",
+        "start_lost",
+        "transcript_amplification",
+        "inframe_insertion",
+        "inframe_deletion",
+        "missense_variant",
+        "protein_altering_variant",
+        "splice_region_variant",
+        "incomplete_terminal_codon_variant",
+        "start_retained_variant",
+        "stop_retained_variant",
+        "synonymous_variant",
+        "coding_sequence_variant",
+        "mature_miRNA_variant",
+        "5_prime_UTR_variant",
+        "3_prime_UTR_variant",
+        "non_coding_transcript_exon_variant",
+        "intron_variant",
+        "NMD_transcript_variant",
+        "non_coding_transcript_variant",
+        "upstream_gene_variant",
+        "downstream_gene_variant",
+        "TFBS_ablation",
+        "TFBS_amplification",
+        "TF_binding_site_variant",
+        "regulatory_region_ablation",
+        "regulatory_region_amplification",
+        "feature_elongation",
+        "regulatory_region_variant",
+        "feature_truncation",
+        "intergenic_variant",
+    ]
+    """All the possible consequence types fetched from `Ensembl v99`_ (January 2020).
+
+    .. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
+    """
+
+    data: Dict[str, Any]
 
     def __init__(self, dict=None, **kwargs):
         super().__init__(dict, **kwargs)
@@ -284,6 +355,29 @@ class CSQ(UserDict):
             raise ValueError(
                 f"CSQ misses these required fields: {', '.join(missing_fields)}"
             )
+
+    def rank_consequence_type(self) -> int:
+        """Rank the severeness of its consequence type (CSQ column ``Consequence``).
+
+        Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
+        :data:`ALL_VEP_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
+        smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.
+        """
+        consequence_types: List[str] = self.data["Consequence"].split("&")
+        ranks: List[int] = []
+        for ct in consequence_types:
+            try:
+                rank = self.ALL_CONSEQUENCE_TYPES.index(ct)
+            except ValueError:
+                # Assign unknown consequence type to the lowest rank
+                rank = len(self.ALL_CONSEQUENCE_TYPES)
+                logger.warning(
+                    "Got unknown consequence type: {ct}; assign its rank = {rank}",
+                    ct=ct,
+                    rank=rank,
+                )
+            ranks.append(rank)
+        return min(ranks)
 
     def __repr__(self):
         fields = ["SYMBOL", "HGVSc", "Consequence"]
@@ -428,47 +522,3 @@ class ClinicalSignificance(Enum):
                     clin_sig = cls.PATHOGENIC
                     break
         return clin_sig
-
-
-ALL_VEP_VARIANT_EFFECTS = [
-    "transcript_ablation",
-    "splice_acceptor_variant",
-    "splice_donor_variant",
-    "stop_gained",
-    "frameshift_variant",
-    "stop_lost",
-    "start_lost",
-    "transcript_amplification",
-    "inframe_insertion",
-    "inframe_deletion",
-    "missense_variant",
-    "protein_altering_variant",
-    "splice_region_variant",
-    "incomplete_terminal_codon_variant",
-    "start_retained_variant",
-    "stop_retained_variant",
-    "synonymous_variant",
-    "coding_sequence_variant",
-    "mature_miRNA_variant",
-    "5_prime_UTR_variant",
-    "3_prime_UTR_variant",
-    "non_coding_transcript_exon_variant",
-    "intron_variant",
-    "NMD_transcript_variant",
-    "non_coding_transcript_variant",
-    "upstream_gene_variant",
-    "downstream_gene_variant",
-    "TFBS_ablation",
-    "TFBS_amplification",
-    "TF_binding_site_variant",
-    "regulatory_region_ablation",
-    "regulatory_region_amplification",
-    "feature_elongation",
-    "regulatory_region_variant",
-    "feature_truncation",
-    "intergenic_variant",
-]
-"""All the possible VEP variant effects fetched from `Ensembl v99`_ (January 2020).
-
-.. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
-"""
