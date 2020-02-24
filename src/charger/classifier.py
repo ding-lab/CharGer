@@ -313,14 +313,22 @@ class CharGer:
             f"Matched {clinvar_match_num:,d} out of {len(self.input_variants):,d} input variants to a ClinVar record"
         )
 
+    @staticmethod
+    def _run_or_skip_module(
+        module_name: str, module_avail: "ModuleAvailability"
+    ) -> bool:
+        if module_avail is ModuleAvailability.ACTIVE:
+            logger.info("Running {name} module", name=module_name)
+            return True
+        else:
+            logger.info("Skipped {name} module", name=module_name)
+            return False
+
     def run_acmg_modules(self) -> None:
         logger.info("Run all ACMG modules")
 
         # PVS1
-        if self._acmg_module_availability["PVS1"] is not ModuleAvailability.ACTIVE:
-            logger.info("Skipped PVS1 module")
-        else:
-            logger.info("Running PVS1 module")
+        if self._run_or_skip_module("PVS1", self._acmg_module_availability["PVS1"]):
             for result in self.results:
                 self.run_acmg_pvs1_module(result)
 
