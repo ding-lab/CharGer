@@ -111,7 +111,7 @@ class Variant:
         else:
             return len(self.ref_allele) > len(self.alt_allele)
 
-    def get_most_servere_csq(self) -> "CSQ":
+    def get_most_servere_csq(self) -> CSQ:
         """Get the most severe CSQ based on the consequence type.
 
         If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.

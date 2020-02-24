@@ -322,6 +322,11 @@ class CharGer:
             for result in self.results:
                 self.run_acmg_pvs1(result)
 
+        # PM4
+        if self._run_or_skip_module("PM4", self._acmg_module_availability["PM4"]):
+            for result in self.results:
+                self.run_acmg_pm4(result)
+
     def run_charger_modules(self) -> None:
         logger.info("Run all CharGer modules")
         # PSC1
@@ -333,6 +338,16 @@ class CharGer:
         if self._run_or_skip_module("PMC1", self._charger_module_availability["PMC1"]):
             for result in self.results:
                 self.run_charger_pmc1(result)
+
+        # PPC1
+        if self._run_or_skip_module("PPC1", self._charger_module_availability["PPC1"]):
+            for result in self.results:
+                self.run_charger_ppc1(result)
+
+        # PPC2
+        if self._run_or_skip_module("PPC2", self._charger_module_availability["PPC2"]):
+            for result in self.results:
+                self.run_charger_ppc2(result)
 
     def run_acmg_pvs1(self, result: "CharGerResult") -> None:
         """Run ACMG PVS1 module per variant."""
@@ -349,6 +364,18 @@ class CharGer:
                 # TODO: Check the expression effect if it's given
                 return
         result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
+
+    def run_acmg_pm4(self, result: "CharGerResult") -> None:
+        """Run ACMG PM4 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        gene_symbol = most_servere_csq["SYMBOL"]
+        if most_servere_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
+            mode = self.inheritance_genes[gene_symbol]
+            # Gene is autosomal dominant
+            if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
+                result.acmg_decisions["PM4"] = ModuleDecision.PASSED
+                return
+        result.acmg_decisions["PM4"] = ModuleDecision.FAILED
 
     def run_charger_psc1(self, result: "CharGerResult") -> None:
         """Run CharGer PSC1 module per variant."""
@@ -372,6 +399,26 @@ class CharGer:
             result.charger_decisions["PMC1"] = ModuleDecision.PASSED
         else:
             result.charger_decisions["PMC1"] = ModuleDecision.FAILED
+
+    def run_charger_ppc1(self, result: "CharGerResult") -> None:
+        """Run CharGer PPC1 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        gene_symbol = most_servere_csq["SYMBOL"]
+        if most_servere_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
+            mode = self.inheritance_genes[gene_symbol]
+            # Gene is autosomal dominant
+            if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
+                result.charger_decisions["PPC1"] = ModuleDecision.PASSED
+                return
+        result.charger_decisions["PPC1"] = ModuleDecision.FAILED
+
+    def run_charger_ppc2(self, result: "CharGerResult") -> None:
+        """Run CharGer PPC2 module per variant."""
+        most_servere_csq = result.variant.get_most_servere_csq()
+        if most_servere_csq.is_inframe_type():
+            result.charger_decisions["PPC2"] = ModuleDecision.PASSED
+        else:
+            result.charger_decisions["PPC2"] = ModuleDecision.FAILED
 
 
 class ModuleAvailability(Enum):
