@@ -290,6 +290,8 @@ class CSQ(UserDict):
         'ENST00000267430.5:c.5101N>T'
     """
 
+    data: Dict[str, Any]
+
     #: Required CSQ fields. Will raise a `ValueError` if any of the fields is missing.
     REQUIRED_FIELDS: Set[str] = set(
         [
@@ -355,7 +357,20 @@ class CSQ(UserDict):
     .. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
     """
 
-    data: Dict[str, Any]
+    ALL_TRUNCATION_TYPES: List[str] = [
+        "transcript_ablation",
+        "splice_acceptor_variant",
+        "splice_donor_variant",
+        "stop_gained",
+        "frameshift_variant",
+        "start_lost",
+    ]
+
+    ALL_INFRAME_TYPES: List[str] = [
+        "inframe_insertion",
+        "inframe_deletion",
+        "stop_lost",
+    ]
 
     def __init__(self, dict=None, **kwargs):
         super().__init__(dict, **kwargs)
@@ -387,6 +402,12 @@ class CSQ(UserDict):
                 )
             ranks.append(rank)
         return min(ranks)
+
+    def is_truncation_type(self) -> bool:
+        """Whether the consequence type is truncation."""
+
+        consequence_types = self.data["Consequence"].split("&")
+        return any(ct in self.ALL_TRUNCATION_TYPES for ct in consequence_types)
 
     def __repr__(self):
         fields = ["SYMBOL", "HGVSc", "Consequence"]

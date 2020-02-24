@@ -19,22 +19,6 @@ except ImportError:
 logger.disable("charger")  # Disable emit logs by default
 
 
-ALL_TRUNCATION_CONSEQUENCE_TYPES: List[str] = [
-    "transcript_ablation",
-    "splice_acceptor_variant",
-    "splice_donor_variant",
-    "stop_gained",
-    "frameshift_variant",
-    "start_lost",
-]
-
-ALL_INFRAME_CONSEQUENCE_TYPES: List[str] = [
-    "inframe_insertion",
-    "inframe_deletion",
-    "stop_lost",
-]
-
-
 class CharGer:
     """
     Variant classifier.
@@ -354,11 +338,10 @@ class CharGer:
         """Run ACMG PVS1 module per variant."""
         most_servere_csq = result.variant.get_most_servere_csq()
         gene_symbol = most_servere_csq["SYMBOL"]
-        consequence_types = most_servere_csq["Consequence"].split("&")
-        is_truncation = any(
-            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
-        )
-        if is_truncation and gene_symbol in self.inheritance_genes:
+        if (
+            most_servere_csq.is_truncation_type()
+            and gene_symbol in self.inheritance_genes
+        ):
             mode = self.inheritance_genes[gene_symbol]
             # Gene is autosomal dominant
             if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
@@ -371,11 +354,10 @@ class CharGer:
         """Run CharGer PSC1 module per variant."""
         most_servere_csq = result.variant.get_most_servere_csq()
         gene_symbol = most_servere_csq["SYMBOL"]
-        consequence_types = most_servere_csq["Consequence"].split("&")
-        is_truncation = any(
-            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
-        )
-        if is_truncation and gene_symbol in self.inheritance_genes:
+        if (
+            most_servere_csq.is_truncation_type()
+            and gene_symbol in self.inheritance_genes
+        ):
             mode = self.inheritance_genes[gene_symbol]
             # Gene is autosomal dominant
             if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
@@ -386,11 +368,7 @@ class CharGer:
     def run_charger_pmc1(self, result: "CharGerResult") -> None:
         """Run CharGer PMC1 module per variant."""
         most_servere_csq = result.variant.get_most_servere_csq()
-        consequence_types = most_servere_csq["Consequence"].split("&")
-        is_truncation = any(
-            ct in ALL_TRUNCATION_CONSEQUENCE_TYPES for ct in consequence_types
-        )
-        if is_truncation:
+        if most_servere_csq.is_truncation_type():
             result.charger_decisions["PMC1"] = ModuleDecision.PASSED
         else:
             result.charger_decisions["PMC1"] = ModuleDecision.FAILED
