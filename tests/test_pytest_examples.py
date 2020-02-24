@@ -2,12 +2,6 @@ from textwrap import dedent
 
 from loguru import logger
 
-from charger import __version__
-
-
-def test_version():
-    assert __version__ == "0.6.0"
-
 
 def test_log_capture(caplog):
     logger.info("Log something")
