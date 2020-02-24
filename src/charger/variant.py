@@ -1,14 +1,15 @@
 import re
-from collections import UserDict
 from contextlib import closing
 from enum import Enum, Flag, auto
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Set, Type, TypeVar
+from typing import Any, Dict, Generator, List, Optional, Type, TypeVar
 
 import attr
 from cyvcf2 import VCF
 from cyvcf2 import Variant as CyVCF2Variant
 from loguru import logger
+
+from .csq import CSQ
 
 logger.disable("charger")  # Disable emit logs by default
 
@@ -52,15 +53,15 @@ class Variant:
     ref_allele: str  #: Reference allele sequence.
     alt_allele: str  #: Alternative allele sequence (currently only allow one possible allele).
     id: Optional[str] = None
-    """ID in the VCF record. None when the original value is ``.``."""
+    """ID in the VCF record. `None` when the original value is ``.``."""
     filter: Optional[List[str]] = None
-    """FILTER in the VCF record. None when the original value is ``PASS``."""
+    """FILTER in the VCF record. `None` when the original value is ``PASS``."""
     info: Dict[str, Any] = attr.Factory(dict)
     """INFO in the VCF record."""
 
     parsed_csq: Optional[List["CSQ"]] = None
     """
-    Store list of parsed CSQ annotation per feature(transcript) of the variant.
+    All parsed CSQ annotations of the variant as a list of :class:`.CSQ` objects.
     Use :meth:`read_vcf(parse_csq=True) <read_vcf>` to automatically parse CSQ
     while reading an annotated VCF.
     """
@@ -80,7 +81,7 @@ class Variant:
             )
 
     def is_snp(self) -> bool:
-        """True if the variant is a SNP."""
+        """`True` if the variant is a SNP."""
         if len(self.ref_allele) > 1:
             return False
         elif self.alt_allele not in ("A", "C", "G", "T"):
@@ -88,11 +89,11 @@ class Variant:
         return True
 
     def is_sv(self) -> bool:
-        """True if the variant ia an SV."""
+        """`True` if the variant ia an SV."""
         return "SVTYPE" in self.info and self.info["SVTYPE"] is not None
 
     def is_indel(self) -> bool:
-        """True if the variant ia an INDEL."""
+        """`True` if the variant ia an INDEL."""
         is_sv = self.is_sv()
         if len(self.ref_allele) > 1 and not is_sv:
             return True
@@ -104,7 +105,7 @@ class Variant:
         return False
 
     def is_deletion(self) -> bool:
-        """True if the variant is a deletion."""
+        """`True` if the variant is a deletion."""
         if not self.is_indel():
             return False
         else:
@@ -146,7 +147,9 @@ class Variant:
     def _parse_csq(self, csq_fields: List[str]):
         """Parse the CSQ info string based on the CSQ field spec.
 
-        It returns a list of consequences per annotation(transcript)."""
+        It returns a list of consequences per annotation(transcript)
+        as a list of :class:`.CSQ` objects.
+        """
         all_csq = self.info["CSQ"].split(",")
         parsed_csq_per_annotation = []
         for one_csq in all_csq:
@@ -269,152 +272,6 @@ class Variant:
                 if parse_csq:
                     variant._parse_csq(csq_fields)
                 yield variant
-
-
-class CSQ(UserDict):
-    """
-    Consequence of a variant. Access each CSQ field like a `dict`.
-
-    The class is used to set the annotation records in a :class:`Variant` object.
-    List of CSQ per feature will be stored at :attr:`Variant.parsed_csq`.
-
-    Examples:
-
-        >>> csq = variant.parsed_csq[0]; csq
-        CSQ(SYMBOL='FANCM', HGVSc='ENST00000267430.5:c.5101N>T', Consequence='stop_gained', …)
-        >>> list(csq.keys())[:5]
-        ['Allele', 'Consequence', 'IMPACT', 'SYMBOL', 'Gene']
-        >>> list(csq.values())[:5]
-        ['T', 'stop_gained', 'HIGH', 'FANCM', 'ENSG00000187790']
-        >>> csq['HGVSc']
-        'ENST00000267430.5:c.5101N>T'
-    """
-
-    data: Dict[str, Any]
-
-    #: Required CSQ fields. Will raise a `ValueError` if any of the fields is missing.
-    REQUIRED_FIELDS: Set[str] = set(
-        [
-            "Allele",
-            "Consequence",
-            "SYMBOL",
-            "Gene",
-            "Feature_type",
-            "Feature",
-            "BIOTYPE",
-            "HGVSc",
-            "HGVSp",
-            "cDNA_position",
-            "CDS_position",
-            "Protein_position",
-            "Amino_acids",
-            "Codons",
-            "Existing_variation",
-            "STRAND",
-        ]
-    )
-
-    ALL_CONSEQUENCE_TYPES: List[str] = [
-        "transcript_ablation",
-        "splice_acceptor_variant",
-        "splice_donor_variant",
-        "stop_gained",
-        "frameshift_variant",
-        "stop_lost",
-        "start_lost",
-        "transcript_amplification",
-        "inframe_insertion",
-        "inframe_deletion",
-        "missense_variant",
-        "protein_altering_variant",
-        "splice_region_variant",
-        "incomplete_terminal_codon_variant",
-        "start_retained_variant",
-        "stop_retained_variant",
-        "synonymous_variant",
-        "coding_sequence_variant",
-        "mature_miRNA_variant",
-        "5_prime_UTR_variant",
-        "3_prime_UTR_variant",
-        "non_coding_transcript_exon_variant",
-        "intron_variant",
-        "NMD_transcript_variant",
-        "non_coding_transcript_variant",
-        "upstream_gene_variant",
-        "downstream_gene_variant",
-        "TFBS_ablation",
-        "TFBS_amplification",
-        "TF_binding_site_variant",
-        "regulatory_region_ablation",
-        "regulatory_region_amplification",
-        "feature_elongation",
-        "regulatory_region_variant",
-        "feature_truncation",
-        "intergenic_variant",
-    ]
-    """All the possible consequence types fetched from `Ensembl v99`_ (January 2020).
-
-    .. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
-    """
-
-    ALL_TRUNCATION_TYPES: List[str] = [
-        "transcript_ablation",
-        "splice_acceptor_variant",
-        "splice_donor_variant",
-        "stop_gained",
-        "frameshift_variant",
-        "start_lost",
-    ]
-
-    ALL_INFRAME_TYPES: List[str] = [
-        "inframe_insertion",
-        "inframe_deletion",
-        "stop_lost",
-    ]
-
-    def __init__(self, dict=None, **kwargs):
-        super().__init__(dict, **kwargs)
-        missing_fields = self.REQUIRED_FIELDS - set(self.data.keys())
-        if missing_fields:
-            raise ValueError(
-                f"CSQ misses these required fields: {', '.join(missing_fields)}"
-            )
-
-    def rank_consequence_type(self) -> int:
-        """Rank the severeness of its consequence type (CSQ column ``Consequence``).
-
-        Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
-        :data:`ALL_VEP_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
-        smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.
-        """
-        consequence_types: List[str] = self.data["Consequence"].split("&")
-        ranks: List[int] = []
-        for ct in consequence_types:
-            try:
-                rank = self.ALL_CONSEQUENCE_TYPES.index(ct)
-            except ValueError:
-                # Assign unknown consequence type to the lowest rank
-                rank = len(self.ALL_CONSEQUENCE_TYPES)
-                logger.warning(
-                    "Got unknown consequence type: {ct}; assign its rank = {rank}",
-                    ct=ct,
-                    rank=rank,
-                )
-            ranks.append(rank)
-        return min(ranks)
-
-    def is_truncation_type(self) -> bool:
-        """Whether the consequence type is truncation."""
-
-        consequence_types = self.data["Consequence"].split("&")
-        return any(ct in self.ALL_TRUNCATION_TYPES for ct in consequence_types)
-
-    def __repr__(self):
-        fields = ["SYMBOL", "HGVSc", "Consequence"]
-        details = []
-        for f in fields:
-            details.append(f"{f}={self.data[f]!r}")
-        return f"CSQ({', '.join(details)}, …)"
 
 
 def limit_seq_display(seq: str, limit: int = 5) -> str:

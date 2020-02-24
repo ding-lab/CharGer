@@ -6,5 +6,6 @@ CharGer internals
    config
    classifier
    variant
+   csq
    io
    console
