@@ -3,6 +3,7 @@ from typing import List
 import attr
 import pytest
 
+from charger import __version__
 from charger.config import CharGerConfig
 from charger.console import create_console_parser, parse_console
 
@@ -28,6 +29,11 @@ def test_default_config(default_config: CharGerConfig, required_args: List[str])
     assert config_d == default_config_d
 
 
+def test_version_string_in_log(required_args, caplog):
+    parse_console(required_args)
+    assert f"Running CharGer v{__version__} " in caplog.text
+
+
 def test_console_score_override(required_args: List[str], caplog):
     config = parse_console(
         required_args
@@ -40,7 +46,6 @@ def test_console_score_override(required_args: List[str], caplog):
     assert config.acmg_module_scores["PS2"] == 3
     assert config.charger_module_scores["PSC1"] == 5
     assert config.charger_module_scores["PMC1"] == 3
-    assert "Console parameters:" in caplog.text
     assert "--override-acmg-score=PS1=9 PS2=3" in caplog.text
 
 
