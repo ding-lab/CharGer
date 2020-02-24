@@ -87,6 +87,10 @@ class CSQ(UserDict):
 
     data: Dict[str, Any]
 
+    __slots__ = [
+        "data",
+    ]
+
     #: Required CSQ fields. Will raise a `ValueError` if any of the fields is missing.
     REQUIRED_FIELDS: Set[str] = set(
         [
