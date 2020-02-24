@@ -352,6 +352,9 @@ class CharGer:
                 return
         result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
 
+    def run_charger_psc1_pmc1_modules(self, result: "CharGerResult") -> None:
+        pass
+
 
 class ModuleAvailability(Enum):
     """Availability of a  ACMG or CharGer modules.
