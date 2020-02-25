@@ -15,8 +15,22 @@ maintainers = [
 ]
 license = "GPL-3.0-only"
 readme = "README.md"
-homepage = "https://github.com/ding-lab/CharGer"
+homepage = "https://ding-lab.github.com/CharGer"
 repository = "https://github.com/ding-lab/CharGer"
+documentation = "https://ding-lab.github.com/CharGer"
+keywords = [
+    "germline",
+    "variant",
+    "classifier",
+    "genomics"
+    "bioinformatics",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.scripts]
 charger = 'charger.console:run'
