@@ -1,7 +1,7 @@
 ## Installation
 Make sure the conda is available and set up [bioconda]. Create a new conda environment (for example, `charger_py37`):
 
-    conda create -n charger_py37 python=3.7 pip poetry cyvcf2
+    conda create -n charger_py37 python=3.7 pip poetry cyvcf2 pysam
     conda activate charger_py37
     git clone https://github.com/ding-lab/LightCharGer
     poetry install      # install charger and all its dependencies

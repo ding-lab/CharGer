@@ -3,6 +3,14 @@ from textwrap import dedent
 from loguru import logger
 
 
+def test_charger_version():
+    # make sure the version is the same on PyPI and in __init__.py
+    import pkg_resources
+    from charger import __version__
+
+    assert pkg_resources.get_distribution("charger").version == __version__
+
+
 def test_log_capture(caplog):
     logger.info("Log something")
     assert len(caplog.records) == 1

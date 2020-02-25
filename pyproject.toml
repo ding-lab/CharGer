@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "charger"
-version = "0.6.0b0"
+version = "0.6.0b1"
 description = "Characterization of germline variants"
 authors = [
     "Liang-Bo Wang <liang-bo.wang@wustl.edu>",
@@ -15,6 +15,7 @@ maintainers = [
 ]
 license = "GPL-3.0-only"
 readme = "README.md"
+homepage = "https://github.com/ding-lab/CharGer"
 repository = "https://github.com/ding-lab/CharGer"
 
 [tool.poetry.scripts]
