@@ -1,5 +1,5 @@
 ## CharGer
-⚠️ **NOTICE: To use the most stable CharGer version (v0.5.4; Python 2.7 only), please refer to the installation instructions and source code at [commit `7d7d291`] or [tag `v0.5.4`].**
+⚠️ **NOTICE: To use the most recent stable CharGer (version v0.5.4; Python 2.7 only), please refer to the installation instructions and source code at [commit `7d7d291`] or [tag `v0.5.4`]. Python 3 compatible CharGer is still under development.**
 
 CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants. CharGer gathers evidence from databases and annotations, provided by local tools and files or via ReST APIs, and classifies variants according to ACMG guidelines for assessing variant pathogenicity. User-designed pathogenicity criteria can be incorporated into CharGer’s flexible framework, thereby allowing users to create a customized classification protocol.
 
