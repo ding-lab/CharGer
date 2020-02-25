@@ -15,7 +15,7 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 ## Installation
 ⚠️ **Version 0.6.0+ is still under development and incomplete.**
 
-Install the beta CharGer (v0.6.0+; Python 3.7+) by:
+Install the beta CharGer (v0.6.0+; Python 3.6+) by:
 
     pip install --pre -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ charger
 
