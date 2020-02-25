@@ -22,7 +22,7 @@ keywords = [
     "germline",
     "variant",
     "classifier",
-    "genomics"
+    "genomics",
     "bioinformatics",
 ]
 classifiers = [
