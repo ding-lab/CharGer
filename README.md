@@ -1,4 +1,33 @@
+## CharGer
+**NOTICE: To use the same CharGer version (v0.5.4; Python 2.7 only) published in [Bioinformatics 2019][paper-bioinfo-2019],**
+**please refer to the installation instructions and source code at [commit `7d7d291`] or [branch `v0.5.4`].**
+
+CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants. CharGer gathers evidence from databases and annotations, provided by local tools and files or via ReST APIs, and classifies variants according to ACMG guidelines for assessing variant pathogenicity. User-designed pathogenicity criteria can be incorporated into CharGer’s flexible framework, thereby allowing users to create a customized classification protocol.
+
+If you use CharGer, please cite our publication so we can continue to support CharGer development:
+
+> Scott, A.D., Huang, K.-L., Weerasinghe, A., Mashl, R.J., Gao, Q., Martins Rodrigues, F., Wyczalkowski, M.A., and Ding, L. (2018). CharGer: clinical Characterization of Germline variants. Bioinformatics 35, 865–867. DOI: <https://doi.org/10.1093/bioinformatics/bty649>
+
+[commit `7d7d291`]: https://github.com/ding-lab/CharGer/tree/7d7d2911b89261fa5dceea6395a5d188a82757f2
+[branch `v0.5.4`]: https://github.com/ding-lab/CharGer/tree/v0.5.4
+[paper-bioinfo-2019]: https://doi.org/10.1093/bioinformatics/bty649
+
 ## Installation
+Install the beta CharGer version (0.6.0+; Python 3.7+) by:
+
+    pip install --pre -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ charger
+
+
+## Usage
+
+    charger -h
+
+Visit CharGer's documentations for its detailed usage.
+
+
+## Development
+
+### Environment setup
 Make sure the conda is available and set up [bioconda]. Create a new conda environment (for example, `charger_py37`):
 
     conda create -n charger_py37 python=3.7 pip poetry cyvcf2 pysam
@@ -7,7 +36,7 @@ Make sure the conda is available and set up [bioconda]. Create a new conda envir
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
 
-For python3.8, one needs to build the cyvcf2 manually from source:
+For Python 3.8, one needs to build the cyvcf2 manually from source:
 
     conda create -n charger_py38 python=3.8 poetry pip numpy
     conda activate charger_py38
@@ -30,15 +59,6 @@ For python3.8, one needs to build the cyvcf2 manually from source:
     pre-commit install
 
 [bioconda]: https://bioconda.github.io/
-
-## Usage
-
-    charger -h
-
-Visit CharGer's documentations for its detailed usage.
-
-
-## Development
 
 ### Pass tests before commit
 Style checks are enforced to pass before any git commit (by running `pre-commit install` once).
