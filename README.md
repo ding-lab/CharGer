@@ -34,31 +34,15 @@ Make sure the conda is available and set up [bioconda]. Create a new conda envir
 
     conda create -n charger_py37 python=3.7 pip poetry cyvcf2 pysam
     conda activate charger_py37
-    git clone https://github.com/ding-lab/LightCharGer
+    git clone https://github.com/ding-lab/CharGer charger
+    cd charger
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
 
-For Python 3.8, one needs to build the cyvcf2 manually from source:
+For Python 3.8, exclude cyvcf2 and pysam as bioconda hasn't started to built Python 3.8 packages:
 
     conda create -n charger_py38 python=3.8 poetry pip numpy
-    conda activate charger_py38
-    git clone https://github.com/ding-lab/LightCharGer
-    # Install cyvcf2 from source, can skip once bioconda builds python3.8 cyvcf
-    # conda create -n cyvcf python=3.8 cython numpy wheel
-    # conda activate cyvcf
-    # git clone --recursive https://github.com/brentp/cyvcf2
-    # cd cyvcf2/htslib
-    # autoheader
-    # autoconf
-    # ./configure --enable-libcurl
-    # make
-    # cd ..
-    # python setup.py bdist_wheel
-    # Additionally, run python setup.py test to make sure it passes all the tests
-    # a .whl cyvcf2 package will be available under dist/; can be re-used
-    pip install dist/cyvcf2-0.11.6-cp38-cp38-macosx_10_9_x86_64.whl
-    poetry install
-    pre-commit install
+    # same as above
 
 [bioconda]: https://bioconda.github.io/
 
@@ -81,6 +65,12 @@ but it's recommended to run and pass all the tests and type checks by:
     mypy --pretty src tests
 
 The repo should always pass all the tests described above.
+
+### Test using tox
+
+    conda install tox tox-conda
+    tox -p auto -c tox_conda.ini
+
 
 ### Build documentation
 CharGer's documentation is powered by [sphinx] under `docs`. Build a new version by:

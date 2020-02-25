@@ -17,6 +17,7 @@ __pycache__
 
 .mypy_cache/
 .pytest_cache/
+.tox/
 
 docs/_build/
 
