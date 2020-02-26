@@ -5,23 +5,29 @@ from charger.config import CharGerConfig
 from charger.console import setup_logger
 
 REPO_ROOT = Path(__file__).parent.parent
+path_in_repo = REPO_ROOT.joinpath
 
+# Enable logging to stderr
 setup_logger()
+
+# Configure CharGer
 config = CharGerConfig(
-    input=REPO_ROOT.joinpath(
+    input=path_in_repo(
         "tests/examples/10.1056_NEJMoa1508054_S4_AD_vep85.sorted.vcf.gz"
     ),
-    pathogenic_variant=REPO_ROOT.joinpath(
+    pathogenic_variant=path_in_repo(
         "tests/examples/annotations/grch37_pathogenic_variants.vcf.gz"
     ),
-    inheritance_gene_table=REPO_ROOT.joinpath(
+    inheritance_gene_table=path_in_repo(
         "tests/examples/annotations/inheritance_gene_table.tsv.gz"
     ),
-    PP2_gene_list=REPO_ROOT.joinpath("tests/examples/annotations/pp2_gene_list.txt.gz"),
-    clinvar_table=REPO_ROOT.joinpath(
+    PP2_gene_list=path_in_repo("tests/examples/annotations/pp2_gene_list.txt.gz"),
+    clinvar_table=path_in_repo(
         "tests/examples/annotations/clinvar_chrom_22_only.b37.tsv.gz"
     ),
 )
+
+# Initiate and run the CharGer classifier
 charger = CharGer(config)
 charger.setup()
 charger.match_clinvar()
