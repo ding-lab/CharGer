@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>console module &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Changelog" href="../changelog.html" />
+    <link rel="prev" title="io module" href="io.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">CharGer Internals</a><ul>
+      <li>Previous: <a href="io.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+      <li>Next: <a href="../changelog.html" title="next chapter">Changelog</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-charger.console">
+<span id="console-module"></span><h1><code class="docutils literal notranslate"><span class="pre">console</span></code> module<a class="headerlink" href="#module-charger.console" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="charger.console.create_console_parser">
+<code class="sig-name descname">create_console_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.create_console_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create CharGer’s commandline parser.</p>
+<p>See <a class="reference internal" href="config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a> for the detailed specification of each parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser" title="(in Python v3.8)">argparse.ArgumentParser</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="charger.console.parse_console">
+<code class="sig-name descname">parse_console</code><span class="sig-paren">(</span><em class="sig-param">args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.parse_console" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a> object
+based on the command-line arguments or the given <cite>args</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig">charger.config.CharGerConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="charger.console.setup_logger">
+<code class="sig-name descname">setup_logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.setup_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up stderr logging format.</p>
+<p>Override the logging format and colors in command line interface
+by setting up the environment variables such as <code class="docutils literal notranslate"><span class="pre">LOGURU_FORMAT</span></code>.
+See <a class="reference external" href="https://loguru.readthedocs.io/en/stable/api/logger.html#env">Loguru documentation</a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="charger.console.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point of the program.</p>
+<p>When user runs <code class="docutils literal notranslate"><span class="pre">charger</span></code>, the script calls this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-charger.argtype">
+<span id="argtype-module"></span><h1><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module<a class="headerlink" href="#module-charger.argtype" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="charger.argtype.PathType">
+<em class="property">class </em><code class="sig-name descname">PathType</code><span class="sig-paren">(</span><em class="sig-param">exists=None</em>, <em class="sig-param">type=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.argtype.PathType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse file path arguments as a <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></a> object.</p>
+<p>Type factory for ArgumentParser.add_argument() that validates the file path arguments.
+Adapted from <a class="reference external" href="https://stackoverflow.com/a/33181083">https://stackoverflow.com/a/33181083</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exists</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em>) – The path must exist when <cite>True</cite>, and the path must not exist when <cite>False</cite>.
+Skip the check when <cite>None</cite>.</p></li>
+<li><p><strong>type</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>]</em><em>]</em>) – <code class="docutils literal notranslate"><span class="pre">file</span></code> will be checked by <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path.is_file" title="(in Python v3.8)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">is_file()</span></code></a>.
+<code class="docutils literal notranslate"><span class="pre">dir</span></code> will be checked by <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path.is_dir" title="(in Python v3.8)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">is_dir()</span></code></a>.
+It also accepts a function that takes <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a> object
+and returns <cite>True</cite> for valid paths.
+Skip the check when <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Add an argument that must be an existing file, but can also be specified as a dash (<code class="docutils literal notranslate"><span class="pre">-</span></code>) in the command,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;existing_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Add an argument for a new path that must NOT exist, but the parent folder exists,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CreatablePathType</span> <span class="o">=</span> <span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">is_dir</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;non_existing_folder&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">CreatablePathType</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="charger.argtype.ModuleScoreOverrideType">
+<em class="property">class </em><code class="sig-name descname">ModuleScoreOverrideType</code><span class="sig-paren">(</span><em class="sig-param">defaults</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.argtype.ModuleScoreOverrideType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate override arguments to new scores of all modules.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">default_scores</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">override_score</span> <span class="o">=</span> <span class="n">ModuleScoreOverrideType</span><span class="p">(</span><span class="n">default_scores</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">override_score</span><span class="p">(</span><span class="s1">&#39;A=7 B=-4&#39;</span><span class="p">)</span>
+<span class="go">{&#39;A&#39;: 7, &#39;B&#39;: -4}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>int</strong><strong>] </strong><strong>defaults</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Development Guide &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CharGer Internals" href="internals/index.html" />
+    <link rel="prev" title="CharGer: Characterization of Germline variants" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#workflow-overview">Workflow overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-environment">Set up environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#check-styles">Check styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#check-types">Check types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-functional-tests">Run functional tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-multiple-python-versions">Test multiple Python versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-documentation">Build documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#develop-using-visual-studio-code">Develop using Visual Studio Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">CharGer: Characterization of Germline variants</a></li>
+      <li>Next: <a href="internals/index.html" title="next chapter">CharGer Internals</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="development-guide">
+<h1>Development Guide<a class="headerlink" href="#development-guide" title="Permalink to this headline">¶</a></h1>
+<p>Here are details of contributing to CharGer.</p>
+<div class="section" id="workflow-overview">
+<h2>Workflow overview<a class="headerlink" href="#workflow-overview" title="Permalink to this headline">¶</a></h2>
+<p>A typical workflow of updating CharGer involves these steps:</p>
+<ol class="arabic simple">
+<li><p>Add new code</p></li>
+<li><p>Add new tests for the new code</p></li>
+<li><p>Pass all the style checks (<a class="reference external" href="https://github.com/timothycrosley/isort/">isort</a>, <a class="reference external" href="https://github.com/psf/black">black</a>, and <a class="reference external" href="https://flake8.pycqa.org/">flake8</a>)</p></li>
+<li><p>Pass all the type checks (<a class="reference external" href="http://www.mypy-lang.org/">mypy</a>)</p></li>
+<li><p>Pass all the functional tests (<a class="reference external" href="https://docs.pytest.org/">pytest</a>)</p></li>
+<li><p>Update documentation (<a class="reference external" href="https://www.sphinx-doc.org/">sphinx</a>)</p></li>
+<li><p>Commit the change</p></li>
+</ol>
+<p>Below are the details of each step.</p>
+</div>
+<div class="section" id="set-up-environment">
+<h2>Set up environment<a class="headerlink" href="#set-up-environment" title="Permalink to this headline">¶</a></h2>
+<p>Make sure the conda is available and has set up <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channels.
+Create a new conda environment (for example, <code class="docutils literal notranslate"><span class="pre">charger_py37</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">charger_py37</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span> <span class="n">pip</span> <span class="n">poetry</span> <span class="n">cyvcf2</span> <span class="n">pysam</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">charger_py37</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ding</span><span class="o">-</span><span class="n">lab</span><span class="o">/</span><span class="n">CharGer</span> <span class="n">charger</span>
+<span class="n">cd</span> <span class="n">charger</span>
+<span class="n">poetry</span> <span class="n">install</span>      <span class="c1"># install charger and all its dependencies</span>
+<span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>  <span class="c1"># enforce style check at every commit</span>
+</pre></div>
+</div>
+<p>On Python 3.8, exclude cyvcf2 and pysam as bioconda hasn’t started to built Python 3.8 packages:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">charger_py38</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.8</span> <span class="n">poetry</span> <span class="n">pip</span> <span class="n">numpy</span>
+<span class="c1"># ... continue the same as above</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="check-styles">
+<h2>Check styles<a class="headerlink" href="#check-styles" title="Permalink to this headline">¶</a></h2>
+<p>Style checks are enforced to pass before any git commit (by running <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> once).
+To run all the style checks at any time, run the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">run</span> <span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>Otherwise, run the style checks manually by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">isort</span>               <span class="c1"># Sort the import order</span>
+<span class="n">black</span> <span class="n">src</span> <span class="n">tests</span>     <span class="c1"># Format the code</span>
+<span class="n">flake8</span>              <span class="c1"># Check coding style</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="check-types">
+<h2>Check types<a class="headerlink" href="#check-types" title="Permalink to this headline">¶</a></h2>
+<p>Type checks use <a class="reference external" href="http://www.mypy-lang.org/">mypy</a> to infer the data types of the Python variables and report any potential mismatches (say, passing string where an integer is required). Run type checks by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mypy</span> <span class="o">--</span><span class="n">pretty</span> <span class="n">src</span> <span class="n">tests</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-functional-tests">
+<h2>Run functional tests<a class="headerlink" href="#run-functional-tests" title="Permalink to this headline">¶</a></h2>
+<p>Functional tests check if the program works as expected. All the tests are under <code class="docutils literal notranslate"><span class="pre">tests</span></code> folder. Some tests check one particular functions, and some other tests check if the output is expected given a certain CharGer config.</p>
+<p>Run functional tests by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">v</span>
+</pre></div>
+</div>
+<p>Functional tests and type checks are not run automatically for every commit, but it’s recommended to run and pass all the tests and type checks.</p>
+<p>The repo should always pass all the tests (style checks, type checks, and functional tests) described above.</p>
+</div>
+<div class="section" id="test-multiple-python-versions">
+<h2>Test multiple Python versions<a class="headerlink" href="#test-multiple-python-versions" title="Permalink to this headline">¶</a></h2>
+<p>To make sure CharGer works on all Python versions, we use tox to run tests on each supported Python version:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">tox</span> <span class="n">tox</span><span class="o">-</span><span class="n">conda</span>
+<span class="n">tox</span> <span class="o">-</span><span class="n">p</span> <span class="n">auto</span> <span class="o">-</span><span class="n">c</span> <span class="n">tox_conda</span><span class="o">.</span><span class="n">ini</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="build-documentation">
+<h2>Build documentation<a class="headerlink" href="#build-documentation" title="Permalink to this headline">¶</a></h2>
+<p>CharGer’s documentation is powered by <a class="reference external" href="https://www.sphinx-doc.org/">sphinx</a> under <code class="docutils literal notranslate"><span class="pre">docs</span></code>. Build or update the documentation by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span>
+<span class="n">make</span> <span class="n">html</span>
+</pre></div>
+</div>
+<p>And the documentation will be available under <code class="docutils literal notranslate"><span class="pre">docs/_build/html</span></code>.</p>
+</div>
+<div class="section" id="develop-using-visual-studio-code">
+<h2>Develop using Visual Studio Code<a class="headerlink" href="#develop-using-visual-studio-code" title="Permalink to this headline">¶</a></h2>
+<p>Here are some additional setup that utilize <a class="reference external" href="https://code.visualstudio.com/">Visual Studio Code</a>’s IDE:</p>
+<ul class="simple">
+<li><p>Run style checks (<a class="reference external" href="https://github.com/psf/black">black</a>, <a class="reference external" href="http://www.mypy-lang.org/">mypy</a> and <a class="reference external" href="https://flake8.pycqa.org/">flake8</a>) at every file save</p></li>
+<li><p>The default build task will call <a class="reference external" href="https://www.sphinx-doc.org/">sphinx</a> to build the documentation</p></li>
+<li><p>A debug shortcut to go into CharGer internals using a startup script <code class="docutils literal notranslate"><span class="pre">scripts/debug_example.py</span></code></p></li>
+</ul>
+<p>Add the following workspace settings <code class="docutils literal notranslate"><span class="pre">.vscode/settings.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;python.autoComplete.extraPaths&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">],</span>
+    <span class="nt">&quot;python.formatting.provider&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;editor.formatOnSave&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;editor.wordWrapColumn&quot;</span><span class="p">:</span> <span class="mi">120</span><span class="p">,</span>
+    <span class="nt">&quot;python.linting.enabled&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;python.linting.flake8Enabled&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;python.linting.mypyEnabled&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;python.linting.mypyArgs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;--follow-imports=normal&quot;</span><span class="p">,</span> <span class="s2">&quot;--show-column-numbers&quot;</span><span class="p">],</span>
+    <span class="nt">&quot;python.testing.pytestEnabled&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="nt">&quot;python.testing.pytestArgs&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;junit_family=xunit1&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Set up the documentation build as a task in <code class="docutils literal notranslate"><span class="pre">.vscode/tasks.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;tasks&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Build document&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;process&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;options&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;cwd&quot;</span><span class="p">:</span> <span class="s2">&quot;${workspaceFolder}/docs&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;command&quot;</span><span class="p">:</span> <span class="s2">&quot;${config:python.pythonPath}&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;sphinx&quot;</span><span class="p">,</span> <span class="s2">&quot;-b&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/html&quot;</span><span class="p">],</span>
+            <span class="nt">&quot;group&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;isDefault&quot;</span><span class="p">:</span> <span class="kc">true</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;presentation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;echo&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="nt">&quot;reveal&quot;</span><span class="p">:</span> <span class="s2">&quot;silent&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;focus&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nt">&quot;panel&quot;</span><span class="p">:</span> <span class="s2">&quot;dedicated&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;showReuseMessage&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="nt">&quot;clear&quot;</span><span class="p">:</span> <span class="kc">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Set up the the debug shortcut in <code class="docutils literal notranslate"><span class="pre">.vscode/launch.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.2.0&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;configurations&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Run CharGer&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;${workspaceFolder}/scripts/debug_example.py&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

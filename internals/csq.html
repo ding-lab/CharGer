@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>csq module &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="io module" href="io.html" />
+    <link rel="prev" title="variant module" href="variant.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">CharGer Internals</a><ul>
+      <li>Previous: <a href="variant.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+      <li>Next: <a href="io.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="csq-module">
+<h1><code class="docutils literal notranslate"><span class="pre">csq</span></code> module<a class="headerlink" href="#csq-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="csq">
+<h2><code class="docutils literal notranslate"><span class="pre">CSQ</span></code><a class="headerlink" href="#csq" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="charger.csq.CSQ">
+<em class="property">class </em><code class="sig-name descname">CSQ</code><span class="sig-paren">(</span><em class="sig-param">dict=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.UserDict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.UserDict</span></code></a></p>
+<p>Consequence of a variant. Access each CSQ field like a <cite>dict</cite>.</p>
+<p>The class is used to set the annotation records in a <a class="reference internal" href="variant.html#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.
+List of CSQ per feature will be stored at <a class="reference internal" href="variant.html#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">csq</span> <span class="o">=</span> <span class="n">variant</span><span class="o">.</span><span class="n">parsed_csq</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">csq</span>
+<span class="go">CSQ(SYMBOL=&#39;FANCM&#39;, HGVSc=&#39;ENST00000267430.5:c.5101N&gt;T&#39;, Consequence=&#39;stop_gained&#39;, …)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">csq</span><span class="o">.</span><span class="n">keys</span><span class="p">())[:</span><span class="mi">5</span><span class="p">]</span>
+<span class="go">[&#39;Allele&#39;, &#39;Consequence&#39;, &#39;IMPACT&#39;, &#39;SYMBOL&#39;, &#39;Gene&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">csq</span><span class="o">.</span><span class="n">values</span><span class="p">())[:</span><span class="mi">5</span><span class="p">]</span>
+<span class="go">[&#39;T&#39;, &#39;stop_gained&#39;, &#39;HIGH&#39;, &#39;FANCM&#39;, &#39;ENSG00000187790&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csq</span><span class="p">[</span><span class="s1">&#39;HGVSc&#39;</span><span class="p">]</span>
+<span class="go">&#39;ENST00000267430.5:c.5101N&gt;T&#39;</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="charger.csq.CSQ.data">
+<code class="sig-name descname">data</code><a class="headerlink" href="#charger.csq.CSQ.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.csq.CSQ.REQUIRED_FIELDS">
+<code class="sig-name descname">REQUIRED_FIELDS</code><em class="property">: Set[str]</em><em class="property"> = {'Allele', 'Amino_acids', 'BIOTYPE', 'CDS_position', 'Codons', 'Consequence', 'Existing_variation', 'Feature', 'Feature_type', 'Gene', 'HGVSc', 'HGVSp', 'Protein_position', 'STRAND', 'SYMBOL', 'cDNA_position'}</em><a class="headerlink" href="#charger.csq.CSQ.REQUIRED_FIELDS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required CSQ fields. Will raise a <cite>ValueError</cite> if any of the fields is missing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="charger.csq.CSQ.consequence_types">
+<em class="property">property </em><code class="sig-name descname">consequence_types</code><a class="headerlink" href="#charger.csq.CSQ.consequence_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all the consequence types separated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="charger.csq.CSQ.rank_consequence_type">
+<code class="sig-name descname">rank_consequence_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.rank_consequence_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rank the severeness of its consequence type (CSQ column <code class="docutils literal notranslate"><span class="pre">Consequence</span></code>).</p>
+<p>Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
+<a class="reference internal" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="charger.csq.ALL_CONSEQUENCE_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_CONSEQUENCE_TYPES</span></code></a>. When the CSQ has multiple consequence types separated by <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, return the
+smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.csq.CSQ._abc_impl">
+<code class="sig-name descname">_abc_impl</code><em class="property"> = &lt;_abc_data object&gt;</em><a class="headerlink" href="#charger.csq.CSQ._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="charger.csq.CSQ.is_truncation_type">
+<code class="sig-name descname">is_truncation_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.is_truncation_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the consequence type is truncation.</p>
+<p>See <a class="reference internal" href="#charger.csq.ALL_TRUNCATION_TYPES" title="charger.csq.ALL_TRUNCATION_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_TRUNCATION_TYPES</span></code></a> for the full list of consequence types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="charger.csq.CSQ.is_inframe_type">
+<code class="sig-name descname">is_inframe_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.is_inframe_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the consequence type is inframe.</p>
+<p>See <a class="reference internal" href="#charger.csq.ALL_INFRAME_TYPES" title="charger.csq.ALL_INFRAME_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_INFRAME_TYPES</span></code></a> for the full list of consequence types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="constants-and-helpers">
+<h2>Constants and helpers<a class="headerlink" href="#constants-and-helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="charger.csq.ALL_CONSEQUENCE_TYPES">
+<code class="sig-name descname">ALL_CONSEQUENCE_TYPES</code><em class="property">: List[str]</em><em class="property"> = ['transcript_ablation', 'splice_acceptor_variant', 'splice_donor_variant', 'stop_gained', 'frameshift_variant', 'stop_lost', 'start_lost', 'transcript_amplification', 'inframe_insertion', 'inframe_deletion', 'missense_variant', 'protein_altering_variant', 'splice_region_variant', 'incomplete_terminal_codon_variant', 'start_retained_variant', 'stop_retained_variant', 'synonymous_variant', 'coding_sequence_variant', 'mature_miRNA_variant', '5_prime_UTR_variant', '3_prime_UTR_variant', 'non_coding_transcript_exon_variant', 'intron_variant', 'NMD_transcript_variant', 'non_coding_transcript_variant', 'upstream_gene_variant', 'downstream_gene_variant', 'TFBS_ablation', 'TFBS_amplification', 'TF_binding_site_variant', 'regulatory_region_ablation', 'regulatory_region_amplification', 'feature_elongation', 'regulatory_region_variant', 'feature_truncation', 'intergenic_variant']</em><a class="headerlink" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>All the possible consequence types fetched from <a class="reference external" href="https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html">Ensembl v99</a> (January 2020).</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="charger.csq.ALL_TRUNCATION_TYPES">
+<code class="sig-name descname">ALL_TRUNCATION_TYPES</code><em class="property">: List[str]</em><em class="property"> = ['transcript_ablation', 'splice_acceptor_variant', 'splice_donor_variant', 'stop_gained', 'frameshift_variant', 'start_lost']</em><a class="headerlink" href="#charger.csq.ALL_TRUNCATION_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>All consequence types considered as a truncation.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="charger.csq.ALL_INFRAME_TYPES">
+<code class="sig-name descname">ALL_INFRAME_TYPES</code><em class="property">: List[str]</em><em class="property"> = ['inframe_insertion', 'inframe_deletion', 'stop_lost']</em><a class="headerlink" href="#charger.csq.ALL_INFRAME_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd><p>All consequence types considered as to be inframe.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

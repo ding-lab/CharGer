@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Changelog &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="console module" href="internals/console.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#unreleased">0.6.0 (<em>unreleased</em>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.5.4 (2019-09-30)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">0.5.3 (2019-09-30)</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="internals/console.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="unreleased">
+<h2>0.6.0 (<em>unreleased</em>)<a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="improvements">
+<h3>Improvements<a class="headerlink" href="#improvements" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>0.5.4 (2019-09-30)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h3>Improvements<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added support for vcf files annotated with VEP releases ≥ 90.</p></li>
+<li><p>When present in VEP annotation, CharGer prioritizes gnomAD population frequencies over ExAC.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>0.5.3 (2019-09-30)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h3>Improvements<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="id5">
+<h3>Bug Fixes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed parsing ClinVar information.</p></li>
+<li><p>Fixed <code class="docutils literal notranslate"><span class="pre">parseMacPathogenicity()</span></code> to handle variants with multiple submitters that received both benign and pathogenic classifications, but no conflict is reported (i.e. <code class="docutils literal notranslate"><span class="pre">isPathogenic</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">and</span> <span class="pre">isBenign</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">and</span> <span class="pre">isConflicted</span> <span class="pre">==</span> <span class="pre">0</span></code>).</p></li>
+<li><p>[<a class="reference external" href="https://github.com/ding-lab/CharGer/pull/19">#19</a>] Fixed <code class="docutils literal notranslate"><span class="pre">var.splitHGVSc</span></code> doesn’t consider strand information. When <code class="docutils literal notranslate"><span class="pre">override</span> <span class="pre">=</span> <span class="pre">True</span></code>, the ref and alt for genomic variants would be wrongly changed for minus strand transcripts. Changed to <code class="docutils literal notranslate"><span class="pre">override</span> <span class="pre">=</span> <span class="pre">False</span></code>.</p></li>
+<li><p>[<a class="reference external" href="https://github.com/ding-lab/CharGer/pull/19">#19</a>] Fixed coordinates in <code class="docutils literal notranslate"><span class="pre">getMacClinVarTSV()</span></code> to match <code class="docutils literal notranslate"><span class="pre">readVCF()</span></code>.</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

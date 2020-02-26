@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CharGer Internals &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="config module" href="config.html" />
+    <link rel="prev" title="Development Guide" href="../development.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CharGer Internals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../development.html" title="previous chapter">Development Guide</a></li>
+      <li>Next: <a href="config.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="charger-internals">
+<h1>CharGer Internals<a class="headerlink" href="#charger-internals" title="Permalink to this headline">¶</a></h1>
+<p>Here documents CharGer’s internal design by modules:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config.html#chargerconfig"><code class="docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html#constants-and-helpers">Constants and helpers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html#charger"><code class="docutils literal notranslate"><span class="pre">CharGer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html#chargerresult"><code class="docutils literal notranslate"><span class="pre">CharGerResult</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html#module-helper-classes">Module helper classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="variant.html#variant"><code class="docutils literal notranslate"><span class="pre">Variant</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html#geneinheritancemode"><code class="docutils literal notranslate"><span class="pre">GeneInheritanceMode</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html#clinicalsignificance"><code class="docutils literal notranslate"><span class="pre">ClinicalSignificance</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html#helpers">Helpers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="csq.html#csq"><code class="docutils literal notranslate"><span class="pre">CSQ</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html#constants-and-helpers">Constants and helpers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io.html#read-tsv"><code class="docutils literal notranslate"><span class="pre">read_tsv</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#read-csv"><code class="docutils literal notranslate"><span class="pre">read_csv</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#read-lines"><code class="docutils literal notranslate"><span class="pre">read_lines</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#helpers">Helpers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+</ul>
+</div>
+<div class="section" id="reuse-charger-modules">
+<h2>Reuse CharGer modules<a class="headerlink" href="#reuse-charger-modules" title="Permalink to this headline">¶</a></h2>
+<p>The module can be accessed externally by <code class="docutils literal notranslate"><span class="pre">charger.&lt;module_name&gt;</span></code>. For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">charger.classifier</span> <span class="kn">import</span> <span class="n">CharGer</span>
+<span class="kn">from</span> <span class="nn">charger.config</span> <span class="kn">import</span> <span class="n">CharGerConfig</span>
+<span class="kn">from</span> <span class="nn">charger.console</span> <span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="kn">from</span> <span class="nn">charger.variant</span> <span class="kn">import</span> <span class="n">Variant</span>
+</pre></div>
+</div>
+<p>The following script programmatically calls CharGer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable logging to stderr</span>
+<span class="n">setup_logger</span><span class="p">()</span>
+
+<span class="c1"># Configure CharGer</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">CharGerConfig</span><span class="p">(</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">path_in_repo</span><span class="p">(</span>
+        <span class="s2">&quot;tests/examples/10.1056_NEJMoa1508054_S4_AD_vep85.sorted.vcf.gz&quot;</span>
+    <span class="p">),</span>
+    <span class="n">pathogenic_variant</span><span class="o">=</span><span class="n">path_in_repo</span><span class="p">(</span>
+        <span class="s2">&quot;tests/examples/annotations/grch37_pathogenic_variants.vcf.gz&quot;</span>
+    <span class="p">),</span>
+    <span class="n">inheritance_gene_table</span><span class="o">=</span><span class="n">path_in_repo</span><span class="p">(</span>
+        <span class="s2">&quot;tests/examples/annotations/inheritance_gene_table.tsv.gz&quot;</span>
+    <span class="p">),</span>
+    <span class="n">PP2_gene_list</span><span class="o">=</span><span class="n">path_in_repo</span><span class="p">(</span><span class="s2">&quot;tests/examples/annotations/pp2_gene_list.txt.gz&quot;</span><span class="p">),</span>
+    <span class="n">clinvar_table</span><span class="o">=</span><span class="n">path_in_repo</span><span class="p">(</span>
+        <span class="s2">&quot;tests/examples/annotations/clinvar_chrom_22_only.b37.tsv.gz&quot;</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Initiate and run the CharGer classifier</span>
+<span class="n">charger</span> <span class="o">=</span> <span class="n">CharGer</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">charger</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+<span class="n">charger</span><span class="o">.</span><span class="n">match_clinvar</span><span class="p">()</span>
+<span class="n">charger</span><span class="o">.</span><span class="n">run_acmg_modules</span><span class="p">()</span>
+<span class="n">charger</span><span class="o">.</span><span class="n">run_charger_modules</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

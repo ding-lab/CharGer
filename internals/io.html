@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>io module &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="console module" href="console.html" />
+    <link rel="prev" title="csq module" href="csq.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">CharGer Internals</a><ul>
+      <li>Previous: <a href="csq.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+      <li>Next: <a href="console.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="io-module">
+<h1><code class="docutils literal notranslate"><span class="pre">io</span></code> module<a class="headerlink" href="#io-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="read-tsv">
+<h2><code class="docutils literal notranslate"><span class="pre">read_tsv</span></code><a class="headerlink" href="#read-tsv" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="charger.io.read_tsv">
+<code class="sig-name descname">read_tsv</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">dialect='unix_tab'</em>, <em class="sig-param">as_dict=False</em>, <em class="sig-param">columns=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_tsv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a plain-text or gzip compressed TSV table.</p>
+<p>When <cite>as_dict</cite> is <cite>False</cite>, return each row as a list using <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.reader" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">csv.reader()</span></code></a>.</p>
+<p>When <cite>as_dict</cite> is <cite>True</cite>, return each row as a <cite>dict</cite> mapping from the column name to the corresponding value
+using <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.DictReader" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.DictReader</span></code></a>. <cite>columns</cite> will be used as the column names. If <cite>columns</cite> is omitted, the first
+row will be treated as the column names.</p>
+<p>Additional arguments <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> are passed to the underlying function.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tsv_pth</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;inheritance_gene_table.tsv.gz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">read_tsv</span><span class="p">(</span><span class="n">tsv_pth</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reader</span><span class="p">);</span> <span class="n">header</span>
+<span class="go">[&#39;gene&#39;, &#39;disease&#39;, &#39;modes_of_inheritance&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reader</span><span class="p">);</span> <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">&#39;autosomal recessive, autosomal dominant&#39;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">read_tsv</span><span class="p">(</span><span class="n">tsv_pth</span><span class="p">,</span> <span class="n">as_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row_d</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">row_d</span><span class="p">[</span><span class="s1">&#39;gene&#39;</span><span class="p">]</span>
+<span class="go">&#39;SDHA&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – </p></li>
+<li><p><strong>dialect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
+<li><p><strong>as_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
+<li><p><strong>columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Generator[Any, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="read-csv">
+<h2><code class="docutils literal notranslate"><span class="pre">read_csv</span></code><a class="headerlink" href="#read-csv" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="charger.io.read_csv">
+<code class="sig-name descname">read_csv</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">*</em>, <em class="sig-param">dialect='excel'</em>, <em class="sig-param">as_dict=False</em>, <em class="sig-param">columns=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a plain-text or gzip compressed CSV table.</p>
+<p>See <a class="reference internal" href="#charger.io.read_tsv" title="charger.io.read_tsv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_tsv()</span></code></a> for its usage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – </p></li>
+<li><p><strong>dialect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
+<li><p><strong>as_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
+<li><p><strong>columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Generator[Any, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="read-lines">
+<h2><code class="docutils literal notranslate"><span class="pre">read_lines</span></code><a class="headerlink" href="#read-lines" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="charger.io.read_lines">
+<code class="sig-name descname">read_lines</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a plain-text or gzip compressed text per line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="helpers">
+<h2>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="charger.io.unix_tab">
+<em class="property">class </em><code class="sig-name descname">unix_tab</code><a class="headerlink" href="#charger.io.unix_tab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.excel" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.excel</span></code></a></p>
+<p>The <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.Dialect" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.Dialect</span></code></a> to read TSV.</p>
+<dl class="attribute">
+<dt id="charger.io.unix_tab.delimiter">
+<code class="sig-name descname">delimiter</code><em class="property"> = '\t'</em><a class="headerlink" href="#charger.io.unix_tab.delimiter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.io.unix_tab.lineterminator">
+<code class="sig-name descname">lineterminator</code><em class="property"> = '\n'</em><a class="headerlink" href="#charger.io.unix_tab.lineterminator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

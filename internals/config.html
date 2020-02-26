@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>config module &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="classifier module" href="classifier.html" />
+    <link rel="prev" title="CharGer Internals" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">CharGer Internals</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">CharGer Internals</a></li>
+      <li>Next: <a href="classifier.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="config-module">
+<h1><code class="docutils literal notranslate"><span class="pre">config</span></code> module<a class="headerlink" href="#config-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="chargerconfig">
+<h2><code class="docutils literal notranslate"><span class="pre">CharGerConfig</span></code><a class="headerlink" href="#chargerconfig" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="charger.config.CharGerConfig">
+<em class="property">class </em><code class="sig-name descname">CharGerConfig</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">input=None</em>, <em class="sig-param">output=None</em>, <em class="sig-param">hotspot3d_cluster=None</em>, <em class="sig-param">pathogenic_variant=None</em>, <em class="sig-param">override_variant_info=False</em>, <em class="sig-param">include_vcf_details=False</em>, <em class="sig-param">clinvar_table=None</em>, <em class="sig-param">rare_threshold=0.0005</em>, <em class="sig-param">common_threshold=0.005</em>, <em class="sig-param">acmg_module_scores=NOTHING</em>, <em class="sig-param">charger_module_scores=NOTHING</em>, <em class="sig-param">min_pathogenic_score=9</em>, <em class="sig-param">min_likely_pathogenic_score=5</em>, <em class="sig-param">max_likely_benign_score=-4</em>, <em class="sig-param">max_benign_score=-8</em>, <em class="sig-param">disease_specific=False</em>, <em class="sig-param">inheritance_gene_table=None</em>, <em class="sig-param">PP2_gene_list=None</em>, <em class="sig-param">BP1_gene_list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.config.CharGerConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>CharGer configuration.</p>
+<p>CharGer can be configured programatically using this object.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">CharGerConfig</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>output</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>hotspot3d_cluster</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>pathogenic_variant</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>override_variant_info</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
+<li><p><strong>include_vcf_details</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
+<li><p><strong>clinvar_table</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>rare_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p></li>
+<li><p><strong>common_threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p></li>
+<li><p><strong>int</strong><strong>] </strong><strong>acmg_module_scores</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
+<li><p><strong>int</strong><strong>] </strong><strong>charger_module_scores</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
+<li><p><strong>min_pathogenic_score</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>min_likely_pathogenic_score</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>max_likely_benign_score</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>max_benign_score</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>disease_specific</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
+<li><p><strong>inheritance_gene_table</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>PP2_gene_list</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+<li><p><strong>BP1_gene_list</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.input">
+<code class="sig-name descname">input</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the input VCF.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.output">
+<code class="sig-name descname">output</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the CharGer output.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.hotspot3d_cluster">
+<code class="sig-name descname">hotspot3d_cluster</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.hotspot3d_cluster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.pathogenic_variant">
+<code class="sig-name descname">pathogenic_variant</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.pathogenic_variant" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.override_variant_info">
+<code class="sig-name descname">override_variant_info</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.override_variant_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.include_vcf_details">
+<code class="sig-name descname">include_vcf_details</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.include_vcf_details" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.clinvar_table">
+<code class="sig-name descname">clinvar_table</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.clinvar_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path the the Tabix indexed ClinVar database table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.rare_threshold">
+<code class="sig-name descname">rare_threshold</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.rare_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.common_threshold">
+<code class="sig-name descname">common_threshold</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.common_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.acmg_module_scores">
+<code class="sig-name descname">acmg_module_scores</code><em class="property">: Dict[str, int]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.acmg_module_scores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.charger_module_scores">
+<code class="sig-name descname">charger_module_scores</code><em class="property">: Dict[str, int]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.charger_module_scores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.min_pathogenic_score">
+<code class="sig-name descname">min_pathogenic_score</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.min_pathogenic_score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.min_likely_pathogenic_score">
+<code class="sig-name descname">min_likely_pathogenic_score</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.min_likely_pathogenic_score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.max_likely_benign_score">
+<code class="sig-name descname">max_likely_benign_score</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.max_likely_benign_score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.max_benign_score">
+<code class="sig-name descname">max_benign_score</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.max_benign_score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.disease_specific">
+<code class="sig-name descname">disease_specific</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.disease_specific" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to enable disease specific detection for <a class="reference internal" href="#charger.config.CharGerConfig.inheritance_gene_table" title="charger.config.CharGerConfig.inheritance_gene_table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">inheritance_gene_table</span></code></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.inheritance_gene_table">
+<code class="sig-name descname">inheritance_gene_table</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.inheritance_gene_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to a TSV table of inheritance genes.</p>
+<p>The table columns must have these three columns in order: <code class="docutils literal notranslate"><span class="pre">gene</span></code>, <code class="docutils literal notranslate"><span class="pre">diseases</span></code>, <code class="docutils literal notranslate"><span class="pre">modes_of_inheritance</span></code>.
+The first row is header and will be ignored.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gene</span></code>: Gene symbol.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diseases</span></code>: Name of the diseases seperated by comma.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">modes_of_inheritance</span></code>: Name of the inheritance modes seperated by comma.
+Possible modes:
+<code class="docutils literal notranslate"><span class="pre">autosomal</span> <span class="pre">recessive</span></code>, <code class="docutils literal notranslate"><span class="pre">autosomal</span> <span class="pre">dominant</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Y-linked</span></code>, <code class="docutils literal notranslate"><span class="pre">X-linked</span> <span class="pre">recessive</span></code>, <code class="docutils literal notranslate"><span class="pre">X-link</span> <span class="pre">dominant</span></code>,
+<code class="docutils literal notranslate"><span class="pre">unknown</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Example table of <code class="docutils literal notranslate"><span class="pre">inheritance_gene_table</span></code></span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>gene</p></th>
+<th class="head"><p>diseases</p></th>
+<th class="head"><p>modes_of_inheritance</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>BRCA2</p></td>
+<td><p>BRCA, OV</p></td>
+<td><p>autosomal recessive, autosomal dominant</p></td>
+</tr>
+<tr class="row-odd"><td><p>NF1</p></td>
+<td><p>Neurofibroma</p></td>
+<td><p>autosomal dominant</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.PP2_gene_list">
+<code class="sig-name descname">PP2_gene_list</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.PP2_gene_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the list of genes for PP2 module.</p>
+<p>The given file has one gene symbol per line.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.config.CharGerConfig.BP1_gene_list">
+<code class="sig-name descname">BP1_gene_list</code><em class="property">: Optional[Path]</em><em class="property"> = None</em><a class="headerlink" href="#charger.config.CharGerConfig.BP1_gene_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the list of genes for BP1 module.</p>
+<p>The given file has one gene symbol per line.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="constants-and-helpers">
+<h2>Constants and helpers<a class="headerlink" href="#constants-and-helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="charger.config.ACMG_MODULES">
+<code class="sig-name descname">ACMG_MODULES</code><em class="property">: Dict[str, List[str]]</em><em class="property"> = {'b_moderate': [], 'b_standalone': ['BA1'], 'b_strong': ['BS1', 'BS2', 'BS3', 'BS4'], 'b_support': ['BP1', 'BP2', 'BP3', 'BP4', 'BP5', 'BP6', 'BP7'], 'p_moderate': ['PM1', 'PM2', 'PM3', 'PM4', 'PM5', 'PM6'], 'p_strong': ['PS1', 'PS2', 'PS3', 'PS4'], 'p_support': ['PP1', 'PP2', 'PP3', 'PP4', 'PP5'], 'p_very_strong': ['PVS1']}</em><a class="headerlink" href="#charger.config.ACMG_MODULES" title="Permalink to this definition">¶</a></dt>
+<dd><p>All ACMG modules.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="charger.config.CHARGER_MODULES">
+<code class="sig-name descname">CHARGER_MODULES</code><em class="property">: Dict[str, List[str]]</em><em class="property"> = {'b_moderate': ['BMC1'], 'b_strong': ['BSC1'], 'b_support': [], 'p_moderate': ['PMC1'], 'p_strong': ['PSC1'], 'p_support': ['PPC1', 'PPC2']}</em><a class="headerlink" href="#charger.config.CHARGER_MODULES" title="Permalink to this definition">¶</a></dt>
+<dd><p>All CharGer modules.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="charger.config._set_default_module_scores">
+<code class="sig-name descname">_set_default_module_scores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.config._set_default_module_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the default scores for all ACMG and CharGer modules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>], Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
