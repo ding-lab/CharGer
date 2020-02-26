@@ -601,6 +601,22 @@ test = ["pytest (<5.3.3)", "pytest-cov", "html5lib", "flake8 (>=3.5.0)", "flake8
 
 [[package]]
 category = "dev"
+description = "A Sphinx extension for linking to your project's issue tracker"
+name = "sphinx-issues"
+optional = false
+python-versions = "*"
+version = "1.2.0"
+
+[package.dependencies]
+sphinx = "*"
+
+[package.extras]
+dev = ["pytest", "flake8 (3.6.0)", "pre-commit (1.13.0)", "tox", "mock", "flake8-bugbear (18.8.0)"]
+lint = ["flake8 (3.6.0)", "pre-commit (1.13.0)", "flake8-bugbear (18.8.0)"]
+tests = ["pytest", "mock"]
+
+[[package]]
+category = "dev"
 description = ""
 name = "sphinxcontrib-applehelp"
 optional = false
@@ -762,7 +778,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "ab09639f31c05bba799685f6dc24327ed0bf7139ddded3edad48c7d5ca8ea74e"
+content-hash = "c96ecfe87cb60e63844e46e070cca8c8ec1bbabfa0551e28147f95e5f02da476"
 python-versions = ">=3.6"
 
 [metadata.files]
@@ -1097,6 +1113,10 @@ snowballstemmer = [
 sphinx = [
     {file = "Sphinx-2.4.3-py3-none-any.whl", hash = "sha256:776ff8333181138fae52df65be733127539623bb46cc692e7fa0fcfc80d7aa88"},
     {file = "Sphinx-2.4.3.tar.gz", hash = "sha256:ca762da97c3b5107cbf0ab9e11d3ec7ab8d3c31377266fd613b962ed971df709"},
+]
+sphinx-issues = [
+    {file = "sphinx-issues-1.2.0.tar.gz", hash = "sha256:845294736c7ac4c09c706f13431f709e1164037cbb00f6bf623ae16eccf509f3"},
+    {file = "sphinx_issues-1.2.0-py2.py3-none-any.whl", hash = "sha256:1208e1869742b7800a45b3c47ab987b87b2ad2024cbc36e0106e8bba3549dd22"},
 ]
 sphinxcontrib-applehelp = [
     {file = "sphinxcontrib-applehelp-1.0.1.tar.gz", hash = "sha256:edaa0ab2b2bc74403149cb0209d6775c96de797dfd5b5e2a71981309efab3897"},

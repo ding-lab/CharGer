@@ -1,11 +1,10 @@
 Development Guide
 =================
-
 Here are details of contributing to CharGer.
 
 
-Workflow
---------
+Workflow overview
+-----------------
 A typical workflow of updating CharGer involves these steps:
 
 1. Add new code
@@ -13,7 +12,7 @@ A typical workflow of updating CharGer involves these steps:
 3. Pass all the style checks (isort_, black_, and flake8_)
 4. Pass all the type checks (mypy_)
 5. Pass all the functional tests (pytest_)
-6. Update documentation
+6. Update documentation (sphinx_)
 7. Commit the change
 
 Below are the details of each step.
@@ -25,8 +24,8 @@ Below are the details of each step.
 .. _pytest: https://docs.pytest.org/
 
 
-Environment setup
------------------
+Set up environment
+------------------
 Make sure the conda is available and has set up bioconda_ channels.
 Create a new conda environment (for example, ``charger_py37``)::
 
@@ -45,7 +44,7 @@ On Python 3.8, exclude cyvcf2 and pysam as bioconda hasn't started to built Pyth
 .. _bioconda: https://bioconda.github.io/
 
 
-Style checks
+Check styles
 ------------
 Style checks are enforced to pass before any git commit (by running ``pre-commit install`` once).
 To run all the style checks at any time, run the following command::
@@ -59,15 +58,15 @@ Otherwise, run the style checks manually by::
     flake8              # Check coding style
 
 
-Type checks
+Check types
 -----------
 Type checks use mypy_ to infer the data types of the Python variables and report any potential mismatches (say, passing string where an integer is required). Run type checks by::
 
     mypy --pretty src tests
 
 
-Functional tests
-----------------
+Run functional tests
+--------------------
 Functional tests check if the program works as expected. All the tests are under ``tests`` folder. Some tests check one particular functions, and some other tests check if the output is expected given a certain CharGer config.
 
 Run functional tests by::
@@ -99,8 +98,8 @@ And the documentation will be available under ``docs/_build/html``.
 .. _sphinx: https://www.sphinx-doc.org/
 
 
-Develop with Visual Studio Code
--------------------------------
+Develop using Visual Studio Code
+--------------------------------
 Here are some additional setup that utilize `Visual Studio Code`_'s IDE:
 
 - Run style checks (black_, mypy_ and flake8_) at every file save

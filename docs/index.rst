@@ -22,11 +22,20 @@ Documentation
 Please see :ref:`Table of Contents <mastertoc>` for full documentation, including installation, tutorials and APIs.
 
 
-
 Bugs/Requests
 -------------
-Please use the GitHub issue tracker to submit bugs or request features.
+Please use the `GitHub issue tracker`_ to submit bugs or request features.
+
+.. _GitHub issue tracker: https://github.com/ding-lab/CharGer/issues
+
 
 Changelog
 ---------
-Consult the Changelog page for fixes and enhancements of each version.
+Consult the :doc:`Changelog <changelog>` page for fixes and enhancements of each version.
+
+
+License
+-------
+Copyright Ding Lab, 2017-2020.
+
+Distributed under GNU GPL v3.0 only license.

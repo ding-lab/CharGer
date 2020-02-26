@@ -50,6 +50,7 @@ mypy = "~0.761"
 black = "^19.10b0"
 isort = "~4.3"
 sphinx = "~2.4"
+sphinx-issues = "^1.2.0"
 pre-commit = "~2.0"
 
 [tool.isort]

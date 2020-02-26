@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.githubpages",
+    "sphinx_issues",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,3 +94,7 @@ autodoc_default_options = {
     "private-members": False,
     "exclude-members": "__weakref__",
 }
+
+
+# -- Options for sphinx-issues -----------------------------------------------
+issues_github_path = "ding-lab/CharGer"

@@ -2,12 +2,13 @@ Full CharGer documentation
 ==========================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :name: mastertoc
 
    Home <index>
    development
    internals/index
+   changelog
 
 
 Indices and tables

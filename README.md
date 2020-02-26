@@ -27,5 +27,5 @@ Install the beta CharGer (v0.6.0+; Python 3.6+) by:
 Visit CharGer's documentations for its detailed usage.
 
 
-## Development
-
+## License
+**CharGer** is made by Ding Lab under GNU GPL v3.0 only license.
