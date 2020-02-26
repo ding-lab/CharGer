@@ -1,8 +1,25 @@
-charger.variant module
-======================
+``variant`` module
+==================
+.. currentmodule:: charger.variant
 
-.. automodule:: charger.variant
-   :members:
-   :undoc-members:
-   :private-members:
+
+``Variant``
+-----------
+.. autoclass:: Variant
+
+
+``GeneInheritanceMode``
+-----------------------
+.. autoclass:: GeneInheritanceMode
    :show-inheritance:
+
+
+``ClinicalSignificance``
+------------------------
+.. autoclass:: ClinicalSignificance
+   :show-inheritance:
+
+
+Helpers
+-------
+.. autofunction:: limit_seq_display

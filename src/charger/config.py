@@ -19,6 +19,7 @@ ACMG_MODULES: Dict[str, List[str]] = {
     "b_strong": ["BS1", "BS2", "BS3", "BS4"],
     "b_standalone": ["BA1"],
 }
+"""All ACMG modules."""
 
 CHARGER_MODULES: Dict[str, List[str]] = {
     # CharGer pathogenic modules
@@ -30,6 +31,7 @@ CHARGER_MODULES: Dict[str, List[str]] = {
     "b_moderate": ["BMC1"],
     "b_strong": ["BSC1"],
 }
+"""All CharGer modules."""
 
 
 def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:

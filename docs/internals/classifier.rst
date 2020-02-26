@@ -1,8 +1,22 @@
-charger.classifier module
-=========================
+``classifier`` module
+=====================
+.. currentmodule:: charger.classifier
 
-.. automodule:: charger.classifier
-   :members:
-   :undoc-members:
-   :private-members:
+
+``CharGer``
+-----------
+.. autoclass:: CharGer
+
+
+``CharGerResult``
+-----------------
+.. autoclass:: CharGerResult
+
+
+Module helper classes
+---------------------
+.. autoclass:: ModuleDecision
+   :show-inheritance:
+
+.. autoclass:: ModuleAvailability
    :show-inheritance:

@@ -1,7 +1,16 @@
-charger.csq module
-==================
+``csq`` module
+==============
+.. currentmodule:: charger.csq
 
-.. automodule:: charger.csq
-   :members:
-   :undoc-members:
+
+``CSQ``
+-------
+.. autoclass:: CSQ
    :show-inheritance:
+
+
+Constants and helpers
+---------------------
+.. autodata:: ALL_CONSEQUENCE_TYPES
+.. autodata:: ALL_TRUNCATION_TYPES
+.. autodata:: ALL_INFRAME_TYPES

@@ -86,9 +86,10 @@ html_show_sourcelink = False
 autodoc_typehints = "description"
 autodoc_member_order = "bysource"
 autodoc_default_options = {
+    "members": True,
     "member-order": "bysource",
     "undoc-members": True,
-    "show-inheritance": True,
+    "show-inheritance": False,
     "private-members": False,
     "exclude-members": "__weakref__",
 }
