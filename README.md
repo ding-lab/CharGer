@@ -13,18 +13,24 @@ If you use CharGer, please cite our publication so we can continue to support Ch
 
 
 ## Installation
-⚠️ **Version 0.6.0+ is still under development and incomplete.**
+⚠️ **Version 0.6.0+ is still UNDER DEVELOPMENT and INCOMPLETE.**
 
-Install the beta CharGer (v0.6.0+; Python 3.6+) by:
+CharGer requires Python 3.6+. Use pip to install CharGer:
 
-    pip install --pre -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ charger
+    pip install charger
+
+Alternatively, use conda with bioconda channels configured:
+
+    conda install charger
 
 
 ## Usage
 
     charger -h
 
-Visit CharGer's documentations for its detailed usage.
+Visit [CharGer's documentations][doc] for its detailed usage.
+
+[doc]: https://ding-lab.github.io/CharGer/
 
 
 ## License
