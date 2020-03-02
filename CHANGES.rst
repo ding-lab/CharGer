@@ -3,10 +3,11 @@
 Backward-incompatible Changes
 -----------------------------
 - Rewrite CharGer to be Python 3.6+ compatible and Python 2.7 is no longer supported. Most of the options have been renamed and unified.
-- Input variants must be normalized and biallelic. Only VCF format is accepted (``.vcf``, ``.vcf.gz``, or ``.bcf``).
+- Input variants must be normalized and biallelic, and must be annotated by VEP with the recommended parameters. Only VCF format is accepted (``.vcf``, ``.vcf.gz``, or ``.bcf``).
 - ClinVar variant table must be Tabix indexed.
-- User should get results nearly identical to v0.5.4 with all exceptions documented below:
-    - Matching ClinVar now requires the alternative allele sequence to be identical.
+- v0.6.0 results are identical to v0.5.4 except for the conditions listed below:
+
+    - ClinVar matching now requires the alternative allele to be identical.
 
 
 0.5.4 (2019-09-30)
