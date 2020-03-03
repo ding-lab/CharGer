@@ -6,6 +6,7 @@ Full CharGer documentation
    :name: mastertoc
 
    Home <index>
+   prepare_inputs
    cli
    development
    internals/index
