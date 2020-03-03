@@ -14,4 +14,6 @@ Constants and helpers
 
 .. autodata:: CHARGER_MODULES
 
-.. autofunction:: _set_default_module_scores
+.. autodata:: _default_acmg_scores
+
+.. autodata:: _default_charger_scores

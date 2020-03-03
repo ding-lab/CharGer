@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Preparing the Inputs &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command line interface" href="cli.html" />
+    <link rel="prev" title="CharGer: Characterization of Germline variants" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Preparing the Inputs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-variants">Input variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#known-pathogenic-variants">Known pathogenic variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inheritance-gene-table">Inheritance gene table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hotspot3d-results">HotSpot3D results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">CharGer: Characterization of Germline variants</a></li>
+      <li>Next: <a href="cli.html" title="next chapter">Command line interface</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="preparing-the-inputs">
+<h1>Preparing the Inputs<a class="headerlink" href="#preparing-the-inputs" title="Permalink to this headline">¶</a></h1>
+<p>CharGer relies on the annotations in the input VCF, and additional annotations for different classification rules/modules. This page helps the user to prepare all the inputs for CharGer.</p>
+<div class="section" id="input-variants">
+<h2>Input variants<a class="headerlink" href="#input-variants" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The resulting file goes to <code class="docutils literal notranslate"><span class="pre">--input</span></code> <a class="reference internal" href="cli.html#cli"><span class="std std-ref">command line option</span></a> or <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.input" title="charger.config.CharGerConfig.input"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.input</span></code></a>.</p>
+</div>
+<div class="section" id="normalize-the-variants">
+<h3>Normalize the variants<a class="headerlink" href="#normalize-the-variants" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bcftools norm <span class="se">\</span>
+    -f /path/to/genome_ref.fa
+    --multiallelics - <span class="se">\</span>
+    --check-ref e <span class="se">\</span>
+    -Oz -o input_normalized.vcf.gz <span class="se">\</span>
+    input.vcf.gz
+</pre></div>
+</div>
+</div>
+<div class="section" id="annotate-the-variants-using-ensembl-vep">
+<h3>Annotate the variants using Ensembl VEP<a class="headerlink" href="#annotate-the-variants-using-ensembl-vep" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>vep --format vcf --vcf <span class="se">\</span>
+    --assembly GRCh38 <span class="se">\</span>
+    --everything --af_exac <span class="se">\</span>
+    --offline <span class="se">\</span>
+    --cache --dir_cache /path/to/vep_cache/ <span class="se">\</span>
+    --fasta /path/to/Homo_sapiens.GRCh38.dna.toplevel.fa <span class="se">\</span>
+    --input_file input_normalized.vcf.gz <span class="se">\</span>
+    --output_file input_normalized.vep.vcf
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="known-pathogenic-variants">
+<h2>Known pathogenic variants<a class="headerlink" href="#known-pathogenic-variants" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The resulting file goes to <code class="docutils literal notranslate"><span class="pre">--pathogenic-variant</span></code> <a class="reference internal" href="cli.html#cli"><span class="std std-ref">command line option</span></a> or <code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.pathognic_variant</span></code>.</p>
+</div>
+</div>
+<div class="section" id="inheritance-gene-table">
+<h2>Inheritance gene table<a class="headerlink" href="#inheritance-gene-table" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The resulting file goes to <code class="docutils literal notranslate"><span class="pre">--inheritance-gene-table</span></code> <a class="reference internal" href="cli.html#cli"><span class="std std-ref">command line option</span></a> or <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.inheritance_gene_table" title="charger.config.CharGerConfig.inheritance_gene_table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.inheritance_gene_table</span></code></a>.</p>
+</div>
+</div>
+<div class="section" id="hotspot3d-results">
+<h2>HotSpot3D results<a class="headerlink" href="#hotspot3d-results" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The resulting file goes to <code class="docutils literal notranslate"><span class="pre">--hotspot3d-cluster</span></code> <a class="reference internal" href="cli.html#cli"><span class="std std-ref">command line option</span></a> or <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.hotspot3d_cluster" title="charger.config.CharGerConfig.hotspot3d_cluster"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.hotspot3d_cluster</span></code></a>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

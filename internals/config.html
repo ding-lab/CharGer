@@ -36,6 +36,8 @@
 <h3><a href="../contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
@@ -280,15 +282,16 @@ Possible modes:
 <dd><p>All CharGer modules.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="charger.config._set_default_module_scores">
-<code class="sig-name descname">_set_default_module_scores</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.config._set_default_module_scores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define the default scores for all ACMG and CharGer modules.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>], Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>]]</p>
-</dd>
-</dl>
+<dl class="data">
+<dt id="charger.config._default_acmg_scores">
+<code class="sig-name descname">_default_acmg_scores</code><em class="property">: Dict[str, int]</em><em class="property"> = {'BA1': -8, 'BP1': -1, 'BP2': -1, 'BP3': -1, 'BP4': -1, 'BP5': -1, 'BP6': -1, 'BP7': -1, 'BS1': -4, 'BS2': -4, 'BS3': -4, 'BS4': -4, 'PM1': 2, 'PM2': 2, 'PM3': 2, 'PM4': 2, 'PM5': 2, 'PM6': 2, 'PP1': 1, 'PP2': 1, 'PP3': 1, 'PP4': 1, 'PP5': 1, 'PS1': 7, 'PS2': 4, 'PS3': 4, 'PS4': 4, 'PVS1': 8}</em><a class="headerlink" href="#charger.config._default_acmg_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default scores for ACMG modules.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="charger.config._default_charger_scores">
+<code class="sig-name descname">_default_charger_scores</code><em class="property">: Dict[str, int]</em><em class="property"> = {'BMC1': -2, 'BSC1': -6, 'PMC1': 2, 'PPC1': 1, 'PPC2': 1, 'PSC1': 4}</em><a class="headerlink" href="#charger.config._default_charger_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default scores for CharGer modules.</p>
 </dd></dl>
 
 </div>

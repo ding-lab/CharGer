@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Command line interface &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Development Guide" href="development.html" />
+    <link rel="prev" title="Preparing the Inputs" href="prepare_inputs.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command line interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#all-options">All options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Documentation overview</a><ul>
+      <li>Previous: <a href="prepare_inputs.html" title="previous chapter">Preparing the Inputs</a></li>
+      <li>Next: <a href="development.html" title="next chapter">Development Guide</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="command-line-interface">
+<span id="cli"></span><h1>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="all-options">
+<h2>All options<a class="headerlink" href="#all-options" title="Permalink to this headline">¶</a></h2>
+<p>Each options here has an one-to-one mapping to an attribute of <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a> by replacing all the dashes with underscores. For example, <code class="docutils literal notranslate"><span class="pre">--input</span></code> maps to <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.input" title="charger.config.CharGerConfig.input"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.input</span></code></a>, and <code class="docutils literal notranslate"><span class="pre">--pathogenic-variant</span></code> maps to <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.pathogenic_variant" title="charger.config.CharGerConfig.pathogenic_variant"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.pathogenic_variant</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">charger</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">version</span><span class="p">]</span> <span class="o">--</span><span class="nb">input</span> <span class="n">VCF</span> <span class="p">[</span><span class="o">--</span><span class="n">output</span> <span class="n">TSV</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">pathogenic</span><span class="o">-</span><span class="n">variant</span> <span class="n">VCF</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hotspot3d</span><span class="o">-</span><span class="n">cluster</span> <span class="n">TSV</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">variant</span><span class="o">-</span><span class="n">info</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">include</span><span class="o">-</span><span class="n">vcf</span><span class="o">-</span><span class="n">details</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">inheritance</span><span class="o">-</span><span class="n">gene</span><span class="o">-</span><span class="n">table</span> <span class="n">TSV</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">disease</span><span class="o">-</span><span class="n">specific</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">PP2</span><span class="o">-</span><span class="n">gene</span><span class="o">-</span><span class="nb">list</span> <span class="n">TXT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">BP1</span><span class="o">-</span><span class="n">gene</span><span class="o">-</span><span class="nb">list</span> <span class="n">TXT</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">acmg</span><span class="o">-</span><span class="n">score</span> <span class="s1">&#39;MODULE=SCORE MODULE=SCORE ...&#39;</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">override</span><span class="o">-</span><span class="n">charger</span><span class="o">-</span><span class="n">score</span> <span class="s1">&#39;MODULE=SCORE MODULE=SCORE ...&#39;</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">clinvar</span><span class="o">-</span><span class="n">table</span> <span class="n">TABIX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rare</span><span class="o">-</span><span class="n">threshold</span> <span class="n">FREQ</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">common</span><span class="o">-</span><span class="n">threshold</span> <span class="n">FREQ</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">pathogenic</span><span class="o">-</span><span class="n">score</span> <span class="n">INT</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">likely</span><span class="o">-</span><span class="n">pathogenic</span><span class="o">-</span><span class="n">score</span> <span class="n">INT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">max</span><span class="o">-</span><span class="n">likely</span><span class="o">-</span><span class="n">benign</span><span class="o">-</span><span class="n">score</span> <span class="n">INT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">max</span><span class="o">-</span><span class="n">benign</span><span class="o">-</span><span class="n">score</span> <span class="n">INT</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--version</kbd></dt>
+<dd><p>show program’s version number and exit</p>
+</dd>
+<dt><kbd>--input</kbd></dt>
+<dd><p>Path to the input VCF to be annotated</p>
+</dd>
+<dt><kbd>--output</kbd></dt>
+<dd><p>Path to CharGer output</p>
+</dd>
+<dt><kbd>--pathogenic-variant</kbd></dt>
+<dd><p>Path to the known pathogenic variants</p>
+</dd>
+<dt><kbd>--hotspot3d-cluster</kbd></dt>
+<dd><p>Path to HotSpot3D clusters result</p>
+</dd>
+<dt><kbd>--override-variant-info</kbd></dt>
+<dd><p>Override the variant info using ClinVar description</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--include-vcf-details</kbd></dt>
+<dd><p>Include the VCF details in the output</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="ACMG modules">
+<h3>ACMG modules<a class="headerlink" href="#ACMG modules" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--inheritance-gene-table</kbd></dt>
+<dd><p>Path to inheritance gene tab separated table and enable PVS1 module. Table columns must be: gene, disease, mode_of_inheritance.</p>
+</dd>
+<dt><kbd>--disease-specific</kbd></dt>
+<dd><p>Enable disease specific inheritance-gene-table detection</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--PP2-gene-list</kbd></dt>
+<dd><p>Path to PP2 gene list (list of gene symbols)</p>
+</dd>
+<dt><kbd>--BP1-gene-list</kbd></dt>
+<dd><p>Path to BP1 gene list (list of gene symbols)</p>
+</dd>
+<dt><kbd>--override-acmg-score</kbd></dt>
+<dd><p>Override the default scoring of ACMG modules</p>
+<p>It overrides the default score for each ACMG module defined by <a class="reference internal" href="internals/config.html#charger.config._default_acmg_scores" title="charger.config._default_acmg_scores"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_default_acmg_scores</span></code></a> and stores the final scores at <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.acmg_module_scores" title="charger.config.CharGerConfig.acmg_module_scores"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.acmg_module_scores</span></code></a>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="CharGer modules">
+<h3>CharGer modules<a class="headerlink" href="#CharGer modules" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--override-charger-score</kbd></dt>
+<dd><p>Override the default scoring of CharGer modules</p>
+<p>It overrides the default score for each CharGer module defined by <a class="reference internal" href="internals/config.html#charger.config._default_charger_scores" title="charger.config._default_charger_scores"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_default_charger_scores</span></code></a> and stores the final scores at <a class="reference internal" href="internals/config.html#charger.config.CharGerConfig.charger_module_scores" title="charger.config.CharGerConfig.charger_module_scores"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.charger_module_scores</span></code></a>.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Annotation sources">
+<h3>Annotation sources<a class="headerlink" href="#Annotation sources" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--clinvar-table</kbd></dt>
+<dd><p>Path to the Tabix indexed ClinVar table</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Thresholds">
+<h3>Thresholds<a class="headerlink" href="#Thresholds" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--rare-threshold</kbd></dt>
+<dd><p>Maximal allele frequency to be a rare variant</p>
+<p>Default: 0.0005</p>
+</dd>
+<dt><kbd>--common-threshold</kbd></dt>
+<dd><p>Minimal allele frequency to be a common variant</p>
+<p>Default: 0.005</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Score thresholds">
+<h3>Score thresholds<a class="headerlink" href="#Score thresholds" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>--min-pathogenic-score</kbd></dt>
+<dd><p>Minimal total score for a variant to be pathogenic</p>
+<p>Default: 9</p>
+</dd>
+<dt><kbd>--min-likely-pathogenic-score</kbd></dt>
+<dd><p>Minimal total score for a variant to be likely pathogenic</p>
+<p>Default: 5</p>
+</dd>
+<dt><kbd>--max-likely-benign-score</kbd></dt>
+<dd><p>Maximal total score for a variant to be likely benign</p>
+<p>Default: -4</p>
+</dd>
+<dt><kbd>--max-benign-score</kbd></dt>
+<dd><p>Maximal total score for a variant to be benign</p>
+<p>Default: -8</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

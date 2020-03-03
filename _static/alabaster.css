@@ -4,7 +4,7 @@
 
 body {
     font-family: Georgia, serif;
-    font-size: 17px;
+    font-size: 16px;
     background-color: #fff;
     color: #000;
     margin: 0;
@@ -199,7 +199,7 @@ div.body h5,
 div.body h6 {
     font-family: Georgia, serif;
     font-weight: normal;
-    margin: 30px 0px 10px 0px;
+    margin: 2rem 0 1rem 0;
     padding: 0;
 }
 
@@ -226,8 +226,10 @@ div.body p, div.body dd, div.body li {
 }
 
 div.admonition {
-    margin: 20px 0px;
-    padding: 10px 30px;
+    margin: 1rem 0 1rem 0;
+    padding: 0.5rem 0;
+    font-size: 1rem;
+    border-radius: 2px;
     background-color: #EEE;
     border: 1px solid #CCC;
 }
@@ -237,16 +239,20 @@ div.admonition tt.xref, div.admonition code.xref, div.admonition a tt {
     border-bottom: 1px solid #fafafa;
 }
 
-div.admonition p.admonition-title {
-    font-family: Georgia, serif;
-    font-weight: normal;
-    font-size: 24px;
-    margin: 0 0 10px 0;
+div.admonition p {
+    margin: 0.5rem 0.5rem;
     padding: 0;
-    line-height: 1;
 }
 
-div.admonition p.last {
+div.admonition p.admonition-title {
+    font-size: 1rem;
+    font-family: Georgia, serif;
+    font-weight: bold;
+    line-height: 1;
+    display: inline;
+}
+
+div.admonition p:last-of-type {
     margin-bottom: 0;
 }
 
@@ -256,6 +262,14 @@ div.highlight {
 
 dt:target, .highlight {
     background: #FAF3E8;
+}
+
+div.warning,
+div.danger,
+div.error,
+div.caution,
+div.attention {
+    padding: 1rem 0.5rem;
 }
 
 div.warning {
@@ -318,10 +332,6 @@ div.topic {
     background-color: #EEE;
 }
 
-p.admonition-title {
-    display: inline;
-}
-
 p.admonition-title:after {
     content: ":";
 }
@@ -338,8 +348,6 @@ pre, tt, code {
     display: block;
 }
 
-img.screenshot {
-}
 
 tt.descname, tt.descclassname, code.descname, code.descclassname {
     font-size: 0.95em;
@@ -440,8 +448,8 @@ ul, ol {
 
 pre {
     background: #EEE;
-    padding: 7px 30px;
-    margin: 15px 0px;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
     line-height: 1.3em;
 }
 
@@ -449,15 +457,9 @@ div.viewcode-block:target {
     background: #ffd;
 }
 
-dl pre, blockquote pre, li pre {
-    margin-left: 0;
-    padding-left: 30px;
-}
-
 tt, code {
     background-color: #ecf0f3;
     color: #222;
-    /* padding: 1px 2px; */
 }
 
 tt.xref, code.xref, a tt {
@@ -496,28 +498,47 @@ a:hover tt, a:hover code {
 
 
 @media screen and (max-width: 870px) {
+    body {
+        margin: 0;
+        padding: 0;
+    }
 
-    div.sphinxsidebar {
-    	display: none;
+    div.bodywrapper {
+    	margin: 0;
+    }
+
+    div.body {
+        min-height: 0;
+        padding: 0;
     }
 
     div.document {
        width: 100%;
+       margin: 0;
+    }
 
+    div.sphinxsidebarwrapper,
+    div.documentwrapper {
+        margin: 0;
+        padding: 1rem 1.5rem;
+        float: none;
+        display: block;
     }
 
     div.documentwrapper {
-    	margin-left: 0;
-    	margin-top: 0;
-    	margin-right: 0;
-    	margin-bottom: 0;
+        width: auto;
+        padding-top: 2rem;
+        background: #fff;
     }
 
-    div.bodywrapper {
-    	margin-top: 0;
-    	margin-right: 0;
-    	margin-bottom: 0;
-    	margin-left: 0;
+    div.footer {
+        width: auto;
+        margin: 0;
+        padding: 1rem 1.5rem;
+    }
+
+    div.github {
+        display: none;
     }
 
     ul {
@@ -529,102 +550,33 @@ a:hover tt, a:hover code {
 		margin-left: 30px;
 	}
 
-    .document {
-    	width: auto;
-    }
-
-    .footer {
-    	width: auto;
-    }
-
-    .bodywrapper {
-    	margin: 0;
-    }
-
-    .footer {
-    	width: auto;
-    }
-
-    .github {
-        display: none;
-    }
-
-
-
-}
-
-
-
-@media screen and (max-width: 875px) {
-
-    body {
-        margin: 0;
-        padding: 20px 30px;
-    }
-
-    div.documentwrapper {
-        float: none;
-        background: #fff;
-    }
-
     div.sphinxsidebar {
-        display: block;
         float: none;
-        width: 102.5%;
-        margin: -20px -30px 20px -30px;
-        padding: 10px 20px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
         background: #333;
         color: #FFF;
     }
 
-    div.sphinxsidebar h3, div.sphinxsidebar h4, div.sphinxsidebar p,
+    div.sphinxsidebar h3, div.sphinxsidebar h4,
+    div.sphinxsidebar p,
+    div.sphinxsidebar h1 a,
     div.sphinxsidebar h3 a {
         color: #fff;
     }
 
-    div.sphinxsidebar a {
+    div.sphinxsidebar a,
+    div.sphinxsidebar code {
         color: #AAA;
     }
 
+    div.sphinxsidebar a:hover tt,
+    div.sphinxsidebar a:hover code {
+        background: #222;
+    }
+
     div.sphinxsidebar p.logo {
-        display: none;
-    }
-
-    div.document {
-        width: 100%;
-        margin: 0;
-    }
-
-    div.footer {
-        display: none;
-    }
-
-    div.bodywrapper {
-        margin: 0;
-    }
-
-    div.body {
-        min-height: 0;
-        padding: 0;
-    }
-
-    .rtd_doc_footer {
-        display: none;
-    }
-
-    .document {
-        width: auto;
-    }
-
-    .footer {
-        width: auto;
-    }
-
-    .footer {
-        width: auto;
-    }
-
-    .github {
         display: none;
     }
 }
