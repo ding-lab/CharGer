@@ -125,7 +125,7 @@ def create_console_parser() -> argparse.ArgumentParser:
         help="Override the default scoring of CharGer modules",
     )
 
-    anno_src_grp = parser.add_argument_group("annotation sources")
+    anno_src_grp = parser.add_argument_group("Annotation sources")
     anno_src_grp.add_argument(
         "--clinvar-table",
         metavar="TABIX",
@@ -133,7 +133,7 @@ def create_console_parser() -> argparse.ArgumentParser:
         help=("Path to the Tabix indexed ClinVar table"),
     )
 
-    threshold_grp = parser.add_argument_group("thresholds")
+    threshold_grp = parser.add_argument_group("Thresholds")
     threshold_grp.add_argument(
         "--rare-threshold",
         type=float,
@@ -149,9 +149,7 @@ def create_console_parser() -> argparse.ArgumentParser:
         help="Minimal allele frequency to be a common variant",
     )
 
-    cg_cls_threshold_grp = parser.add_argument_group(
-        "CharGer variant classiciation thresholds"
-    )
+    cg_cls_threshold_grp = parser.add_argument_group("Score thresholds")
     cg_cls_threshold_grp.add_argument(
         "--min-pathogenic-score",
         type=int,

@@ -34,7 +34,9 @@ CHARGER_MODULES: Dict[str, List[str]] = {
 """All CharGer modules."""
 
 
-def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:
+def _set_default_module_scores(
+    acmg_module_scores: Dict[str, int], charger_module_scores: Dict[str, int]
+) -> Tuple[Dict[str, int], Dict[str, int]]:
     """Define the default scores for all ACMG and CharGer modules."""
     # Set up default module scores based on their type
     default_module_type_scores = {
@@ -47,12 +49,10 @@ def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:
         "b_strong": -4,
         "b_standalone": -8,
     }
-    acmg_module_scores: Dict[str, int] = {}
     for module_type, modules in ACMG_MODULES.items():
         for m in modules:
             acmg_module_scores[m] = default_module_type_scores[module_type]
 
-    charger_module_scores: Dict[str, int] = {}
     for module_type, modules in CHARGER_MODULES.items():
         for m in modules:
             charger_module_scores[m] = default_module_type_scores[module_type]
@@ -62,8 +62,14 @@ def _set_default_module_scores() -> Tuple[Dict[str, int], Dict[str, int]]:
     return acmg_module_scores, charger_module_scores
 
 
-# Create the default scores for char classification and each module
-_default_acmg_scores, _default_charger_scores = _set_default_module_scores()
+# Create the default scores each module
+_default_acmg_scores: Dict[str, int] = {}
+"""Default scores for ACMG modules."""
+
+_default_charger_scores: Dict[str, int] = {}
+"""Default scores for CharGer modules."""
+
+_set_default_module_scores(_default_acmg_scores, _default_charger_scores)
 
 
 @attr.s(auto_attribs=True, kw_only=True, repr=True)
