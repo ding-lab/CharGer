@@ -563,6 +563,7 @@ a:hover tt, a:hover code {
     }
 
     div.body {
+        min-width: 300px;
         min-height: 0;
         padding: 0;
     }
