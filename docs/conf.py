@@ -66,7 +66,10 @@ html_theme_options = {
     # 'logo': 'logo.png',
     "description": "Characterization of Germline variants",
     "fixed_sidebar": False,
-    "extra_nav_links": {},
+    "extra_nav_links": {
+        "PyPI releases": "https://pypi.org/project/CharGer",
+        "Source Code": "https://github.com/ding-lab/CharGer",
+    },
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
