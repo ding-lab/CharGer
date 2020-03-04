@@ -111,7 +111,7 @@ div.sphinxsidebar h4 {
     color: #444;
     font-size: 24px;
     font-weight: normal;
-    margin: 0 0 5px 0;
+    margin: 0;
     padding: 0;
 }
 
@@ -124,19 +124,17 @@ div.sphinxsidebar h3 a {
 }
 
 div.sphinxsidebar p.logo a,
-div.sphinxsidebar h3 a,
-div.sphinxsidebar p.logo a:hover,
-div.sphinxsidebar h3 a:hover {
+div.sphinxsidebar p.logo a:hover {
     border: none;
 }
 
 div.sphinxsidebar p {
     color: #555;
-    margin: 10px 0;
+    margin: 0.5rem 0;
 }
 
 div.sphinxsidebar ul {
-    margin: 10px 0;
+    margin: 0.25rem 0 1rem 0;
     padding: 0;
     color: #000;
 }
@@ -508,7 +506,7 @@ a:hover tt, a:hover code {
     }
 
     div.body {
-        min-width: 0;
+        min-width: 300px;
         min-height: 0;
         padding: 0;
     }
@@ -556,6 +554,10 @@ a:hover tt, a:hover code {
         width: 100%;
         margin: 0;
         padding: 0;
+    }
+
+    div.sphinxsidebar,
+    div.footer {
         background: #333;
         color: #FFF;
     }
@@ -564,12 +566,15 @@ a:hover tt, a:hover code {
     div.sphinxsidebar p,
     div.sphinxsidebar h1 a,
     div.sphinxsidebar h3 a {
-        color: #fff;
+        color: #FFF;
     }
 
+    div.sphinxsidebar ul,
     div.sphinxsidebar a,
-    div.sphinxsidebar code {
-        color: #AAA;
+    div.sphinxsidebar code,
+    div.footer a,
+    div.footer code {
+        color: #CCC;
     }
 
     div.sphinxsidebar a:hover tt,
@@ -579,12 +584,6 @@ a:hover tt, a:hover code {
 
     div.sphinxsidebar p.logo {
         display: none;
-    }
-}
-@media screen and (min-width: 876px) {
-    div.sphinxsidebar {
-        position: fixed;
-        margin-left: 0;
     }
 }
 
