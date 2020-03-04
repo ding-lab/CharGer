@@ -185,7 +185,7 @@ div.sphinxsidebar p.logo a:hover {
 
 div.sphinxsidebar p {
     color: {{ theme_sidebar_text }};
-    margin: 1rem 0;
+    margin: 0.5rem 0;
 }
 
 div.sphinxsidebar ul {

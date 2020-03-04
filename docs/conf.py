@@ -59,13 +59,7 @@ pygments_style = "sphinx"
 html_theme = "alabaster"
 
 html_sidebars = {
-    "**": [
-        "about.html",
-        "navigation.html",
-        "relations.html",
-        "searchbox.html",
-        # "donate.html",
-    ]
+    "**": ["about.html", "navigation.html", "relations.html", "slim_searchbox.html"]
 }
 
 html_theme_options = {
