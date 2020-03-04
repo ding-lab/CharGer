@@ -166,7 +166,7 @@ div.sphinxsidebar h4 {
     color: {{ theme_sidebar_header }};
     font-size: 24px;
     font-weight: normal;
-    margin: 0 0 5px 0;
+    margin: 0;
     padding: 0;
 }
 
@@ -179,19 +179,17 @@ div.sphinxsidebar h3 a {
 }
 
 div.sphinxsidebar p.logo a,
-div.sphinxsidebar h3 a,
-div.sphinxsidebar p.logo a:hover,
-div.sphinxsidebar h3 a:hover {
+div.sphinxsidebar p.logo a:hover {
     border: none;
 }
 
 div.sphinxsidebar p {
     color: {{ theme_sidebar_text }};
-    margin: 10px 0;
+    margin: 1rem 0;
 }
 
 div.sphinxsidebar ul {
-    margin: 10px 0;
+    margin: 0.25rem 0 1rem 0;
     padding: 0;
     color: {{ theme_sidebar_list }};
 }
