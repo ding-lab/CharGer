@@ -7,7 +7,7 @@ Backward-incompatible Changes
 - ClinVar variant table must be Tabix indexed.
 - v0.6.0 results are identical to v0.5.4 except for the conditions listed below:
 
-    - ClinVar matching now requires the alternative allele to be identical.
+  - ClinVar matching now requires the alternative allele to be identical.
 
 
 0.5.4 (2019-09-30)
