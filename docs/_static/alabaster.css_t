@@ -47,7 +47,7 @@
 
 {%- set theme_topic_bg = theme_topic_bg or theme_gray_2 %}
 
-{%- set theme_narrow_sidebar_link = theme_narrow_sidebar_link or theme_gray_3 %}
+{%- set theme_narrow_sidebar_link = theme_narrow_sidebar_link or '#CCC' %}
 {%- set theme_sidebar_hr = theme_sidebar_hr or theme_gray_3 %}
 
 {%- set theme_relbar_border = theme_relbar_border or theme_gray_2 -%}
@@ -611,6 +611,10 @@ a:hover tt, a:hover code {
         width: 100%;
         margin: 0;
         padding: 0;
+    }
+
+    div.sphinxsidebar,
+    div.footer {
         background: {{ theme_narrow_sidebar_bg }};
         color: {{ theme_narrow_sidebar_fg }};
     }
@@ -619,11 +623,14 @@ a:hover tt, a:hover code {
     div.sphinxsidebar p,
     div.sphinxsidebar h1 a,
     div.sphinxsidebar h3 a {
-        color: {{ theme_base_bg }};
+        color: {{ theme_narrow_sidebar_fg }};
     }
 
+    div.sphinxsidebar ul,
     div.sphinxsidebar a,
-    div.sphinxsidebar code {
+    div.sphinxsidebar code,
+    div.footer a,
+    div.footer code {
         color: {{ theme_narrow_sidebar_link }};
     }
 

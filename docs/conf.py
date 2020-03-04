@@ -71,7 +71,7 @@ html_sidebars = {
 html_theme_options = {
     # 'logo': 'logo.png',
     "description": "Characterization of Germline variants",
-    "fixed_sidebar": True,
+    "fixed_sidebar": False,
     "extra_nav_links": {},
 }
 
