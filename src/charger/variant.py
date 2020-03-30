@@ -66,8 +66,8 @@ class Variant:
     while reading an annotated VCF.
     """
 
-    _most_servere_csq: Optional["CSQ"] = attr.ib(default=None, init=False)
-    """Cached most servere CSQ based on the consequence type."""
+    _most_severe_csq: Optional["CSQ"] = attr.ib(default=None, init=False)
+    """Cached most severe CSQ based on the consequence type."""
 
     def __attrs_post_init__(self):
         # Variant must be normalized
@@ -111,14 +111,14 @@ class Variant:
         else:
             return len(self.ref_allele) > len(self.alt_allele)
 
-    def get_most_servere_csq(self) -> CSQ:
+    def get_most_severe_csq(self) -> CSQ:
         """Get the most severe CSQ based on the consequence type.
 
         If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.
         """
         # Return the cache the result if available
-        if self._most_servere_csq is not None:
-            return self._most_servere_csq
+        if self._most_severe_csq is not None:
+            return self._most_severe_csq
 
         if self.parsed_csq is None:
             raise ValueError(
@@ -141,8 +141,8 @@ class Variant:
                 (rank_consequence_type, rank_canonical, csq_ix)
             )
         rank_ct, rank_canonical, csq_ix = min(rank_and_canonical_per_csq)
-        self._most_servere_csq = self.parsed_csq[csq_ix]
-        return self._most_servere_csq
+        self._most_severe_csq = self.parsed_csq[csq_ix]
+        return self._most_severe_csq
 
     def _parse_csq(self, csq_fields: List[str]):
         """Parse the CSQ info string based on the CSQ field spec.

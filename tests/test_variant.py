@@ -178,36 +178,34 @@ def test_variant_parse_csq_grch37(grch37_vep85_annotated_variants: List[Variant]
         assert csq["ExAC_Adj_MAF"] == "T:8.649e-05"
 
 
-def test_variant_most_servere_csq_grch38(
+def test_variant_most_severe_csq_grch38(
     grch38_vep95_annotated_variants: List[Variant],
 ):
     v = grch38_vep95_annotated_variants[42]
     assert v.parsed_csq is not None
     assert v.parsed_csq[0]["Consequence"] == v.parsed_csq[1]["Consequence"]
-    most_servere_csq = v.get_most_servere_csq()
-    assert v._most_servere_csq is not None
-    assert most_servere_csq is v.parsed_csq[0]
-    assert most_servere_csq["HGVSc"] == "ENST00000378785.6:c.414C>T"
-    assert most_servere_csq["CANONICAL"] == "YES"
+    most_severe_csq = v.get_most_severe_csq()
+    assert v._most_severe_csq is not None
+    assert most_severe_csq is v.parsed_csq[0]
+    assert most_severe_csq["HGVSc"] == "ENST00000378785.6:c.414C>T"
+    assert most_severe_csq["CANONICAL"] == "YES"
 
     v = grch38_vep95_annotated_variants[2]
-    most_servere_csq = v.get_most_servere_csq()
-    assert most_servere_csq["HGVSc"] == "ENST00000342066.7:c.1027T>C"
+    most_severe_csq = v.get_most_severe_csq()
+    assert most_severe_csq["HGVSc"] == "ENST00000342066.7:c.1027T>C"
 
 
-def test_variant_most_servere_csq_grch37(
+def test_variant_most_severe_csq_grch37(
     grch37_vep85_annotated_variants: List[Variant],
 ):
-    most_servere_csq_per_v = [
-        v.get_most_servere_csq() for v in grch37_vep85_annotated_variants
+    most_severe_csq_per_v = [
+        v.get_most_severe_csq() for v in grch37_vep85_annotated_variants
     ]
-    assert most_servere_csq_per_v[0]["HGVSc"] == "ENST00000391945.4:c.2005delN"
-    assert most_servere_csq_per_v[0]["Consequence"] == "frameshift_variant"
+    assert most_severe_csq_per_v[0]["HGVSc"] == "ENST00000391945.4:c.2005delN"
+    assert most_severe_csq_per_v[0]["Consequence"] == "frameshift_variant"
 
-    assert (
-        most_servere_csq_per_v[1]["HGVSc"] == "ENST00000285398.2:c.1113_1114insAGCAGT"
-    )
-    assert most_servere_csq_per_v[1]["Consequence"] == "inframe_insertion"
+    assert most_severe_csq_per_v[1]["HGVSc"] == "ENST00000285398.2:c.1113_1114insAGCAGT"
+    assert most_severe_csq_per_v[1]["Consequence"] == "inframe_insertion"
 
 
 def test_limit_seq_display() -> None:

@@ -129,7 +129,7 @@ class CSQ(UserDict):
     def rank_consequence_type(self) -> int:
         """Rank the severeness of its consequence type (CSQ column ``Consequence``).
 
-        Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
+        Severe consequence type has smaller rank (smallest being 0). Ranking is based on the order in
         :attr:`ALL_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
         smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.
         """

@@ -351,10 +351,10 @@ class CharGer:
 
     def run_acmg_pvs1(self, result: "CharGerResult") -> None:
         """Run ACMG PVS1 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        gene_symbol = most_servere_csq["SYMBOL"]
+        most_severe_csq = result.variant.get_most_severe_csq()
+        gene_symbol = most_severe_csq["SYMBOL"]
         if (
-            most_servere_csq.is_truncation_type()
+            most_severe_csq.is_truncation_type()
             and gene_symbol in self.inheritance_genes
         ):
             mode = self.inheritance_genes[gene_symbol]
@@ -367,9 +367,9 @@ class CharGer:
 
     def run_acmg_pm4(self, result: "CharGerResult") -> None:
         """Run ACMG PM4 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        gene_symbol = most_servere_csq["SYMBOL"]
-        if most_servere_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
+        most_severe_csq = result.variant.get_most_severe_csq()
+        gene_symbol = most_severe_csq["SYMBOL"]
+        if most_severe_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
             mode = self.inheritance_genes[gene_symbol]
             # Gene is autosomal dominant
             if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
@@ -379,10 +379,10 @@ class CharGer:
 
     def run_charger_psc1(self, result: "CharGerResult") -> None:
         """Run CharGer PSC1 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        gene_symbol = most_servere_csq["SYMBOL"]
+        most_severe_csq = result.variant.get_most_severe_csq()
+        gene_symbol = most_severe_csq["SYMBOL"]
         if (
-            most_servere_csq.is_truncation_type()
+            most_severe_csq.is_truncation_type()
             and gene_symbol in self.inheritance_genes
         ):
             mode = self.inheritance_genes[gene_symbol]
@@ -394,17 +394,17 @@ class CharGer:
 
     def run_charger_pmc1(self, result: "CharGerResult") -> None:
         """Run CharGer PMC1 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        if most_servere_csq.is_truncation_type():
+        most_severe_csq = result.variant.get_most_severe_csq()
+        if most_severe_csq.is_truncation_type():
             result.charger_decisions["PMC1"] = ModuleDecision.PASSED
         else:
             result.charger_decisions["PMC1"] = ModuleDecision.FAILED
 
     def run_charger_ppc1(self, result: "CharGerResult") -> None:
         """Run CharGer PPC1 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        gene_symbol = most_servere_csq["SYMBOL"]
-        if most_servere_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
+        most_severe_csq = result.variant.get_most_severe_csq()
+        gene_symbol = most_severe_csq["SYMBOL"]
+        if most_severe_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
             mode = self.inheritance_genes[gene_symbol]
             # Gene is autosomal dominant
             if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
@@ -414,8 +414,8 @@ class CharGer:
 
     def run_charger_ppc2(self, result: "CharGerResult") -> None:
         """Run CharGer PPC2 module per variant."""
-        most_servere_csq = result.variant.get_most_servere_csq()
-        if most_servere_csq.is_inframe_type():
+        most_severe_csq = result.variant.get_most_severe_csq()
+        if most_severe_csq.is_inframe_type():
             result.charger_decisions["PPC2"] = ModuleDecision.PASSED
         else:
             result.charger_decisions["PPC2"] = ModuleDecision.FAILED
