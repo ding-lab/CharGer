@@ -3,7 +3,13 @@ import functools
 import gzip
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Generator, List, Optional
+from typing import Dict, Generator, List, overload
+
+try:
+    from typing import Literal
+except ImportError:
+    # Backport additional typings prior to python 3.8
+    from typing_extensions import Literal  # type: ignore
 
 
 class unix_tab(csv.excel):
@@ -16,13 +22,21 @@ class unix_tab(csv.excel):
 csv.register_dialect("unix_tab", unix_tab)
 
 
+@overload
 def read_tsv(
-    path: Path,
-    dialect: str = "unix_tab",
-    as_dict: bool = False,
-    columns: Optional[List[str]] = None,
-    **kwargs
-) -> Generator[Any, None, None]:
+    path: Path, as_dict: Literal[False], **kwargs
+) -> Generator[List[str], None, None]:
+    ...
+
+
+@overload
+def read_tsv(
+    path: Path, as_dict: Literal[True], columns: List[str], **kwargs
+) -> Generator[Dict[str, str], None, None]:
+    ...
+
+
+def read_tsv(path, dialect="unix_tab", as_dict=False, columns=None, **kwargs):
     """Read a plain-text or gzip compressed TSV table.
 
     When `as_dict` is `False`, return each row as a list using :func:`csv.reader`.
