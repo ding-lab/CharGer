@@ -39,6 +39,7 @@ Create a new conda environment (for example, ``charger_py37``)::
 On Python 3.8, exclude cyvcf2 and pysam as bioconda hasn't started to built Python 3.8 packages::
 
     conda create -n charger_py38 python=3.8 poetry pip numpy
+    conda activate charger_py38
     # ... continue the same as above
 
 .. _bioconda: https://bioconda.github.io/
