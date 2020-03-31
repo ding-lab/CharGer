@@ -8,8 +8,8 @@ Full CharGer documentation
    Home <index>
    installation
    prepare_inputs
-   acmg_guideline
    cli
+   acmg_guideline
    development
    internals/index
    changelog

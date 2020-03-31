@@ -1,5 +1,5 @@
 ``result`` module
-=============
+=================
 .. currentmodule:: charger.result
 
 
