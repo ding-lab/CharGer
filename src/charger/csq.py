@@ -45,6 +45,8 @@ ALL_CONSEQUENCE_TYPES: List[str] = [
 ]
 """All the possible consequence types fetched from `Ensembl v99`_ (January 2020).
 
+The consequence types here are ordered by their severeness.
+
 .. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
 """
 
@@ -91,7 +93,8 @@ class CSQ(UserDict):
         "data",
     ]
 
-    #: Required CSQ fields. Will raise a `ValueError` if any of the fields is missing.
+    #: Required CSQ fields. Will raise a `ValueError` if any of the fields is
+    #: missing when creating a new CSQ object.
     REQUIRED_FIELDS: Set[str] = set(
         [
             "Allele",

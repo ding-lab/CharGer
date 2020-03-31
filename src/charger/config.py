@@ -112,7 +112,7 @@ class CharGerConfig:
     max_likely_benign_score: int = -4
     max_benign_score: int = -8
 
-    # ACMG classifcation modules
+    # ACMG classification modules
     disease_specific: bool = False
     """Whether to enable disease specific detection for :attr:`inheritance_gene_table`."""
 

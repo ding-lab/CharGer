@@ -196,8 +196,8 @@ def parse_console(args=None) -> CharGerConfig:
 def setup_logger() -> None:
     """Set up stderr logging format.
 
-    Override the logging format and colors in command line interface
-    by setting up the environment variables such as ``LOGURU_FORMAT``.
+    The logging format and colors can be overridden by setting up the
+    environment variables such as ``LOGURU_FORMAT``.
     See `Loguru documentation`_ for details.
 
     .. _Loguru documentation: https://loguru.readthedocs.io/en/stable/api/logger.html#env
@@ -221,7 +221,7 @@ def setup_logger() -> None:
 def run() -> None:
     """Entry point of the program.
 
-    When user runs ``charger``, the script calls this function.
+    The ``charger`` command calls this function.
     """
     setup_logger()
     config = parse_console()
