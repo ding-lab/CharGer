@@ -9,6 +9,6 @@
 
 
 Module helper classes
---------------------
+---------------------
 .. autoclass:: ModuleAvailability
    :show-inheritance:
