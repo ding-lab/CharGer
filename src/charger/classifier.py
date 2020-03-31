@@ -112,7 +112,7 @@ class CharGer:
         logger.info(f"Read input VCF from {self.config.input}")
         # TODO: Skip variants with filter, or with high allele frequency
         # num_skipped_variants: Dict[str, int] = {"has_filter": 0}
-        for variant in Variant.read_vcf(self.config.input, parse_csq=True):
+        for variant in Variant.read_and_parse_vcf(self.config.input):
             # # Skip the variant with filter (not PASS)
             # if variant.filter:
             #     logger.warning(
@@ -139,7 +139,7 @@ class CharGer:
             return
         logger.info(f"Read pathogenic VCF from {self.config.pathogenic_variant}")
         self.pathogenic_variants = list(
-            Variant.read_vcf(self.config.pathogenic_variant, parse_csq=True)
+            Variant.read_and_parse_vcf(self.config.pathogenic_variant)
         )
         logger.info(
             f"Read total {len(self.pathogenic_variants):,d} pathogenic variants from the VCF"

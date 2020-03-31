@@ -70,8 +70,8 @@ def test_variant_is_deletion(
 @pytest.fixture(scope="module")
 def grch37_vep85_annotated_variants(test_root: Path):
     return list(
-        Variant.read_vcf(
-            test_root / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
+        Variant.read_and_parse_vcf(
+            test_root / "examples" / "grch37_vep85_5_variants.vcf"
         )
     )
 
@@ -79,9 +79,8 @@ def grch37_vep85_annotated_variants(test_root: Path):
 @pytest.fixture(scope="module")
 def grch38_vep95_annotated_variants(test_root: Path) -> List[Variant]:
     return list(
-        Variant.read_vcf(
-            test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz"),
-            parse_csq=True,
+        Variant.read_and_parse_vcf(
+            test_root.joinpath("examples/grch38_vep95_50_variants.vcf.gz")
         )
     )
 
@@ -89,9 +88,8 @@ def grch38_vep95_annotated_variants(test_root: Path) -> List[Variant]:
 @pytest.fixture(scope="module")
 def grch38_vep95_annotated_variants_info_fixed(test_root: Path) -> List[Variant]:
     return list(
-        Variant.read_vcf(
-            test_root.joinpath("examples/grch38_vep95_50_variants.info_fixed.vcf.gz"),
-            parse_csq=True,
+        Variant.read_and_parse_vcf(
+            test_root.joinpath("examples/grch38_vep95_50_variants.info_fixed.vcf.gz")
         )
     )
 
@@ -108,7 +106,7 @@ def grch38_vep95_annotated_variants_info_fixed(test_root: Path) -> List[Variant]
 def test_read_vcf_detect_vep_version(
     test_root: Path, caplog, vcf_pth: Path, vep_ver: int
 ):
-    reader = Variant.read_vcf(test_root.joinpath(vcf_pth), parse_csq=True)
+    reader = Variant.read_and_parse_vcf(test_root.joinpath(vcf_pth))
     next(reader)
     assert f"VEP version {vep_ver}" in caplog.text
 

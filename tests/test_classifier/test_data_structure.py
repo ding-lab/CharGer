@@ -10,8 +10,8 @@ from charger.variant import Variant
 @pytest.fixture(scope="module")
 def charger_result(test_root: Path):
     variant = next(
-        Variant.read_vcf(
-            test_root / "examples" / "grch37_vep85_5_variants.vcf", parse_csq=True
+        Variant.read_and_parse_vcf(
+            test_root / "examples" / "grch37_vep85_5_variants.vcf"
         )
     )
     return CharGerResult(variant)

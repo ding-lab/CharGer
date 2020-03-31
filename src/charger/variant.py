@@ -24,7 +24,8 @@ class Variant:
     """
     Biallelic variant.
 
-    For normal usage, consider using :meth:`~read_vcf` to construct the objects from a VEP annotated VCF.
+    For normal usage, consider using :meth:`read_and_parse_vcf` to construct
+    the objects from a VEP annotated VCF.
 
     Examples:
 
@@ -42,7 +43,7 @@ class Variant:
 
         Annotate it with online VEP,
 
-            >>> v = next(Variant.read_vcf('rs80359550.vcf', parse_csq=True))
+            >>> v = next(Variant.read_and_parse_vcf('rs80359550.vcf'))
             >>> v
             Variant(13:32340300GT>G info: CSQ[4 parsed])
     """
@@ -61,9 +62,9 @@ class Variant:
 
     parsed_csq: Optional[List["CSQ"]] = None
     """
-    All parsed CSQ annotations of the variant as a list of :class:`.CSQ` objects.
-    Use :meth:`read_vcf(parse_csq=True) <read_vcf>` to automatically parse CSQ
-    while reading an annotated VCF.
+    All parsed CSQ annotations of the variant as a list of :class:`.CSQ`
+    objects. Use :meth:`read_and_parse_vcf` to automatically parse CSQ while
+    reading an annotated VCF.
     """
 
     _most_severe_csq: Optional["CSQ"] = attr.ib(default=None, init=False)
@@ -116,15 +117,19 @@ class Variant:
 
         If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.
         """
-        # Return the cache the result if available
+        # Return the cached result if available
         if self._most_severe_csq is not None:
             return self._most_severe_csq
 
         if self.parsed_csq is None:
             raise ValueError(
-                "Variant {self!r} may not have annotation or its CSQ is not parsed."
+                "Variant {self!r} CSQ is not parsed or it does not have any annotation."
             )
 
+        # Order all CSQ based on:
+        # - The most severe consequence type
+        # - The transcript is canonical
+        # - The CSQ comes first
         rank_and_canonical_per_csq = []
         for csq_ix, csq in enumerate(self.parsed_csq):
             # Severe consequence have smaller rank
@@ -194,22 +199,28 @@ class Variant:
         )
 
     @classmethod
-    def get_vep_csq_fields(cls: Type[V], vcf: VCF):
-        """Extract the CSQ fields VEP output in the given VCF."""
-        # Reverse the header order because the newer header appears later
-        vcf_raw_headers = list(reversed(vcf.raw_header.splitlines()))
+    def get_vep_version(cls: Type[V], vcf_raw_headers: List[str]) -> str:
+        """Extract the VEP version in the given VCF."""
         # Find VEP version
+        # Reverse the header order because the newer header appears later
         try:
-            vep_header = next(l for l in vcf_raw_headers if l.startswith("##VEP="))
+            vep_header = next(
+                l for l in reversed(vcf_raw_headers) if l.startswith("##VEP=")
+            )
             vep_version = re.match(r"^##VEP=['\"]?v(\d+)['\"]?", vep_header).group(1)  # type: ignore
         except (StopIteration, AttributeError):
             logger.warning(f"Cannot find VEP version in the VCF header")
             vep_version = "UNKNOWN"
+        return vep_version
 
+    @classmethod
+    def get_vep_csq_fields(cls: Type[V], vcf_raw_headers: List[str]) -> List[str]:
+        """Extract the CSQ fields VEP output in the given VCF."""
         # Get CSQ spec
+        # Reverse the header order because the newer header appears later
         try:
             csq_info_header = next(
-                l for l in vcf_raw_headers if l.startswith("##INFO=<ID=CSQ,")
+                l for l in reversed(vcf_raw_headers) if l.startswith("##INFO=<ID=CSQ,")
             )
         except StopIteration:
             raise ValueError(f"Cannot find CSQ format in the VCF header")
@@ -221,28 +232,43 @@ class Variant:
                 f"Cannot parse the CSQ field format from its INFO VCF header: {csq_info_header}"
             )
         csq_fields = csq_format.split("|")
-
-        logger.debug(
-            f"VEP version {vep_version} with CSQ format [{len(csq_fields)} fields]: {','.join(csq_fields)}"
-        )
         return csq_fields
 
     @classmethod
-    def read_vcf(
-        cls: Type[V], path: Path, parse_csq: bool = False
-    ) -> Generator[V, None, None]:
+    def read_vcf(cls: Type[V], path: Path) -> Generator[V, None, None]:
         """
-        Create one object per VCF record from `path`.
+        Read VCF record from `path`.
 
         This function walks through each variant record in the given VCF
-        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`,
-        and yields the record as a :class:`Variant` object.
+        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`, and yields the record
+        as a :class:`Variant` object.
+
+        See also :meth:`read_and_parse_vcf` to read and parse the VCF.
 
         Args:
             path: Path to the VCF.
-            parse_csq: whether to parse the VEP annotated CSQ annotations.
-                If `True`, the parsed CSQ will be stored in the generated
-                :attr:`Variant.parsed_csq`.
+
+        Returns:
+            An generator walking through all variants per record.
+
+        """
+        with closing(VCF(str(path))) as vcf:
+            for cy_variant in vcf:
+                variant = cls.from_cyvcf2(cy_variant)
+                yield variant
+
+    @classmethod
+    def read_and_parse_vcf(cls: Type[V], path: Path) -> Generator[V, None, None]:
+        """
+        Read and parse VCF record with its VEP-annotated CSQ from `path`.
+
+        This function walks through each variant record in the given VCF
+        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`, and yields the record
+        as a :class:`Variant` object. The parsed CSQ will be stored in the
+        generated :attr:`Variant.parsed_csq`.
+
+        Args:
+            path: Path to the VCF.
 
         Returns:
             An generator walking through all variants per record.
@@ -251,7 +277,7 @@ class Variant:
 
             Read an annotated VCF::
 
-                >>> vcf_reader = Variant.read_vcf('my.vcf', parsed_csq=True)
+                >>> vcf_reader = Variant.read_and_parse_vcf('my.vcf')
                 >>> variant = next(vcf_reader)
                 >>> variant
                 Variant(14:45658326C>T info: CSQ[5 parsed])
@@ -264,13 +290,16 @@ class Variant:
                 ...     print(variant.chrom, variant.parsed_csq[0]['Allele'])
         """
         with closing(VCF(str(path))) as vcf:
-            if parse_csq:
-                # Get the CSQ field definition from the VCF header
-                csq_fields = cls.get_vep_csq_fields(vcf)
+            # Get the CSQ field definition and VEP version from the VCF header
+            vcf_raw_headers = vcf.raw_header.splitlines()
+            vep_version = cls.get_vep_version(vcf_raw_headers)
+            csq_fields = cls.get_vep_csq_fields(vcf_raw_headers)
+            logger.debug(
+                f"VEP version {vep_version} with CSQ format [{len(csq_fields)} fields]: {','.join(csq_fields)}"
+            )
             for cy_variant in vcf:
                 variant = cls.from_cyvcf2(cy_variant)
-                if parse_csq:
-                    variant._parse_csq(csq_fields)
+                variant._parse_csq(csq_fields)
                 yield variant
 
 
