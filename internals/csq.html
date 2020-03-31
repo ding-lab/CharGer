@@ -62,7 +62,8 @@ List of CSQ per feature will be stored at <a class="reference internal" href="va
 <dl class="attribute">
 <dt id="charger.csq.CSQ.REQUIRED_FIELDS">
 <code class="sig-name descname">REQUIRED_FIELDS</code><em class="property">: Set[str]</em><em class="property"> = {'Allele', 'Amino_acids', 'BIOTYPE', 'CDS_position', 'Codons', 'Consequence', 'Existing_variation', 'Feature', 'Feature_type', 'Gene', 'HGVSc', 'HGVSp', 'Protein_position', 'STRAND', 'SYMBOL', 'cDNA_position'}</em><a class="headerlink" href="#charger.csq.CSQ.REQUIRED_FIELDS" title="Permalink to this definition">¶</a></dt>
-<dd><p>Required CSQ fields. Will raise a <cite>ValueError</cite> if any of the fields is missing.</p>
+<dd><p>Required CSQ fields. Will raise a <cite>ValueError</cite> if any of the fields is
+missing when creating a new CSQ object.</p>
 </dd></dl>
 
 <dl class="method">
@@ -75,7 +76,7 @@ List of CSQ per feature will be stored at <a class="reference internal" href="va
 <dt id="charger.csq.CSQ.rank_consequence_type">
 <code class="sig-name descname">rank_consequence_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.rank_consequence_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rank the severeness of its consequence type (CSQ column <code class="docutils literal notranslate"><span class="pre">Consequence</span></code>).</p>
-<p>Servere consequence type has smaller rank (smallest being 0). Ranking is based on the order in
+<p>Severe consequence type has smaller rank (smallest being 0). Ranking is based on the order in
 <a class="reference internal" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="charger.csq.ALL_CONSEQUENCE_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_CONSEQUENCE_TYPES</span></code></a>. When the CSQ has multiple consequence types separated by <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, return the
 smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.</p>
 <dl class="field-list simple">
@@ -123,6 +124,7 @@ smallest rank of all the types. When the consequence type is not known, return t
 <dt id="charger.csq.ALL_CONSEQUENCE_TYPES">
 <code class="sig-name descname">ALL_CONSEQUENCE_TYPES</code><em class="property">: List[str]</em><em class="property"> = ['transcript_ablation', 'splice_acceptor_variant', 'splice_donor_variant', 'stop_gained', 'frameshift_variant', 'stop_lost', 'start_lost', 'transcript_amplification', 'inframe_insertion', 'inframe_deletion', 'missense_variant', 'protein_altering_variant', 'splice_region_variant', 'incomplete_terminal_codon_variant', 'start_retained_variant', 'stop_retained_variant', 'synonymous_variant', 'coding_sequence_variant', 'mature_miRNA_variant', '5_prime_UTR_variant', '3_prime_UTR_variant', 'non_coding_transcript_exon_variant', 'intron_variant', 'NMD_transcript_variant', 'non_coding_transcript_variant', 'upstream_gene_variant', 'downstream_gene_variant', 'TFBS_ablation', 'TFBS_amplification', 'TF_binding_site_variant', 'regulatory_region_ablation', 'regulatory_region_amplification', 'feature_elongation', 'regulatory_region_variant', 'feature_truncation', 'intergenic_variant']</em><a class="headerlink" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="Permalink to this definition">¶</a></dt>
 <dd><p>All the possible consequence types fetched from <a class="reference external" href="https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html">Ensembl v99</a> (January 2020).</p>
+<p>The consequence types here are ordered by their severeness.</p>
 </dd></dl>
 
 <dl class="data">
@@ -156,12 +158,16 @@ smallest rank of all the types. When the consequence type is not known, return t
 <h3><a href="../contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acmg_guideline.html">ACMG guideline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -210,7 +216,7 @@ smallest rank of all the types. When the consequence type is not known, return t
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

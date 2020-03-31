@@ -60,19 +60,6 @@ row will be treated as the column names.</p>
 <span class="go">&#39;SDHA&#39;</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – </p></li>
-<li><p><strong>dialect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>as_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
-<li><p><strong>columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Generator[Any, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -83,19 +70,6 @@ row will be treated as the column names.</p>
 <code class="sig-name descname">read_csv</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">*</em>, <em class="sig-param">dialect='excel'</em>, <em class="sig-param">as_dict=False</em>, <em class="sig-param">columns=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a plain-text or gzip compressed CSV table.</p>
 <p>See <a class="reference internal" href="#charger.io.read_tsv" title="charger.io.read_tsv"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_tsv()</span></code></a> for its usage.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – </p></li>
-<li><p><strong>dialect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>as_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
-<li><p><strong>columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Generator[Any, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -154,12 +128,16 @@ row will be treated as the column names.</p>
 <h3><a href="../contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acmg_guideline.html">ACMG guideline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -208,7 +186,7 @@ row will be treated as the column names.</p>
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

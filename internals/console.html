@@ -62,8 +62,8 @@ based on the command-line arguments or the given <cite>args</cite>.</p>
 <dt id="charger.console.setup_logger">
 <code class="sig-name descname">setup_logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.setup_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up stderr logging format.</p>
-<p>Override the logging format and colors in command line interface
-by setting up the environment variables such as <code class="docutils literal notranslate"><span class="pre">LOGURU_FORMAT</span></code>.
+<p>The logging format and colors can be overridden by setting up the
+environment variables such as <code class="docutils literal notranslate"><span class="pre">LOGURU_FORMAT</span></code>.
 See <a class="reference external" href="https://loguru.readthedocs.io/en/stable/api/logger.html#env">Loguru documentation</a> for details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -76,7 +76,7 @@ See <a class="reference external" href="https://loguru.readthedocs.io/en/stable/
 <dt id="charger.console.run">
 <code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entry point of the program.</p>
-<p>When user runs <code class="docutils literal notranslate"><span class="pre">charger</span></code>, the script calls this function.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">charger</span></code> command calls this function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
@@ -158,12 +158,16 @@ Skip the check when <cite>None</cite>.</p></li>
 <h3><a href="../contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acmg_guideline.html">ACMG guideline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -212,7 +216,7 @@ Skip the check when <cite>None</cite>.</p></li>
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

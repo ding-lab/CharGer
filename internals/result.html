@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>result module &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="classifier module" href="classifier.html" />
+    <link rel="prev" title="config module" href="config.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="result-module">
+<h1><code class="docutils literal notranslate"><span class="pre">result</span></code> module<a class="headerlink" href="#result-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="chargerresult">
+<h2><code class="docutils literal notranslate"><span class="pre">CharGerResult</span></code><a class="headerlink" href="#chargerresult" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="charger.result.CharGerResult">
+<em class="property">class </em><code class="sig-name descname">CharGerResult</code><span class="sig-paren">(</span><em class="sig-param">variant</em>, <em class="sig-param">clinvar=NOTHING</em>, <em class="sig-param">acmg_decisions=NOTHING</em>, <em class="sig-param">charger_decisions=NOTHING</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.result.CharGerResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>CharGer classification result of one variant.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span> <span class="o">=</span> <span class="n">Variant</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="mi">45855804</span><span class="p">,</span> <span class="mi">45855804</span><span class="p">,</span> <span class="s1">&#39;CT&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">CharGerResult</span><span class="p">(</span><span class="n">variant</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">acmg_decisions</span><span class="p">[</span><span class="s1">&#39;PVS1&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variant</strong> (<a class="reference internal" href="variant.html#charger.variant.Variant" title="charger.variant.Variant"><em>charger.variant.Variant</em></a>) – </p></li>
+<li><p><strong>Any</strong><strong>] </strong><strong>clinvar</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
+<li><p><strong>Optional</strong><strong>[</strong><strong>charger.result.ModuleDecision</strong><strong>]</strong><strong>] </strong><strong>acmg_decisions</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
+<li><p><strong>Optional</strong><strong>[</strong><strong>charger.result.ModuleDecision</strong><strong>]</strong><strong>] </strong><strong>charger_decisions</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="charger.result.CharGerResult.variant">
+<code class="sig-name descname">variant</code><a class="headerlink" href="#charger.result.CharGerResult.variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>The input variant of this result.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.result.CharGerResult.clinvar">
+<code class="sig-name descname">clinvar</code><a class="headerlink" href="#charger.result.CharGerResult.clinvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>ClinVar annotation of this variant.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.result.CharGerResult.acmg_decisions">
+<code class="sig-name descname">acmg_decisions</code><a class="headerlink" href="#charger.result.CharGerResult.acmg_decisions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The classification decision per ACMG module of this variant.</p>
+<p><cite>None</cite> if the module is not run. See <a class="reference internal" href="#charger.result.ModuleDecision" title="charger.result.ModuleDecision"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleDecision</span></code></a> for the possible decisions.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.result.CharGerResult.charger_decisions">
+<code class="sig-name descname">charger_decisions</code><a class="headerlink" href="#charger.result.CharGerResult.charger_decisions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The classification decision of each CharGer module of this variant.</p>
+<p>Same usage as <a class="reference internal" href="#charger.result.CharGerResult.acmg_decisions" title="charger.result.CharGerResult.acmg_decisions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">acmg_decisions</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-helper-classes">
+<h2>Module helper classes<a class="headerlink" href="#module-helper-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="charger.result.ModuleDecision">
+<em class="property">class </em><code class="sig-name descname">ModuleDecision</code><a class="headerlink" href="#charger.result.ModuleDecision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>The decision of a ACMG or CharGer module of one variant.</p>
+<p>Used by <a class="reference internal" href="#charger.result.CharGerResult.acmg_decisions" title="charger.result.CharGerResult.acmg_decisions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerResult.acmg_decisions</span></code></a> and <a class="reference internal" href="#charger.result.CharGerResult.charger_decisions" title="charger.result.CharGerResult.charger_decisions"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerResult.charger_decisions</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<p>Skip PVS1 classification:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">CharGerResult</span><span class="p">(</span><span class="n">Variant</span><span class="p">(</span><span class="s1">&#39;19&#39;</span><span class="p">,</span> <span class="mi">45855804</span><span class="p">,</span> <span class="mi">45855804</span><span class="p">,</span> <span class="s1">&#39;CT&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">acmg_decisions</span><span class="p">[</span><span class="s1">&#39;PVS1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleDecision</span><span class="o">.</span><span class="n">SKIPPED</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="charger.result.ModuleDecision.PASSED">
+<code class="sig-name descname">PASSED</code><em class="property"> = 1</em><a class="headerlink" href="#charger.result.ModuleDecision.PASSED" title="Permalink to this definition">¶</a></dt>
+<dd><p>The variant matched the criteria of the module.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="charger.result.ModuleDecision.FAILED">
+<code class="sig-name descname">FAILED</code><em class="property"> = 2</em><a class="headerlink" href="#charger.result.ModuleDecision.FAILED" title="Permalink to this definition">¶</a></dt>
+<dd><p>The variant didn’t match the criteria of the module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="charger.result.ModuleDecision._gen_decision_template">
+<em class="property">classmethod </em><code class="sig-name descname">_gen_decision_template</code><span class="sig-paren">(</span><em class="sig-param">available_modules</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.result.ModuleDecision._gen_decision_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the decision template for all the available modules
+during the initiation of <a class="reference internal" href="#charger.result.CharGerResult" title="charger.result.CharGerResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerResult</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>List</strong><strong>[</strong><strong>str</strong><strong>]</strong><strong>] </strong><strong>available_modules</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable[[], Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, Optional[<a class="reference internal" href="#charger.result.ModuleDecision" title="charger.result.ModuleDecision">charger.result.ModuleDecision</a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../contents.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html"><code class="docutils literal notranslate"><span class="pre">console</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html#module-charger.argtype"><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#reuse-charger-modules">Reuse CharGer modules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../contents.html">Documentation overview</a><ul>
+  <li><a href="index.html">CharGer Internals</a><ul>
+      <li>Previous: <a href="config.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+      <li>Next: <a href="classifier.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

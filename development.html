@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CharGer Internals" href="internals/index.html" />
-    <link rel="prev" title="Command line interface" href="cli.html" />
+    <link rel="prev" title="ACMG guideline" href="acmg_guideline.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -63,6 +63,7 @@ Create a new conda environment (for example, <code class="docutils literal notra
 </div>
 <p>On Python 3.8, exclude cyvcf2 and pysam as bioconda hasn’t started to built Python 3.8 packages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">charger_py38</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.8</span> <span class="n">poetry</span> <span class="n">pip</span> <span class="n">numpy</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">charger_py38</span>
 <span class="c1"># ... continue the same as above</span>
 </pre></div>
 </div>
@@ -200,8 +201,10 @@ To run all the style checks at any time, run the following command:</p>
 <h3><a href="contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prepare_inputs.html">Preparing the Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acmg_guideline.html">ACMG guideline</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#workflow-overview">Workflow overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#set-up-environment">Set up environment</a></li>
@@ -230,7 +233,7 @@ To run all the style checks at any time, run the following command:</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="contents.html">Documentation overview</a><ul>
-      <li>Previous: <a href="cli.html" title="previous chapter">Command line interface</a></li>
+      <li>Previous: <a href="acmg_guideline.html" title="previous chapter">ACMG guideline</a></li>
       <li>Next: <a href="internals/index.html" title="next chapter">CharGer Internals</a></li>
   </ul></li>
 </ul>
@@ -252,7 +255,7 @@ To run all the style checks at any time, run the following command:</p>
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

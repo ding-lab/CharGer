@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="csq module" href="csq.html" />
-    <link rel="prev" title="classifier module" href="classifier.html" />
+    <link rel="prev" title="acmg_modules module" href="acmg_modules.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -41,7 +41,8 @@
 <em class="property">class </em><code class="sig-name descname">Variant</code><span class="sig-paren">(</span><em class="sig-param">chrom</em>, <em class="sig-param">start_pos</em>, <em class="sig-param">end_pos</em>, <em class="sig-param">ref_allele</em>, <em class="sig-param">alt_allele</em>, <em class="sig-param">id=None</em>, <em class="sig-param">filter=None</em>, <em class="sig-param">info=NOTHING</em>, <em class="sig-param">parsed_csq=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Biallelic variant.</p>
-<p>For normal usage, consider using <a class="reference internal" href="#charger.variant.Variant.read_vcf" title="charger.variant.Variant.read_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_vcf()</span></code></a> to construct the objects from a VEP annotated VCF.</p>
+<p>For normal usage, consider using <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to construct
+the objects from a VEP annotated VCF.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span> <span class="o">=</span> <span class="n">Variant</span><span class="p">(</span><span class="s1">&#39;13&#39;</span><span class="p">,</span> <span class="mi">32340300</span><span class="p">,</span> <span class="mi">32340301</span><span class="p">,</span> <span class="s1">&#39;GT&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;rs80359550&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
@@ -57,7 +58,7 @@
 </pre></div>
 </div>
 <p>Annotate it with online VEP,</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">Variant</span><span class="o">.</span><span class="n">read_vcf</span><span class="p">(</span><span class="s1">&#39;rs80359550.vcf&#39;</span><span class="p">,</span> <span class="n">parse_csq</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">Variant</span><span class="o">.</span><span class="n">read_and_parse_vcf</span><span class="p">(</span><span class="s1">&#39;rs80359550.vcf&#39;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">v</span>
 <span class="go">Variant(13:32340300GT&gt;G info: CSQ[4 parsed])</span>
 </pre></div>
@@ -131,15 +132,15 @@
 <dl class="attribute">
 <dt id="charger.variant.Variant.parsed_csq">
 <code class="sig-name descname">parsed_csq</code><a class="headerlink" href="#charger.variant.Variant.parsed_csq" title="Permalink to this definition">¶</a></dt>
-<dd><p>All parsed CSQ annotations of the variant as a list of <a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">CSQ</span></code></a> objects.
-Use <a class="reference internal" href="#charger.variant.Variant.read_vcf" title="charger.variant.Variant.read_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_vcf(parse_csq=True)</span></code></a> to automatically parse CSQ
-while reading an annotated VCF.</p>
+<dd><p>All parsed CSQ annotations of the variant as a list of <a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">CSQ</span></code></a>
+objects. Use <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to automatically parse CSQ while
+reading an annotated VCF.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="charger.variant.Variant._most_servere_csq">
-<code class="sig-name descname">_most_servere_csq</code><a class="headerlink" href="#charger.variant.Variant._most_servere_csq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cached most servere CSQ based on the consequence type.</p>
+<dt id="charger.variant.Variant._most_severe_csq">
+<code class="sig-name descname">_most_severe_csq</code><a class="headerlink" href="#charger.variant.Variant._most_severe_csq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cached most severe CSQ based on the consequence type.</p>
 </dd></dl>
 
 <dl class="method">
@@ -187,8 +188,8 @@ while reading an annotated VCF.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="charger.variant.Variant.get_most_servere_csq">
-<code class="sig-name descname">get_most_servere_csq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.get_most_servere_csq" title="Permalink to this definition">¶</a></dt>
+<dt id="charger.variant.Variant.get_most_severe_csq">
+<code class="sig-name descname">get_most_severe_csq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.get_most_severe_csq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the most severe CSQ based on the consequence type.</p>
 <p>If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.</p>
 <dl class="field-list simple">
@@ -227,31 +228,65 @@ as a list of <a class="reference internal" href="csq.html#charger.csq.CSQ" title
 </dd></dl>
 
 <dl class="method">
+<dt id="charger.variant.Variant.get_vep_version">
+<em class="property">classmethod </em><code class="sig-name descname">get_vep_version</code><span class="sig-paren">(</span><em class="sig-param">vcf_raw_headers</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.get_vep_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the VEP version in the given VCF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="charger.variant.Variant.get_vep_csq_fields">
-<em class="property">classmethod </em><code class="sig-name descname">get_vep_csq_fields</code><span class="sig-paren">(</span><em class="sig-param">vcf</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.get_vep_csq_fields" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">get_vep_csq_fields</code><span class="sig-paren">(</span><em class="sig-param">vcf_raw_headers</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.get_vep_csq_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the CSQ fields VEP output in the given VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vcf</strong> (<a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><em>cyvcf2.cyvcf2.VCF</em></a>) – </p>
+<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="charger.variant.Variant.read_vcf">
-<em class="property">classmethod </em><code class="sig-name descname">read_vcf</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">parse_csq=False</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.read_vcf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create one object per VCF record from <cite>path</cite>.</p>
+<em class="property">classmethod </em><code class="sig-name descname">read_vcf</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.read_vcf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read VCF record from <cite>path</cite>.</p>
 <p>This function walks through each variant record in the given VCF
-using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>,
-and yields the record as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.</p>
+using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record
+as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.</p>
+<p>See also <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to read and parse the VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – Path to the VCF.</p></li>
-<li><p><strong>parse_csq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to parse the VEP annotated CSQ annotations.
-If <cite>True</cite>, the parsed CSQ will be stored in the generated
-<a class="reference internal" href="#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An generator walking through all variants per record.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Generator[V, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="charger.variant.Variant.read_and_parse_vcf">
+<em class="property">classmethod </em><code class="sig-name descname">read_and_parse_vcf</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.variant.Variant.read_and_parse_vcf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and parse VCF record with its VEP-annotated CSQ from <cite>path</cite>.</p>
+<p>This function walks through each variant record in the given VCF
+using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record
+as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object. The parsed CSQ will be stored in the
+generated <a class="reference internal" href="#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An generator walking through all variants per record.</p>
@@ -262,7 +297,7 @@ If <cite>True</cite>, the parsed CSQ will be stored in the generated
 </dl>
 <p class="rubric">Examples</p>
 <p>Read an annotated VCF:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">vcf_reader</span> <span class="o">=</span> <span class="n">Variant</span><span class="o">.</span><span class="n">read_vcf</span><span class="p">(</span><span class="s1">&#39;my.vcf&#39;</span><span class="p">,</span> <span class="n">parsed_csq</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">vcf_reader</span> <span class="o">=</span> <span class="n">Variant</span><span class="o">.</span><span class="n">read_and_parse_vcf</span><span class="p">(</span><span class="s1">&#39;my.vcf&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">vcf_reader</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">variant</span>
 <span class="go">Variant(14:45658326C&gt;T info: CSQ[5 parsed])</span>
@@ -446,12 +481,16 @@ If <cite>True</cite>, the parsed CSQ will be stored in the generated
 <h3><a href="../contents.html">Table of Contents</a></h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../prepare_inputs.html">Preparing the Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acmg_guideline.html">ACMG guideline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -477,7 +516,7 @@ If <cite>True</cite>, the parsed CSQ will be stored in the generated
 <ul>
   <li><a href="../contents.html">Documentation overview</a><ul>
   <li><a href="index.html">CharGer Internals</a><ul>
-      <li>Previous: <a href="classifier.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+      <li>Previous: <a href="acmg_modules.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
       <li>Next: <a href="csq.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
   </ul></li>
   </ul></li>
@@ -500,7 +539,7 @@ If <cite>True</cite>, the parsed CSQ will be stored in the generated
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

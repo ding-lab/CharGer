@@ -481,8 +481,9 @@ a.reference:hover {
 
 a.footnote-reference {
     text-decoration: none;
+    line-height: 1em;
     font-size: 0.7em;
-    vertical-align: top;
+    vertical-align: super;
     border-bottom: 1px dotted #004B6B;
 }
 
