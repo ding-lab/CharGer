@@ -315,39 +315,54 @@ class CharGer:
             return False
 
     def run_acmg_modules(self) -> None:
+        """Run all ACMG modules."""
         logger.info("Run all ACMG modules")
 
+        def run_or_skip(module_name: str):
+            return self._run_or_skip_module(
+                module_name, self._acmg_module_availability[module_name]
+            )
+
         # PVS1
-        if self._run_or_skip_module("PVS1", self._acmg_module_availability["PVS1"]):
+        if run_or_skip("PVS1"):
             for result in self.results:
                 self.run_acmg_pvs1(result)
 
         # PM4
-        if self._run_or_skip_module("PM4", self._acmg_module_availability["PM4"]):
+        if run_or_skip("PM4"):
             for result in self.results:
                 self.run_acmg_pm4(result)
 
     def run_charger_modules(self) -> None:
+        """Run all CharGer customized modules."""
         logger.info("Run all CharGer modules")
+
+        def run_or_skip(module_name: str):
+            return self._run_or_skip_module(
+                module_name, self._charger_module_availability[module_name]
+            )
+
         # PSC1
-        if self._run_or_skip_module("PSC1", self._charger_module_availability["PSC1"]):
+        if run_or_skip("PSC1"):
             for result in self.results:
                 self.run_charger_psc1(result)
 
         # PMC1
-        if self._run_or_skip_module("PMC1", self._charger_module_availability["PMC1"]):
+        if run_or_skip("PMC1"):
             for result in self.results:
                 self.run_charger_pmc1(result)
 
         # PPC1
-        if self._run_or_skip_module("PPC1", self._charger_module_availability["PPC1"]):
+        if run_or_skip("PPC1"):
             for result in self.results:
                 self.run_charger_ppc1(result)
 
-        # PPC2
-        if self._run_or_skip_module("PPC2", self._charger_module_availability["PPC2"]):
+        # PPC
+        if run_or_skip("PPC2"):
             for result in self.results:
                 self.run_charger_ppc2(result)
+
+    # region: ACMG Pathogenic Very Strong
 
     def run_acmg_pvs1(self, result: "CharGerResult") -> None:
         """Run ACMG PVS1 module per variant."""
@@ -364,6 +379,14 @@ class CharGer:
                 # TODO: Check the expression effect if it's given
                 return
         result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
+
+    # endregion
+
+    # region: ACMG Pathogenic Strong
+    def run_acmg_ps1(self, result: "CharGerResult") -> None:
+        pass
+
+    # endregion
 
     def run_acmg_pm4(self, result: "CharGerResult") -> None:
         """Run ACMG PM4 module per variant."""
