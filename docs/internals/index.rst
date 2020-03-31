@@ -5,7 +5,9 @@ Here documents CharGer's internal design by modules:
 .. toctree::
 
    config
+   result
    classifier
+   acmg_modules
    variant
    csq
    io

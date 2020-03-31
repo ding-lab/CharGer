@@ -1,12 +1,13 @@
 from enum import Enum, auto
-from typing import Any, Callable, Dict, List, Optional, Set, Type
+from typing import Any, Dict, List, Optional, Set
 
-import attr
 from loguru import logger
 from pysam import TabixFile
 
+from .acmg_modules import run_pvs1
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
 from .io import read_lines, read_tsv
+from .result import CharGerResult, ModuleDecision
 from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
 
 try:
@@ -17,6 +18,33 @@ except ImportError:
 
 
 logger.disable("charger")  # Disable emit logs by default
+
+
+class ModuleAvailability(Enum):
+    """Availability of a  ACMG or CharGer modules.
+
+    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`.
+
+    Examples:
+
+        Skip PVS1 module by:
+
+        >>> charger = CharGer(CharGerConfig())
+        >>> charger._acmg_module_availability = ModuleAvailability.USER_DISABLED
+    """
+
+    ACTIVE = auto()
+    """The module is active."""
+    USER_DISABLED = auto()
+    """The module is disabled by user. The module will be skipped."""
+    INVALID_SETUP = auto()
+    """
+    The module has invalid setup, such as no additional annotation provided.
+    The module will be skipped.
+    """
+
+
+InheritanceGenesType = Dict[str, Optional[GeneInheritanceMode]]
 
 
 class CharGer:
@@ -47,7 +75,7 @@ class CharGer:
         self.pathogenic_variants: List[Variant] = []
         """Known pathogenic variants."""
 
-        self.inheritance_genes: Dict[str, Optional[GeneInheritanceMode]] = {}
+        self.inheritance_genes: InheritanceGenesType = {}
         """Variant inheritance dominance mode of the genes for PVS1 module."""
 
         self.pp2_genes: Set[str] = set()
@@ -326,7 +354,7 @@ class CharGer:
         # PVS1
         if run_or_skip("PVS1"):
             for result in self.results:
-                self.run_acmg_pvs1(result)
+                run_pvs1(result, self.inheritance_genes)
 
         # PM4
         if run_or_skip("PM4"):
@@ -361,26 +389,6 @@ class CharGer:
         if run_or_skip("PPC2"):
             for result in self.results:
                 self.run_charger_ppc2(result)
-
-    # region: ACMG Pathogenic Very Strong
-
-    def run_acmg_pvs1(self, result: "CharGerResult") -> None:
-        """Run ACMG PVS1 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        gene_symbol = most_severe_csq["SYMBOL"]
-        if (
-            most_severe_csq.is_truncation_type()
-            and gene_symbol in self.inheritance_genes
-        ):
-            mode = self.inheritance_genes[gene_symbol]
-            # Gene is autosomal dominant
-            if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
-                result.acmg_decisions["PVS1"] = ModuleDecision.PASSED
-                # TODO: Check the expression effect if it's given
-                return
-        result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
-
-    # endregion
 
     # region: ACMG Pathogenic Strong
     def run_acmg_ps1(self, result: "CharGerResult") -> None:
@@ -442,101 +450,3 @@ class CharGer:
             result.charger_decisions["PPC2"] = ModuleDecision.PASSED
         else:
             result.charger_decisions["PPC2"] = ModuleDecision.FAILED
-
-
-class ModuleAvailability(Enum):
-    """Availability of a  ACMG or CharGer modules.
-
-    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`.
-
-    Examples:
-
-        Skip PVS1 module by:
-
-        >>> charger = CharGer(CharGerConfig())
-        >>> charger._acmg_module_availability = ModuleAvailability.USER_DISABLED
-    """
-
-    ACTIVE = auto()
-    """The module is active."""
-    USER_DISABLED = auto()
-    """The module is disabled by user. The module will be skipped."""
-    INVALID_SETUP = auto()
-    """
-    The module has invalid setup, such as no additional annotation provided.
-    The module will be skipped.
-    """
-
-
-class ModuleDecision(Enum):
-    """The decision of a ACMG or CharGer module of one variant.
-
-    Used by :attr:`CharGerResult.acmg_decisions` and :attr:`CharGerResult.charger_decisions`.
-
-    Examples:
-
-        Skip PVS1 classification:
-
-        >>> result = CharGerResult(Variant('19', 45855804, 45855804, 'CT', 'C'))
-        >>> result.acmg_decisions['PVS1'] = ModuleDecision.SKIPPED
-    """
-
-    PASSED = auto()
-    """The variant matched the criteria of the module."""
-    FAILED = auto()
-    """The variant didn't match the criteria of the module."""
-
-    @classmethod
-    def _gen_decision_template(
-        cls: Type["ModuleDecision"], available_modules: Dict[str, List[str]]
-    ) -> Callable[[], Dict[str, Optional["ModuleDecision"]]]:
-        """
-        Generate the decision template for all the available modules
-        during the initiation of :class:`CharGerResult`.
-        """
-
-        def gen_template():
-            decisions = {}
-            for module_type, modules in available_modules.items():
-                for m in modules:
-                    decisions[m] = None
-            return decisions
-
-        return gen_template
-
-
-@attr.s(auto_attribs=True, eq=False, order=False, slots=True)
-class CharGerResult:
-    """CharGer classification result of one variant.
-
-    Examples:
-
-        >>> variant = Variant(19, 45855804, 45855804, 'CT', 'C')
-        >>> result = CharGerResult(variant)
-        >>> result.acmg_decisions['PVS1'] is None
-        True
-    """
-
-    variant: Variant
-    """The input variant of this result."""
-
-    clinvar: Dict[str, Any] = attr.Factory(dict)
-    """ClinVar annotation of this variant."""
-
-    acmg_decisions: Dict[str, Optional[ModuleDecision]] = attr.Factory(
-        ModuleDecision._gen_decision_template(ACMG_MODULES)
-    )
-    """
-    The classification decision per ACMG module of this variant.
-
-    `None` if the module is not run. See :class:`ModuleDecision` for the possible decisions.
-    """
-
-    charger_decisions: Dict[str, Optional[ModuleDecision]] = attr.Factory(
-        ModuleDecision._gen_decision_template(CHARGER_MODULES)
-    )
-    """
-    The classification decision of each CharGer module of this variant.
-
-    Same usage as :attr:`acmg_decisions`.
-    """
