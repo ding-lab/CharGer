@@ -4,10 +4,11 @@ from typing import Any, Dict, List, Optional, Set
 from loguru import logger
 from pysam import TabixFile
 
-from .acmg_modules import run_pvs1
+from .acmg_modules import run_pm4, run_pvs1
 from .config import ACMG_MODULES, CHARGER_MODULES, CharGerConfig
+from .custom_modules import run_pmc1, run_ppc1, run_ppc2, run_psc1
 from .io import read_lines, read_tsv
-from .result import CharGerResult, ModuleDecision
+from .result import CharGerResult
 from .variant import ClinicalSignificance, GeneInheritanceMode, Variant
 
 try:
@@ -45,6 +46,7 @@ class ModuleAvailability(Enum):
 
 
 InheritanceGenesType = Dict[str, Optional[GeneInheritanceMode]]
+"""Type hint alias for :attr:`CharGer.inheritance_genes`."""
 
 
 class CharGer:
@@ -359,7 +361,7 @@ class CharGer:
         # PM4
         if run_or_skip("PM4"):
             for result in self.results:
-                self.run_acmg_pm4(result)
+                run_pm4(result, self.inheritance_genes)
 
     def run_charger_modules(self) -> None:
         """Run all CharGer customized modules."""
@@ -373,80 +375,19 @@ class CharGer:
         # PSC1
         if run_or_skip("PSC1"):
             for result in self.results:
-                self.run_charger_psc1(result)
+                run_psc1(result, self.inheritance_genes)
 
         # PMC1
         if run_or_skip("PMC1"):
             for result in self.results:
-                self.run_charger_pmc1(result)
+                run_pmc1(result, self.inheritance_genes)
 
         # PPC1
         if run_or_skip("PPC1"):
             for result in self.results:
-                self.run_charger_ppc1(result)
+                run_ppc1(result, self.inheritance_genes)
 
         # PPC
         if run_or_skip("PPC2"):
             for result in self.results:
-                self.run_charger_ppc2(result)
-
-    # region: ACMG Pathogenic Strong
-    def run_acmg_ps1(self, result: "CharGerResult") -> None:
-        pass
-
-    # endregion
-
-    def run_acmg_pm4(self, result: "CharGerResult") -> None:
-        """Run ACMG PM4 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        gene_symbol = most_severe_csq["SYMBOL"]
-        if most_severe_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
-            mode = self.inheritance_genes[gene_symbol]
-            # Gene is autosomal dominant
-            if mode is not None and mode & GeneInheritanceMode.AUTO_DOMINANT:
-                result.acmg_decisions["PM4"] = ModuleDecision.PASSED
-                return
-        result.acmg_decisions["PM4"] = ModuleDecision.FAILED
-
-    def run_charger_psc1(self, result: "CharGerResult") -> None:
-        """Run CharGer PSC1 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        gene_symbol = most_severe_csq["SYMBOL"]
-        if (
-            most_severe_csq.is_truncation_type()
-            and gene_symbol in self.inheritance_genes
-        ):
-            mode = self.inheritance_genes[gene_symbol]
-            # Gene is autosomal dominant
-            if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
-                result.charger_decisions["PSC1"] = ModuleDecision.PASSED
-                return
-        result.charger_decisions["PSC1"] = ModuleDecision.FAILED
-
-    def run_charger_pmc1(self, result: "CharGerResult") -> None:
-        """Run CharGer PMC1 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        if most_severe_csq.is_truncation_type():
-            result.charger_decisions["PMC1"] = ModuleDecision.PASSED
-        else:
-            result.charger_decisions["PMC1"] = ModuleDecision.FAILED
-
-    def run_charger_ppc1(self, result: "CharGerResult") -> None:
-        """Run CharGer PPC1 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        gene_symbol = most_severe_csq["SYMBOL"]
-        if most_severe_csq.is_inframe_type() and gene_symbol in self.inheritance_genes:
-            mode = self.inheritance_genes[gene_symbol]
-            # Gene is autosomal dominant
-            if mode is not None and mode & GeneInheritanceMode.AUTO_RECESSIVE:
-                result.charger_decisions["PPC1"] = ModuleDecision.PASSED
-                return
-        result.charger_decisions["PPC1"] = ModuleDecision.FAILED
-
-    def run_charger_ppc2(self, result: "CharGerResult") -> None:
-        """Run CharGer PPC2 module per variant."""
-        most_severe_csq = result.variant.get_most_severe_csq()
-        if most_severe_csq.is_inframe_type():
-            result.charger_decisions["PPC2"] = ModuleDecision.PASSED
-        else:
-            result.charger_decisions["PPC2"] = ModuleDecision.FAILED
+                run_ppc2(result, self.inheritance_genes)

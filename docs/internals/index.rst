@@ -8,6 +8,7 @@ Here documents CharGer's internal design by modules:
    result
    classifier
    acmg_modules
+   custom_modules
    variant
    csq
    io
