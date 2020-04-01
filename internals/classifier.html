@@ -14,8 +14,8 @@
     <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="acmg_modules module" href="acmg_modules.html" />
-    <link rel="prev" title="result module" href="result.html" />
+    <link rel="next" title="result module" href="result.html" />
+    <link rel="prev" title="config module" href="config.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -38,7 +38,7 @@
 <h2><code class="docutils literal notranslate"><span class="pre">CharGer</span></code><a class="headerlink" href="#charger" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="charger.classifier.CharGer">
-<em class="property">class </em><code class="sig-name descname">CharGer</code><span class="sig-paren">(</span><em class="sig-param">config</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">CharGer</code><span class="sig-paren">(</span><em class="sig-param">config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Variant classifier.</p>
 <dl class="field-list simple">
@@ -113,7 +113,7 @@ The length and order should always be the same as <a class="reference internal" 
 
 <dl class="method">
 <dt id="charger.classifier.CharGer.setup">
-<code class="sig-name descname">setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.setup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer.setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setup all the intput data and annotation.</p>
 <p>Sequentially it calls:</p>
 <blockquote>
@@ -135,7 +135,7 @@ The length and order should always be the same as <a class="reference internal" 
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._validate_config">
-<code class="sig-name descname">_validate_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._validate_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_validate_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._validate_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._validate_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate the configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -146,7 +146,7 @@ The length and order should always be the same as <a class="reference internal" 
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._read_input_variants">
-<code class="sig-name descname">_read_input_variants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._read_input_variants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_input_variants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._read_input_variants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._read_input_variants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read input VCF and set up the result template</p>
 <p>Load <a class="reference internal" href="#charger.classifier.CharGer.input_variants" title="charger.classifier.CharGer.input_variants"><code class="xref py py-attr docutils literal notranslate"><span class="pre">input_variants</span></code></a> from <a class="reference internal" href="config.html#charger.config.CharGerConfig.input" title="charger.config.CharGerConfig.input"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.config.input</span></code></a>.
 Also populate <a class="reference internal" href="#charger.classifier.CharGer.results" title="charger.classifier.CharGer.results"><code class="xref py py-attr docutils literal notranslate"><span class="pre">results</span></code></a> matching the input variant.</p>
@@ -159,7 +159,7 @@ Also populate <a class="reference internal" href="#charger.classifier.CharGer.re
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._read_pathogenic_variants">
-<code class="sig-name descname">_read_pathogenic_variants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._read_pathogenic_variants" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_pathogenic_variants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._read_pathogenic_variants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._read_pathogenic_variants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read known pathogenic variants.</p>
 <p>Load <a class="reference internal" href="#charger.classifier.CharGer.pathogenic_variants" title="charger.classifier.CharGer.pathogenic_variants"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pathogenic_variants</span></code></a>
 from <a class="reference internal" href="config.html#charger.config.CharGerConfig.pathogenic_variant" title="charger.config.CharGerConfig.pathogenic_variant"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.config.pathogenic_variant</span></code></a>.</p>
@@ -172,7 +172,7 @@ from <a class="reference internal" href="config.html#charger.config.CharGerConfi
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._read_inheritance_gene_table">
-<code class="sig-name descname">_read_inheritance_gene_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._read_inheritance_gene_table" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_inheritance_gene_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._read_inheritance_gene_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._read_inheritance_gene_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read inheritance gene table for PVS1 module.</p>
 <p>Load <a class="reference internal" href="#charger.classifier.CharGer.inheritance_genes" title="charger.classifier.CharGer.inheritance_genes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">inheritance_genes</span></code></a>
 from <a class="reference internal" href="config.html#charger.config.CharGerConfig.inheritance_gene_table" title="charger.config.CharGerConfig.inheritance_gene_table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.config.inheritance_gene_table</span></code></a>.
@@ -186,7 +186,7 @@ Skip PVS1 module if it’s not provided.</p>
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._read_pp2_gene_list">
-<code class="sig-name descname">_read_pp2_gene_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._read_pp2_gene_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_pp2_gene_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._read_pp2_gene_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._read_pp2_gene_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read gene list for PP2 module.</p>
 <p>Load <a class="reference internal" href="#charger.classifier.CharGer.pp2_genes" title="charger.classifier.CharGer.pp2_genes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">pp2_genes</span></code></a>
 from <a class="reference internal" href="config.html#charger.config.CharGerConfig.PP2_gene_list" title="charger.config.CharGerConfig.PP2_gene_list"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.config.PP2_gene_list</span></code></a>.
@@ -200,7 +200,7 @@ Skip PP2 module if not provided.</p>
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._read_bp1_gene_list">
-<code class="sig-name descname">_read_bp1_gene_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._read_bp1_gene_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_read_bp1_gene_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._read_bp1_gene_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._read_bp1_gene_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read gene list for BP1 module.</p>
 <p>Load <a class="reference internal" href="#charger.classifier.CharGer.bp1_genes" title="charger.classifier.CharGer.bp1_genes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">bp1_genes</span></code></a>
 from <a class="reference internal" href="config.html#charger.config.CharGerConfig.BP1_gene_list" title="charger.config.CharGerConfig.BP1_gene_list"><code class="xref py py-attr docutils literal notranslate"><span class="pre">self.config.BP1_gene_list</span></code></a>.
@@ -214,7 +214,7 @@ Skip BP1 module if not provided.</p>
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._match_clinvar_one_variant">
-<em class="property">static </em><code class="sig-name descname">_match_clinvar_one_variant</code><span class="sig-paren">(</span><em class="sig-param">variant</em>, <em class="sig-param">tabix</em>, <em class="sig-param">cols</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._match_clinvar_one_variant" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">_match_clinvar_one_variant</code><span class="sig-paren">(</span><em class="sig-param">variant</em>, <em class="sig-param">tabix</em>, <em class="sig-param">cols</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._match_clinvar_one_variant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._match_clinvar_one_variant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match the variant to the given ClinVar tabix table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -237,7 +237,7 @@ in <code class="xref py py-class docutils literal notranslate"><span class="pre"
 
 <dl class="method">
 <dt id="charger.classifier.CharGer.match_clinvar">
-<code class="sig-name descname">match_clinvar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.match_clinvar" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">match_clinvar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer.match_clinvar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer.match_clinvar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Match the input variant with the ClinVar table.</p>
 <p>Update <code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerResult.clinvar</span></code> the variant matches a ClinVar record
 by calling <a class="reference internal" href="#charger.classifier.CharGer._match_clinvar_one_variant" title="charger.classifier.CharGer._match_clinvar_one_variant"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_match_clinvar_one_variant()</span></code></a>.</p>
@@ -250,7 +250,7 @@ by calling <a class="reference internal" href="#charger.classifier.CharGer._matc
 
 <dl class="method">
 <dt id="charger.classifier.CharGer._run_or_skip_module">
-<em class="property">static </em><code class="sig-name descname">_run_or_skip_module</code><span class="sig-paren">(</span><em class="sig-param">module_name</em>, <em class="sig-param">module_avail</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer._run_or_skip_module" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">_run_or_skip_module</code><span class="sig-paren">(</span><em class="sig-param">module_name</em>, <em class="sig-param">module_avail</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer._run_or_skip_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer._run_or_skip_module" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -266,8 +266,10 @@ by calling <a class="reference internal" href="#charger.classifier.CharGer._matc
 
 <dl class="method">
 <dt id="charger.classifier.CharGer.run_acmg_modules">
-<code class="sig-name descname">run_acmg_modules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_acmg_modules" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_acmg_modules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer.run_acmg_modules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer.run_acmg_modules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run all ACMG modules.</p>
+<p>See <a class="reference internal" href="acmg_modules.html#module-charger.acmg_modules" title="charger.acmg_modules"><code class="xref py py-mod docutils literal notranslate"><span class="pre">acmg_modules</span></code></a> for all the currently implemented
+modules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
@@ -277,94 +279,13 @@ by calling <a class="reference internal" href="#charger.classifier.CharGer._matc
 
 <dl class="method">
 <dt id="charger.classifier.CharGer.run_charger_modules">
-<code class="sig-name descname">run_charger_modules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_charger_modules" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_charger_modules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer.run_charger_modules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.CharGer.run_charger_modules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run all CharGer customized modules.</p>
+<p>See <a class="reference internal" href="custom_modules.html#module-charger.custom_modules" title="charger.custom_modules"><code class="xref py py-mod docutils literal notranslate"><span class="pre">custom_modules</span></code></a> for all the currently implemented
+modules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_acmg_ps1">
-<code class="sig-name descname">run_acmg_ps1</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_acmg_ps1" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_acmg_pm4">
-<code class="sig-name descname">run_acmg_pm4</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_acmg_pm4" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run ACMG PM4 module per variant.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_charger_psc1">
-<code class="sig-name descname">run_charger_psc1</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_charger_psc1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CharGer PSC1 module per variant.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_charger_pmc1">
-<code class="sig-name descname">run_charger_pmc1</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_charger_pmc1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CharGer PMC1 module per variant.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_charger_ppc1">
-<code class="sig-name descname">run_charger_ppc1</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_charger_ppc1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CharGer PPC1 module per variant.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.classifier.CharGer.run_charger_ppc2">
-<code class="sig-name descname">run_charger_ppc2</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.classifier.CharGer.run_charger_ppc2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run CharGer PPC2 module per variant.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>charger.result.CharGerResult</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -374,9 +295,15 @@ by calling <a class="reference internal" href="#charger.classifier.CharGer._matc
 </div>
 <div class="section" id="module-helper-classes">
 <h2>Module helper classes<a class="headerlink" href="#module-helper-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="charger.classifier.InheritanceGenesType">
+<code class="sig-name descname">InheritanceGenesType</code><em class="property"> = Dict[str, Optional[GeneInheritanceMode]]</em><a class="headerlink" href="#charger.classifier.InheritanceGenesType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type hint alias for <a class="reference internal" href="#charger.classifier.CharGer.inheritance_genes" title="charger.classifier.CharGer.inheritance_genes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGer.inheritance_genes</span></code></a>.</p>
+</dd></dl>
+
 <dl class="class">
 <dt id="charger.classifier.ModuleAvailability">
-<em class="property">class </em><code class="sig-name descname">ModuleAvailability</code><a class="headerlink" href="#charger.classifier.ModuleAvailability" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ModuleAvailability</code><a class="reference internal" href="../_modules/charger/classifier.html#ModuleAvailability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.classifier.ModuleAvailability" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
 <p>Availability of a  ACMG or CharGer modules.</p>
 <p>Used by <a class="reference internal" href="#charger.classifier.CharGer._acmg_module_availability" title="charger.classifier.CharGer._acmg_module_availability"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGer._acmg_module_availability</span></code></a> and <a class="reference internal" href="#charger.classifier.CharGer._charger_module_availability" title="charger.classifier.CharGer._charger_module_availability"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGer._charger_module_availability</span></code></a>.</p>
@@ -433,9 +360,10 @@ The module will be skipped.</p>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_modules.html"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -461,8 +389,8 @@ The module will be skipped.</p>
 <ul>
   <li><a href="../contents.html">Documentation overview</a><ul>
   <li><a href="index.html">CharGer Internals</a><ul>
-      <li>Previous: <a href="result.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
-      <li>Next: <a href="acmg_modules.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+      <li>Previous: <a href="config.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
+      <li>Next: <a href="result.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
   </ul></li>
   </ul></li>
 </ul>

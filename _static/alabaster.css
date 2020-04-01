@@ -14,7 +14,7 @@ body {
 
 div.document {
     width: 940px;
-    margin: 30px auto 0 auto;
+    margin: 2rem auto 0 auto;
 }
 
 div.documentwrapper {
@@ -39,7 +39,7 @@ hr {
 div.body {
     background-color: #fff;
     color: #3E4349;
-    padding: 0 30px 0 30px;
+    padding: 0 1.5rem 0 1.5rem;
 }
 
 div.body > .section {
@@ -48,7 +48,7 @@ div.body > .section {
 
 div.footer {
     width: 940px;
-    margin: 20px auto 30px auto;
+    margin: 1rem auto 2rem auto;
     font-size: 14px;
     color: #888;
     text-align: right;

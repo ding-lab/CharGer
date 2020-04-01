@@ -38,11 +38,11 @@
 <h2><code class="docutils literal notranslate"><span class="pre">CSQ</span></code><a class="headerlink" href="#csq" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="charger.csq.CSQ">
-<em class="property">class </em><code class="sig-name descname">CSQ</code><span class="sig-paren">(</span><em class="sig-param">dict=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">CSQ</code><span class="sig-paren">(</span><em class="sig-param">dict=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/csq.html#CSQ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.csq.CSQ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.html#collections.UserDict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.UserDict</span></code></a></p>
 <p>Consequence of a variant. Access each CSQ field like a <cite>dict</cite>.</p>
-<p>The class is used to set the annotation records in a <a class="reference internal" href="variant.html#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.
-List of CSQ per feature will be stored at <a class="reference internal" href="variant.html#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p>
+<p>The class is used to set the annotation records in a <a class="reference internal" href="variant.html#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a>
+object. List of CSQ per feature will be stored at <a class="reference internal" href="variant.html#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">csq</span> <span class="o">=</span> <span class="n">variant</span><span class="o">.</span><span class="n">parsed_csq</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">csq</span>
 <span class="go">CSQ(SYMBOL=&#39;FANCM&#39;, HGVSc=&#39;ENST00000267430.5:c.5101N&gt;T&#39;, Consequence=&#39;stop_gained&#39;, …)</span>
@@ -74,11 +74,12 @@ missing when creating a new CSQ object.</p>
 
 <dl class="method">
 <dt id="charger.csq.CSQ.rank_consequence_type">
-<code class="sig-name descname">rank_consequence_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.rank_consequence_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rank_consequence_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/csq.html#CSQ.rank_consequence_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.csq.CSQ.rank_consequence_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rank the severeness of its consequence type (CSQ column <code class="docutils literal notranslate"><span class="pre">Consequence</span></code>).</p>
-<p>Severe consequence type has smaller rank (smallest being 0). Ranking is based on the order in
-<a class="reference internal" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="charger.csq.ALL_CONSEQUENCE_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_CONSEQUENCE_TYPES</span></code></a>. When the CSQ has multiple consequence types separated by <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, return the
-smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.</p>
+<p>Severe consequence type has smaller rank (smallest being 0). Ranking is based on the
+order in <a class="reference internal" href="#charger.csq.ALL_CONSEQUENCE_TYPES" title="charger.csq.ALL_CONSEQUENCE_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_CONSEQUENCE_TYPES</span></code></a>. When the CSQ has multiple consequence types
+separated by <code class="docutils literal notranslate"><span class="pre">&amp;</span></code>, return the smallest rank of all the types. When the consequence type
+is not known, return the biggest possible rank + 1.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -93,7 +94,7 @@ smallest rank of all the types. When the consequence type is not known, return t
 
 <dl class="method">
 <dt id="charger.csq.CSQ.is_truncation_type">
-<code class="sig-name descname">is_truncation_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.is_truncation_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_truncation_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/csq.html#CSQ.is_truncation_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.csq.CSQ.is_truncation_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the consequence type is truncation.</p>
 <p>See <a class="reference internal" href="#charger.csq.ALL_TRUNCATION_TYPES" title="charger.csq.ALL_TRUNCATION_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_TRUNCATION_TYPES</span></code></a> for the full list of consequence types.</p>
 <dl class="field-list simple">
@@ -105,7 +106,7 @@ smallest rank of all the types. When the consequence type is not known, return t
 
 <dl class="method">
 <dt id="charger.csq.CSQ.is_inframe_type">
-<code class="sig-name descname">is_inframe_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.csq.CSQ.is_inframe_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">is_inframe_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/csq.html#CSQ.is_inframe_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.csq.CSQ.is_inframe_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the consequence type is inframe.</p>
 <p>See <a class="reference internal" href="#charger.csq.ALL_INFRAME_TYPES" title="charger.csq.ALL_INFRAME_TYPES"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ALL_INFRAME_TYPES</span></code></a> for the full list of consequence types.</p>
 <dl class="field-list simple">
@@ -165,9 +166,10 @@ smallest rank of all the types. When the consequence type is not known, return t
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_modules.html"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>

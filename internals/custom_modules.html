@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>acmg_modules module &#8212; CharGer  documentation</title>
+    <title>custom_modules module &#8212; CharGer  documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -14,8 +14,8 @@
     <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="custom_modules module" href="custom_modules.html" />
-    <link rel="prev" title="result module" href="result.html" />
+    <link rel="next" title="variant module" href="variant.html" />
+    <link rel="prev" title="acmg_modules module" href="acmg_modules.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,14 +32,14 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-charger.acmg_modules">
-<span id="acmg-modules-module"></span><h1><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module<a class="headerlink" href="#module-charger.acmg_modules" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-charger.acmg_modules.pathogenic">
-<span id="pathogenic"></span><h2>Pathogenic<a class="headerlink" href="#module-charger.acmg_modules.pathogenic" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="module-charger.custom_modules">
+<span id="custom-modules-module"></span><h1><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module<a class="headerlink" href="#module-charger.custom_modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-charger.custom_modules.pathogenic">
+<span id="pathogenic"></span><h2>Pathogenic<a class="headerlink" href="#module-charger.custom_modules.pathogenic" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="charger.acmg_modules.pathogenic.run_pvs1">
-<code class="sig-name descname">run_pvs1</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/acmg_modules/pathogenic.html#run_pvs1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.acmg_modules.pathogenic.run_pvs1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run ACMG <a class="reference internal" href="../acmg_guideline.html#term-pvs1"><span class="xref std std-term">PVS1</span></a> module per variant.</p>
+<dt id="charger.custom_modules.pathogenic.run_psc1">
+<code class="sig-name descname">run_psc1</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/custom_modules/pathogenic.html#run_psc1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.custom_modules.pathogenic.run_psc1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CharGer PSC1 module per variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -54,12 +54,15 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="charger.acmg_modules.pathogenic.run_ps1">
-<code class="sig-name descname">run_ps1</code><span class="sig-paren">(</span><em class="sig-param">result</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/acmg_modules/pathogenic.html#run_ps1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.acmg_modules.pathogenic.run_ps1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run ACMG <a class="reference internal" href="../acmg_guideline.html#term-ps1"><span class="xref std std-term">PS1</span></a> module per variant.</p>
+<dt id="charger.custom_modules.pathogenic.run_pmc1">
+<code class="sig-name descname">run_pmc1</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/custom_modules/pathogenic.html#run_pmc1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.custom_modules.pathogenic.run_pmc1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CharGer PMC1 module per variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>CharGerResult</em></a>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>CharGerResult</em></a>) – </p></li>
+<li><p><strong>inheritance_genes</strong> (<em>InheritanceGenesType</em>) – </p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
@@ -68,9 +71,26 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="charger.acmg_modules.pathogenic.run_pm4">
-<code class="sig-name descname">run_pm4</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/acmg_modules/pathogenic.html#run_pm4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.acmg_modules.pathogenic.run_pm4" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run ACMG <a class="reference internal" href="../acmg_guideline.html#term-pm4"><span class="xref std std-term">PM4</span></a> module per variant.</p>
+<dt id="charger.custom_modules.pathogenic.run_ppc1">
+<code class="sig-name descname">run_ppc1</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/custom_modules/pathogenic.html#run_ppc1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.custom_modules.pathogenic.run_ppc1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CharGer PPC1 module per variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<a class="reference internal" href="result.html#charger.result.CharGerResult" title="charger.result.CharGerResult"><em>CharGerResult</em></a>) – </p></li>
+<li><p><strong>inheritance_genes</strong> (<em>InheritanceGenesType</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="charger.custom_modules.pathogenic.run_ppc2">
+<code class="sig-name descname">run_ppc2</code><span class="sig-paren">(</span><em class="sig-param">result</em>, <em class="sig-param">inheritance_genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/custom_modules/pathogenic.html#run_ppc2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.custom_modules.pathogenic.run_ppc2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CharGer PPC2 module per variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -112,8 +132,8 @@
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_modules.html"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>
@@ -139,8 +159,8 @@
 <ul>
   <li><a href="../contents.html">Documentation overview</a><ul>
   <li><a href="index.html">CharGer Internals</a><ul>
-      <li>Previous: <a href="result.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
-      <li>Next: <a href="custom_modules.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
+      <li>Previous: <a href="acmg_modules.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+      <li>Next: <a href="variant.html" title="next chapter"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
   </ul></li>
   </ul></li>
 </ul>

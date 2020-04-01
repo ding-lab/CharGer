@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.result &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.result</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">import</span> <span class="nn">attr</span>
+
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">ACMG_MODULES</span><span class="p">,</span> <span class="n">CHARGER_MODULES</span>
+<span class="kn">from</span> <span class="nn">.variant</span> <span class="kn">import</span> <span class="n">Variant</span>
+
+
+<div class="viewcode-block" id="ModuleDecision"><a class="viewcode-back" href="../../internals/result.html#charger.result.ModuleDecision">[docs]</a><span class="k">class</span> <span class="nc">ModuleDecision</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The decision of a ACMG or CharGer module of one variant.</span>
+
+<span class="sd">    Used by :attr:`CharGerResult.acmg_decisions` and :attr:`CharGerResult.charger_decisions`.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        Skip PVS1 classification:</span>
+
+<span class="sd">        &gt;&gt;&gt; result = CharGerResult(Variant(&#39;19&#39;, 45855804, 45855804, &#39;CT&#39;, &#39;C&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; result.acmg_decisions[&#39;PVS1&#39;] = ModuleDecision.SKIPPED</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">PASSED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;The variant matched the criteria of the module.&quot;&quot;&quot;</span>
+    <span class="n">FAILED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;The variant didn&#39;t match the criteria of the module.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ModuleDecision._gen_decision_template"><a class="viewcode-back" href="../../internals/result.html#charger.result.ModuleDecision._gen_decision_template">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_gen_decision_template</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;ModuleDecision&quot;</span><span class="p">],</span> <span class="n">available_modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;ModuleDecision&quot;</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the decision template for all the available modules</span>
+<span class="sd">        during the initiation of :class:`CharGerResult`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">gen_template</span><span class="p">():</span>
+            <span class="n">decisions</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">module_type</span><span class="p">,</span> <span class="n">modules</span> <span class="ow">in</span> <span class="n">available_modules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
+                    <span class="n">decisions</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">decisions</span>
+
+        <span class="k">return</span> <span class="n">gen_template</span></div></div>
+
+
+<div class="viewcode-block" id="CharGerResult"><a class="viewcode-back" href="../../internals/result.html#charger.result.CharGerResult">[docs]</a><span class="nd">@attr</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">CharGerResult</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;CharGer classification result of one variant.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; variant = Variant(19, 45855804, 45855804, &#39;CT&#39;, &#39;C&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; result = CharGerResult(variant)</span>
+<span class="sd">        &gt;&gt;&gt; result.acmg_decisions[&#39;PVS1&#39;] is None</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">variant</span><span class="p">:</span> <span class="n">Variant</span>
+    <span class="sd">&quot;&quot;&quot;The input variant of this result.&quot;&quot;&quot;</span>
+
+    <span class="n">clinvar</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">Factory</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;ClinVar annotation of this variant.&quot;&quot;&quot;</span>
+
+    <span class="n">acmg_decisions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleDecision</span><span class="p">]]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">Factory</span><span class="p">(</span>
+        <span class="n">ModuleDecision</span><span class="o">.</span><span class="n">_gen_decision_template</span><span class="p">(</span><span class="n">ACMG_MODULES</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The classification decision per ACMG module of this variant.</span>
+
+<span class="sd">    `None` if the module is not run. See :class:`ModuleDecision` for the possible decisions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">charger_decisions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModuleDecision</span><span class="p">]]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">Factory</span><span class="p">(</span>
+        <span class="n">ModuleDecision</span><span class="o">.</span><span class="n">_gen_decision_template</span><span class="p">(</span><span class="n">CHARGER_MODULES</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The classification decision of each CharGer module of this variant.</span>
+
+<span class="sd">    Same usage as :attr:`acmg_decisions`.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -36,7 +36,7 @@
 <span id="console-module"></span><h1><code class="docutils literal notranslate"><span class="pre">console</span></code> module<a class="headerlink" href="#module-charger.console" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="charger.console.create_console_parser">
-<code class="sig-name descname">create_console_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.create_console_parser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">create_console_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/console.html#create_console_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.console.create_console_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create CharGer’s commandline parser.</p>
 <p>See <a class="reference internal" href="config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a> for the detailed specification of each parameter.</p>
 <dl class="field-list simple">
@@ -48,7 +48,7 @@
 
 <dl class="function">
 <dt id="charger.console.parse_console">
-<code class="sig-name descname">parse_console</code><span class="sig-paren">(</span><em class="sig-param">args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.parse_console" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">parse_console</code><span class="sig-paren">(</span><em class="sig-param">args=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/console.html#parse_console"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.console.parse_console" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a <a class="reference internal" href="config.html#charger.config.CharGerConfig" title="charger.config.CharGerConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">CharGerConfig</span></code></a> object
 based on the command-line arguments or the given <cite>args</cite>.</p>
 <dl class="field-list simple">
@@ -60,7 +60,7 @@ based on the command-line arguments or the given <cite>args</cite>.</p>
 
 <dl class="function">
 <dt id="charger.console.setup_logger">
-<code class="sig-name descname">setup_logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.setup_logger" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">setup_logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/console.html#setup_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.console.setup_logger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up stderr logging format.</p>
 <p>The logging format and colors can be overridden by setting up the
 environment variables such as <code class="docutils literal notranslate"><span class="pre">LOGURU_FORMAT</span></code>.
@@ -74,7 +74,7 @@ See <a class="reference external" href="https://loguru.readthedocs.io/en/stable/
 
 <dl class="function">
 <dt id="charger.console.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#charger.console.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/console.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.console.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entry point of the program.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">charger</span></code> command calls this function.</p>
 <dl class="field-list simple">
@@ -89,7 +89,7 @@ See <a class="reference external" href="https://loguru.readthedocs.io/en/stable/
 <span id="argtype-module"></span><h1><code class="docutils literal notranslate"><span class="pre">argtype</span></code> module<a class="headerlink" href="#module-charger.argtype" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="charger.argtype.PathType">
-<em class="property">class </em><code class="sig-name descname">PathType</code><span class="sig-paren">(</span><em class="sig-param">exists=None</em>, <em class="sig-param">type=None</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.argtype.PathType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">PathType</code><span class="sig-paren">(</span><em class="sig-param">exists=None</em>, <em class="sig-param">type=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/argtype.html#PathType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.argtype.PathType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse file path arguments as a <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pathlib.Path</span></code></a> object.</p>
 <p>Type factory for ArgumentParser.add_argument() that validates the file path arguments.
 Adapted from <a class="reference external" href="https://stackoverflow.com/a/33181083">https://stackoverflow.com/a/33181083</a></p>
@@ -110,7 +110,8 @@ Skip the check when <cite>None</cite>.</p></li>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Add an argument that must be an existing file, but can also be specified as a dash (<code class="docutils literal notranslate"><span class="pre">-</span></code>) in the command,</p>
+<p>Add an argument that must be an existing file, but can also be specified as a dash
+(<code class="docutils literal notranslate"><span class="pre">-</span></code>) in the command,</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;existing_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -124,7 +125,7 @@ Skip the check when <cite>None</cite>.</p></li>
 
 <dl class="class">
 <dt id="charger.argtype.ModuleScoreOverrideType">
-<em class="property">class </em><code class="sig-name descname">ModuleScoreOverrideType</code><span class="sig-paren">(</span><em class="sig-param">defaults</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.argtype.ModuleScoreOverrideType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ModuleScoreOverrideType</code><span class="sig-paren">(</span><em class="sig-param">defaults</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/argtype.html#ModuleScoreOverrideType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.argtype.ModuleScoreOverrideType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Integrate override arguments to new scores of all modules.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">default_scores</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">2</span><span class="p">}</span>
@@ -165,9 +166,10 @@ Skip the check when <cite>None</cite>.</p></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_modules.html"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>

@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.csq &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.csq</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">UserDict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="s2">&quot;charger&quot;</span><span class="p">)</span>  <span class="c1"># Disable emit logs by default</span>
+
+<span class="n">ALL_CONSEQUENCE_TYPES</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;transcript_ablation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;splice_acceptor_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;splice_donor_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop_gained&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;frameshift_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop_lost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_lost&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcript_amplification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inframe_insertion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inframe_deletion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;missense_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;protein_altering_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;splice_region_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;incomplete_terminal_codon_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_retained_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop_retained_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;synonymous_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;coding_sequence_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mature_miRNA_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;5_prime_UTR_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;3_prime_UTR_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;non_coding_transcript_exon_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;intron_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NMD_transcript_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;non_coding_transcript_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;upstream_gene_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;downstream_gene_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TFBS_ablation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TFBS_amplification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TF_binding_site_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regulatory_region_ablation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regulatory_region_amplification&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;feature_elongation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regulatory_region_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;feature_truncation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;intergenic_variant&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;All the possible consequence types fetched from `Ensembl v99`_ (January 2020).</span>
+
+<span class="sd">The consequence types here are ordered by their severeness.</span>
+
+<span class="sd">.. _Ensembl v99: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">ALL_TRUNCATION_TYPES</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;transcript_ablation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;splice_acceptor_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;splice_donor_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop_gained&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;frameshift_variant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;start_lost&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;All consequence types considered as a truncation.&quot;&quot;&quot;</span>
+
+<span class="n">ALL_INFRAME_TYPES</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;inframe_insertion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inframe_deletion&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stop_lost&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;All consequence types considered as to be inframe.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="CSQ"><a class="viewcode-back" href="../../internals/csq.html#charger.csq.CSQ">[docs]</a><span class="k">class</span> <span class="nc">CSQ</span><span class="p">(</span><span class="n">UserDict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Consequence of a variant. Access each CSQ field like a `dict`.</span>
+
+<span class="sd">    The class is used to set the annotation records in a :class:`~charger.variant.Variant`</span>
+<span class="sd">    object. List of CSQ per feature will be stored at :attr:`Variant.parsed_csq</span>
+<span class="sd">    &lt;charger.variant.Variant.parsed_csq&gt;`.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; csq = variant.parsed_csq[0]; csq</span>
+<span class="sd">        CSQ(SYMBOL=&#39;FANCM&#39;, HGVSc=&#39;ENST00000267430.5:c.5101N&gt;T&#39;, Consequence=&#39;stop_gained&#39;, …)</span>
+<span class="sd">        &gt;&gt;&gt; list(csq.keys())[:5]</span>
+<span class="sd">        [&#39;Allele&#39;, &#39;Consequence&#39;, &#39;IMPACT&#39;, &#39;SYMBOL&#39;, &#39;Gene&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; list(csq.values())[:5]</span>
+<span class="sd">        [&#39;T&#39;, &#39;stop_gained&#39;, &#39;HIGH&#39;, &#39;FANCM&#39;, &#39;ENSG00000187790&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; csq[&#39;HGVSc&#39;]</span>
+<span class="sd">        &#39;ENST00000267430.5:c.5101N&gt;T&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1">#: Required CSQ fields. Will raise a `ValueError` if any of the fields is</span>
+    <span class="c1">#: missing when creating a new CSQ object.</span>
+    <span class="n">REQUIRED_FIELDS</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;Allele&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Consequence&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SYMBOL&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Gene&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Feature_type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Feature&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;BIOTYPE&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;HGVSc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;HGVSp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cDNA_position&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CDS_position&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Protein_position&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Amino_acids&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Codons&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Existing_variation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;STRAND&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">missing_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">REQUIRED_FIELDS</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">missing_fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CSQ misses these required fields: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_fields</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">consequence_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get all the consequence types separated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Consequence&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;&amp;&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CSQ.rank_consequence_type"><a class="viewcode-back" href="../../internals/csq.html#charger.csq.CSQ.rank_consequence_type">[docs]</a>    <span class="k">def</span> <span class="nf">rank_consequence_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Rank the severeness of its consequence type (CSQ column ``Consequence``).</span>
+
+<span class="sd">        Severe consequence type has smaller rank (smallest being 0). Ranking is based on the</span>
+<span class="sd">        order in :attr:`ALL_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types</span>
+<span class="sd">        separated by ``&amp;``, return the smallest rank of all the types. When the consequence type</span>
+<span class="sd">        is not known, return the biggest possible rank + 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ranks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ct</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequence_types</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rank</span> <span class="o">=</span> <span class="n">ALL_CONSEQUENCE_TYPES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">ct</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="c1"># Assign unknown consequence type to the lowest rank</span>
+                <span class="n">rank</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ALL_CONSEQUENCE_TYPES</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Got unknown consequence type: </span><span class="si">{ct}</span><span class="s2">; assign its rank = </span><span class="si">{rank}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">ct</span><span class="o">=</span><span class="n">ct</span><span class="p">,</span>
+                    <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">ranks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">ranks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CSQ.is_truncation_type"><a class="viewcode-back" href="../../internals/csq.html#charger.csq.CSQ.is_truncation_type">[docs]</a>    <span class="k">def</span> <span class="nf">is_truncation_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Whether the consequence type is truncation.</span>
+
+<span class="sd">        See :attr:`ALL_TRUNCATION_TYPES` for the full list of consequence types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">ct</span> <span class="ow">in</span> <span class="n">ALL_TRUNCATION_TYPES</span> <span class="k">for</span> <span class="n">ct</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequence_types</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CSQ.is_inframe_type"><a class="viewcode-back" href="../../internals/csq.html#charger.csq.CSQ.is_inframe_type">[docs]</a>    <span class="k">def</span> <span class="nf">is_inframe_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Whether the consequence type is inframe.</span>
+
+<span class="sd">        See :attr:`ALL_INFRAME_TYPES` for the full list of consequence types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">ct</span> <span class="ow">in</span> <span class="n">ALL_INFRAME_TYPES</span> <span class="k">for</span> <span class="n">ct</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequence_types</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SYMBOL&quot;</span><span class="p">,</span> <span class="s2">&quot;HGVSc&quot;</span><span class="p">,</span> <span class="s2">&quot;Consequence&quot;</span><span class="p">]</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="n">details</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">f</span><span class="p">]</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;CSQ(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">details</span><span class="p">)</span><span class="si">}</span><span class="s2">, …)&quot;</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.io &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.io</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Backport additional typings prior to python 3.8</span>
+    <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span>  <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="unix_tab"><a class="viewcode-back" href="../../internals/io.html#charger.io.unix_tab">[docs]</a><span class="k">class</span> <span class="nc">unix_tab</span><span class="p">(</span><span class="n">csv</span><span class="o">.</span><span class="n">excel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The :class:`csv.Dialect` to read TSV.&quot;&quot;&quot;</span>
+
+    <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span>
+    <span class="n">lineterminator</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span></div>
+
+
+<span class="n">csv</span><span class="o">.</span><span class="n">register_dialect</span><span class="p">(</span><span class="s2">&quot;unix_tab&quot;</span><span class="p">,</span> <span class="n">unix_tab</span><span class="p">)</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">read_tsv</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">as_dict</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span> <span class="nf">read_tsv</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">as_dict</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span> <span class="n">columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="o">...</span>
+
+
+<div class="viewcode-block" id="read_tsv"><a class="viewcode-back" href="../../internals/io.html#charger.io.read_tsv">[docs]</a><span class="k">def</span> <span class="nf">read_tsv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="s2">&quot;unix_tab&quot;</span><span class="p">,</span> <span class="n">as_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read a plain-text or gzip compressed TSV table.</span>
+
+<span class="sd">    When `as_dict` is `False`, return each row as a list using :func:`csv.reader`.</span>
+
+<span class="sd">    When `as_dict` is `True`, return each row as a `dict` mapping from the</span>
+<span class="sd">    column name to the corresponding value using :class:`csv.DictReader`.</span>
+<span class="sd">    `columns` will be used as the column names. If `columns` is omitted, the</span>
+<span class="sd">    first row will be treated as the column names.</span>
+
+<span class="sd">    Additional arguments ``kwargs`` are passed to the underlying function.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; tsv_pth = Path(&#39;inheritance_gene_table.tsv.gz&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader = read_tsv(tsv_pth)</span>
+<span class="sd">        &gt;&gt;&gt; header = next(reader); header</span>
+<span class="sd">        [&#39;gene&#39;, &#39;disease&#39;, &#39;modes_of_inheritance&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; row = next(reader); row[-1]</span>
+<span class="sd">        &#39;autosomal recessive, autosomal dominant&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; reader = read_tsv(tsv_pth, as_dict=True)</span>
+<span class="sd">        &gt;&gt;&gt; row_d = next(reader)</span>
+<span class="sd">        &gt;&gt;&gt; row_d[&#39;gene&#39;]</span>
+<span class="sd">        &#39;SDHA&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.gz&quot;</span><span class="p">:</span>
+        <span class="n">file_obj</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file_obj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">as_dict</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="n">dialect</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="n">dialect</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="n">read_csv</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">read_tsv</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="s2">&quot;excel&quot;</span><span class="p">)</span>
+<span class="n">read_csv</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Read a plain-text or gzip compressed CSV table.</span>
+
+<span class="s2">    See :func:`read_tsv` for its usage.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="read_lines"><a class="viewcode-back" href="../../internals/io.html#charger.io.read_lines">[docs]</a><span class="k">def</span> <span class="nf">read_lines</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Read a plain-text or gzip compressed text per line.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.gz&quot;</span><span class="p">:</span>
+        <span class="n">file_obj</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file_obj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

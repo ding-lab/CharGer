@@ -38,12 +38,13 @@
 <h2><code class="docutils literal notranslate"><span class="pre">read_tsv</span></code><a class="headerlink" href="#read-tsv" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="charger.io.read_tsv">
-<code class="sig-name descname">read_tsv</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">dialect='unix_tab'</em>, <em class="sig-param">as_dict=False</em>, <em class="sig-param">columns=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_tsv" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_tsv</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">dialect='unix_tab'</em>, <em class="sig-param">as_dict=False</em>, <em class="sig-param">columns=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/io.html#read_tsv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.io.read_tsv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a plain-text or gzip compressed TSV table.</p>
 <p>When <cite>as_dict</cite> is <cite>False</cite>, return each row as a list using <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.reader" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">csv.reader()</span></code></a>.</p>
-<p>When <cite>as_dict</cite> is <cite>True</cite>, return each row as a <cite>dict</cite> mapping from the column name to the corresponding value
-using <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.DictReader" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.DictReader</span></code></a>. <cite>columns</cite> will be used as the column names. If <cite>columns</cite> is omitted, the first
-row will be treated as the column names.</p>
+<p>When <cite>as_dict</cite> is <cite>True</cite>, return each row as a <cite>dict</cite> mapping from the
+column name to the corresponding value using <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.DictReader" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.DictReader</span></code></a>.
+<cite>columns</cite> will be used as the column names. If <cite>columns</cite> is omitted, the
+first row will be treated as the column names.</p>
 <p>Additional arguments <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> are passed to the underlying function.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tsv_pth</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;inheritance_gene_table.tsv.gz&#39;</span><span class="p">)</span>
@@ -77,7 +78,7 @@ row will be treated as the column names.</p>
 <h2><code class="docutils literal notranslate"><span class="pre">read_lines</span></code><a class="headerlink" href="#read-lines" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="charger.io.read_lines">
-<code class="sig-name descname">read_lines</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#charger.io.read_lines" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_lines</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/io.html#read_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.io.read_lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a plain-text or gzip compressed text per line.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -94,7 +95,7 @@ row will be treated as the column names.</p>
 <h2>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="charger.io.unix_tab">
-<em class="property">class </em><code class="sig-name descname">unix_tab</code><a class="headerlink" href="#charger.io.unix_tab" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">unix_tab</code><a class="reference internal" href="../_modules/charger/io.html#unix_tab"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.io.unix_tab" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.excel" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.excel</span></code></a></p>
 <p>The <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.Dialect" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">csv.Dialect</span></code></a> to read TSV.</p>
 <dl class="attribute">
@@ -135,9 +136,10 @@ row will be treated as the column names.</p>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">CharGer Internals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="config.html"><code class="docutils literal notranslate"><span class="pre">config</span></code> module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="classifier.html"><code class="docutils literal notranslate"><span class="pre">classifier</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result.html"><code class="docutils literal notranslate"><span class="pre">result</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="acmg_modules.html"><code class="docutils literal notranslate"><span class="pre">acmg_modules</span></code> module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_modules.html"><code class="docutils literal notranslate"><span class="pre">custom_modules</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variant.html"><code class="docutils literal notranslate"><span class="pre">variant</span></code> module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="csq.html"><code class="docutils literal notranslate"><span class="pre">csq</span></code> module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">io</span></code> module</a></li>

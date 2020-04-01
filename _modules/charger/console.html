@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.console &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.console</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">shlex</span> <span class="kn">import</span> <span class="n">quote</span>
+
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">__version__</span>
+<span class="kn">from</span> <span class="nn">.argtype</span> <span class="kn">import</span> <span class="n">ModuleScoreOverrideType</span><span class="p">,</span> <span class="n">PathType</span>
+<span class="kn">from</span> <span class="nn">.classifier</span> <span class="kn">import</span> <span class="n">CharGer</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">CharGerConfig</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="s2">&quot;charger&quot;</span><span class="p">)</span>  <span class="c1"># Disable emit logs by default</span>
+
+<span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">CharGer (Characterization of Germline variants) is a software tool for interpreting and predicting clinical pathogenicity of germline variants.</span>
+<span class="s2">&quot;&quot;&quot;</span>  <span class="c1"># noqa</span>
+
+<span class="c1"># Additional console help message text at the end</span>
+<span class="n">epilog</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">If you use CharGer, please cite our publication so we can continue to support CharGer development:</span>
+
+<span class="s2">    Scott, A.D. et al. (2018). Bioinformatics. https://doi.org/10.1093/bioinformatics/bty649.</span>
+<span class="s2">&quot;&quot;&quot;</span>  <span class="c1"># noqa</span>
+
+
+<div class="viewcode-block" id="create_console_parser"><a class="viewcode-back" href="../../internals/console.html#charger.console.create_console_parser">[docs]</a><span class="k">def</span> <span class="nf">create_console_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Create CharGer&#39;s commandline parser.</span>
+
+<span class="sd">    See :class:`~charger.config.CharGerConfig` for the detailed specification of each parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">ConsoleHelpFormatter</span><span class="p">(</span>
+        <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Obtain the config defaults</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="n">CharGerConfig</span><span class="p">()</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="n">epilog</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">ConsoleHelpFormatter</span><span class="p">,</span>
+        <span class="n">allow_abbrev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--version&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;CharGer v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--input&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;VCF&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to the input VCF to be annotated&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--output&quot;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TSV&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(),</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to CharGer output&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--pathogenic-variant&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;VCF&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to the known pathogenic variants&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--hotspot3d-cluster&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TSV&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to HotSpot3D clusters result&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--override-variant-info&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Override the variant info using ClinVar description&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--include-vcf-details&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Include the VCF details in the output&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">acmg_grp</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;ACMG modules&quot;</span><span class="p">)</span>
+    <span class="n">acmg_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--inheritance-gene-table&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TSV&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Path to inheritance gene tab separated table and enable PVS1 module. &quot;</span>
+            <span class="s2">&quot;Table columns must be: gene, disease, mode_of_inheritance.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">acmg_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--disease-specific&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Enable disease specific inheritance-gene-table detection&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">acmg_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--PP2-gene-list&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TXT&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to PP2 gene list (list of gene symbols)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">acmg_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--BP1-gene-list&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TXT&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to BP1 gene list (list of gene symbols)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">acmg_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--override-acmg-score&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;&#39;MODULE=SCORE MODULE=SCORE ...&#39;&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">ModuleScoreOverrideType</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">acmg_module_scores</span><span class="p">),</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;acmg_module_scores&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Override the default scoring of ACMG modules&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">charger_grp</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;CharGer modules&quot;</span><span class="p">)</span>
+    <span class="n">charger_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--override-charger-score&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;&#39;MODULE=SCORE MODULE=SCORE ...&#39;&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">ModuleScoreOverrideType</span><span class="p">(</span><span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">charger_module_scores</span><span class="p">),</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;charger_module_scores&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Override the default scoring of CharGer modules&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">anno_src_grp</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Annotation sources&quot;</span><span class="p">)</span>
+    <span class="n">anno_src_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--clinvar-table&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;TABIX&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">PathType</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Path to the Tabix indexed ClinVar table&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">threshold_grp</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Thresholds&quot;</span><span class="p">)</span>
+    <span class="n">threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--rare-threshold&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FREQ&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">rare_threshold</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Maximal allele frequency to be a rare variant&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--common-threshold&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FREQ&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">common_threshold</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Minimal allele frequency to be a common variant&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">cg_cls_threshold_grp</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">&quot;Score thresholds&quot;</span><span class="p">)</span>
+    <span class="n">cg_cls_threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--min-pathogenic-score&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;INT&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">min_pathogenic_score</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Minimal total score for a variant to be pathogenic&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cg_cls_threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--min-likely-pathogenic-score&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;INT&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">min_likely_pathogenic_score</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Minimal total score for a variant to be likely pathogenic&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cg_cls_threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--max-likely-benign-score&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;INT&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">max_likely_benign_score</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Maximal total score for a variant to be likely benign&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cg_cls_threshold_grp</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--max-benign-score&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;INT&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">defaults</span><span class="o">.</span><span class="n">max_benign_score</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Maximal total score for a variant to be benign&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="parse_console"><a class="viewcode-back" href="../../internals/console.html#charger.console.parse_console">[docs]</a><span class="k">def</span> <span class="nf">parse_console</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CharGerConfig</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a :class:`~charger.config.CharGerConfig` object</span>
+<span class="sd">    based on the command-line arguments or the given `args`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">create_console_parser</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="n">CharGerConfig</span><span class="p">())</span>
+    <span class="n">console_parameters</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">quote</span><span class="p">,</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running CharGer v</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2"> with parameters: </span><span class="si">{</span><span class="n">console_parameters</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="setup_logger"><a class="viewcode-back" href="../../internals/console.html#charger.console.setup_logger">[docs]</a><span class="k">def</span> <span class="nf">setup_logger</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Set up stderr logging format.</span>
+
+<span class="sd">    The logging format and colors can be overridden by setting up the</span>
+<span class="sd">    environment variables such as ``LOGURU_FORMAT``.</span>
+<span class="sd">    See `Loguru documentation`_ for details.</span>
+
+<span class="sd">    .. _Loguru documentation: https://loguru.readthedocs.io/en/stable/api/logger.html#env</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>  <span class="c1"># Remove the default setting</span>
+
+    <span class="c1"># Set up the preferred logging colors and format unless overridden by its environment variable</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">level</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOGURU_INFO_COLOR&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&lt;white&gt;&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">level</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOGURU_DEBUG_COLOR&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&lt;d&gt;&lt;white&gt;&quot;</span><span class="p">)</span>
+    <span class="n">log_format</span> <span class="o">=</span> <span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOGURU_FORMAT&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="c1"># &quot;&lt;green&gt;{time:YYYY-MM-DD HH:mm:ss}&lt;/green&gt; &quot;</span>
+        <span class="s2">&quot;&lt;b&gt;&lt;level&gt;</span><span class="si">{level: &lt;8}</span><span class="s2">&lt;/level&gt;&lt;/b&gt; &quot;</span>
+        <span class="s2">&quot;| &lt;level&gt;</span><span class="si">{message}</span><span class="s2">&lt;/level&gt;&quot;</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">log_format</span><span class="p">)</span>
+
+    <span class="c1"># By default all the logging messages are disabled</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">&quot;charger&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../internals/console.html#charger.console.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Entry point of the program.</span>
+
+<span class="sd">    The ``charger`` command calls this function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">setup_logger</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">parse_console</span><span class="p">()</span>
+    <span class="n">charger</span> <span class="o">=</span> <span class="n">CharGer</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">charger</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+    <span class="n">charger</span><span class="o">.</span><span class="n">match_clinvar</span><span class="p">()</span>
+    <span class="n">charger</span><span class="o">.</span><span class="n">run_acmg_modules</span><span class="p">()</span>
+    <span class="n">charger</span><span class="o">.</span><span class="n">run_charger_modules</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

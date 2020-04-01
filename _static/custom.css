@@ -1,1 +1,13 @@
-/* This file intentionally left blank. */
+.body[role="main"] > h1:not([id]) + .highlight pre {
+    padding: 0.5rem;
+}
+
+.body[role="main"] > h1:not([id]) + .highlight {
+    margin-right: -5.5rem;
+}
+
+@media screen and (max-width: 870px) {
+    .body[role="main"] > h1:not([id]) + .highlight {
+        margin-right: -1.5rem;
+    }
+}

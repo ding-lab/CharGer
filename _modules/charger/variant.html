@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.variant &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.variant</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">Flag</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">attr</span>
+<span class="kn">from</span> <span class="nn">cyvcf2</span> <span class="kn">import</span> <span class="n">VCF</span>
+<span class="kn">from</span> <span class="nn">cyvcf2</span> <span class="kn">import</span> <span class="n">Variant</span> <span class="k">as</span> <span class="n">CyVCF2Variant</span>
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span> <span class="nn">.csq</span> <span class="kn">import</span> <span class="n">CSQ</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="s2">&quot;charger&quot;</span><span class="p">)</span>  <span class="c1"># Disable emit logs by default</span>
+
+
+<span class="c1"># A type hint variable to annotated the Factory method</span>
+<span class="c1"># See https://github.com/python/typing/issues/58 for details</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;Variant&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Variant"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant">[docs]</a><span class="nd">@attr</span><span class="o">.</span><span class="n">s</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Variant</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Biallelic variant.</span>
+
+<span class="sd">    For normal usage, consider using :meth:`read_and_parse_vcf` to construct</span>
+<span class="sd">    the objects from a VEP annotated VCF.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; variant = Variant(&#39;13&#39;, 32340300, 32340301, &#39;GT&#39;, &#39;G&#39;, id=&#39;rs80359550&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; variant</span>
+<span class="sd">        Variant(13:32340300GT&gt;G info: )</span>
+<span class="sd">        &gt;&gt;&gt; v.is_snp()</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; v.is_sv()</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; v.is_indel()</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; v.is_deletion()</span>
+<span class="sd">        True</span>
+
+<span class="sd">        Annotate it with online VEP,</span>
+
+<span class="sd">            &gt;&gt;&gt; v = next(Variant.read_and_parse_vcf(&#39;rs80359550.vcf&#39;))</span>
+<span class="sd">            &gt;&gt;&gt; v</span>
+<span class="sd">            Variant(13:32340300GT&gt;G info: CSQ[4 parsed])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">chrom</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1">#: Chromosome.</span>
+    <span class="n">start_pos</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1">#: Start position (1-based closed). Same as POS in the VCF record.</span>
+    <span class="n">end_pos</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1">#: End position (1-based closed).</span>
+    <span class="n">ref_allele</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1">#: Reference allele sequence.</span>
+    <span class="n">alt_allele</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1">#: Alternative allele sequence (currently only allow one possible allele).</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;ID in the VCF record. `None` when the original value is ``.``.&quot;&quot;&quot;</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;FILTER in the VCF record. `None` when the original value is ``PASS``.&quot;&quot;&quot;</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">Factory</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;INFO in the VCF record.&quot;&quot;&quot;</span>
+
+    <span class="n">parsed_csq</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="s2">&quot;CSQ&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    All parsed CSQ annotations of the variant as a list of :class:`.CSQ` objects. Use</span>
+<span class="sd">    :meth:`read_and_parse_vcf` to automatically parse CSQ while reading an annotated VCF.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_most_severe_csq</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;CSQ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span><span class="o">.</span><span class="n">ib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;Cached most severe CSQ based on the consequence type.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__attrs_post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Variant must be normalized</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;ref_allele cannot be missing (&#39;.&#39;). Try normalize the variant first.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;alt_allele cannot be missing (&#39;.&#39; or None). Try normalize the variant first.&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="Variant.is_snp"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.is_snp">[docs]</a>    <span class="k">def</span> <span class="nf">is_snp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;`True` if the variant is a SNP.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Variant.is_sv"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.is_sv">[docs]</a>    <span class="k">def</span> <span class="nf">is_sv</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;`True` if the variant ia an SV.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;SVTYPE&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;SVTYPE&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Variant.is_indel"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.is_indel">[docs]</a>    <span class="k">def</span> <span class="nf">is_indel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;`True` if the variant ia an INDEL.&quot;&quot;&quot;</span>
+        <span class="n">is_sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sv</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_sv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_sv</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Variant.is_deletion"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.is_deletion">[docs]</a>    <span class="k">def</span> <span class="nf">is_deletion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;`True` if the variant is a deletion.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_indel</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Variant.get_most_severe_csq"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.get_most_severe_csq">[docs]</a>    <span class="k">def</span> <span class="nf">get_most_severe_csq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CSQ</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the most severe CSQ based on the consequence type.</span>
+
+<span class="sd">        If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will</span>
+<span class="sd">        be selected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Return the cached result if available</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_most_severe_csq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_most_severe_csq</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Variant </span><span class="si">{self!r}</span><span class="s2"> CSQ is not parsed or it does not have any annotation.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Order all CSQ based on:</span>
+        <span class="c1"># - The most severe consequence type</span>
+        <span class="c1"># - The transcript is canonical</span>
+        <span class="c1"># - The CSQ comes first</span>
+        <span class="n">rank_and_canonical_per_csq</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">csq_ix</span><span class="p">,</span> <span class="n">csq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span><span class="p">):</span>
+            <span class="c1"># Severe consequence have smaller rank</span>
+            <span class="n">rank_consequence_type</span> <span class="o">=</span> <span class="n">csq</span><span class="o">.</span><span class="n">rank_consequence_type</span><span class="p">()</span>
+            <span class="c1"># Canonical transcript wins whenever there is a tie in the ranks of consequence type.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">csq</span><span class="p">[</span><span class="s2">&quot;CANONICAL&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span><span class="p">:</span>
+                    <span class="n">rank_canonical</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rank_canonical</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">rank_canonical</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">rank_and_canonical_per_csq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">rank_consequence_type</span><span class="p">,</span> <span class="n">rank_canonical</span><span class="p">,</span> <span class="n">csq_ix</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">rank_ct</span><span class="p">,</span> <span class="n">rank_canonical</span><span class="p">,</span> <span class="n">csq_ix</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rank_and_canonical_per_csq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_most_severe_csq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span><span class="p">[</span><span class="n">csq_ix</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_most_severe_csq</span></div>
+
+<div class="viewcode-block" id="Variant._parse_csq"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant._parse_csq">[docs]</a>    <span class="k">def</span> <span class="nf">_parse_csq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csq_fields</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the CSQ info string based on the CSQ field spec.</span>
+
+<span class="sd">        It returns a list of consequences per annotation(transcript)</span>
+<span class="sd">        as a list of :class:`.CSQ` objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_csq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;CSQ&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">parsed_csq_per_annotation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">one_csq</span> <span class="ow">in</span> <span class="n">all_csq</span><span class="p">:</span>
+            <span class="n">csq_values</span> <span class="o">=</span> <span class="n">one_csq</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">csq_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Number of CSQ values (n=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">csq_values</span><span class="p">)</span><span class="si">}</span><span class="s2">) and columns (n=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;don&#39;t match. columns: </span><span class="si">{</span><span class="n">csq_fields</span><span class="si">!r}</span><span class="s2">, values: </span><span class="si">{</span><span class="n">csq_values</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">parsed_csq_per_annotation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CSQ</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">,</span> <span class="n">csq_values</span><span class="p">))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span> <span class="o">=</span> <span class="n">parsed_csq_per_annotation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;CSQ&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">limit_seq_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">)</span>
+        <span class="n">alt</span> <span class="o">=</span> <span class="n">limit_seq_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alt_allele</span><span class="p">)</span>
+
+        <span class="n">info_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">info_keys</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;CSQ&quot;</span><span class="p">)</span>
+            <span class="n">info_keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSQ[</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parsed_csq</span><span class="p">)</span><span class="si">}</span><span class="s2"> parsed]&quot;</span><span class="p">)</span>
+        <span class="n">info_repr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;info: </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">type_name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chrom</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_pos</span><span class="si">}{</span><span class="n">ref</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">alt</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">info_repr</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="Variant.from_cyvcf2"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.from_cyvcf2">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_cyvcf2</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="n">variant</span><span class="p">:</span> <span class="n">CyVCF2Variant</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">V</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create one Variant object based on the given</span>
+<span class="sd">        :class:`cyvcf2.Variant &lt;cyvcf2.cyvcf2.Variant&gt;` VCF record.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">chrom</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">CHROM</span><span class="p">,</span>
+            <span class="n">start_pos</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">end_pos</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">ref_allele</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">REF</span><span class="p">,</span>
+            <span class="n">alt_allele</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">ALT</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span>
+            <span class="nb">filter</span><span class="o">=</span><span class="n">variant</span><span class="o">.</span><span class="n">FILTER</span><span class="p">,</span>
+            <span class="n">info</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">variant</span><span class="o">.</span><span class="n">INFO</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Variant.get_vep_version"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.get_vep_version">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_vep_version</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="n">vcf_raw_headers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Extract the VEP version in the given VCF.&quot;&quot;&quot;</span>
+        <span class="c1"># Find VEP version</span>
+        <span class="c1"># Reverse the header order because the newer header appears later</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vep_header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">vcf_raw_headers</span><span class="p">)</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;##VEP=&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">vep_version</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^##VEP=[&#39;</span><span class="se">\&quot;</span><span class="s2">]?v(\d+)[&#39;</span><span class="se">\&quot;</span><span class="s2">]?&quot;</span><span class="p">,</span> <span class="n">vep_header</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find VEP version in the VCF header&quot;</span><span class="p">)</span>
+            <span class="n">vep_version</span> <span class="o">=</span> <span class="s2">&quot;UNKNOWN&quot;</span>
+        <span class="k">return</span> <span class="n">vep_version</span></div>
+
+<div class="viewcode-block" id="Variant.get_vep_csq_fields"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.get_vep_csq_fields">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_vep_csq_fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="n">vcf_raw_headers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Extract the CSQ fields VEP output in the given VCF.&quot;&quot;&quot;</span>
+        <span class="c1"># Get CSQ spec</span>
+        <span class="c1"># Reverse the header order because the newer header appears later</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">csq_info_header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">vcf_raw_headers</span><span class="p">)</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;##INFO=&lt;ID=CSQ,&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find CSQ format in the VCF header&quot;</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Format: ([\w\|]+)[&#39;</span><span class="se">\&quot;</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">csq_info_header</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">csq_format</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot parse the CSQ field format from its INFO VCF header: </span><span class="si">{</span><span class="n">csq_info_header</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">csq_fields</span> <span class="o">=</span> <span class="n">csq_format</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">csq_fields</span></div>
+
+<div class="viewcode-block" id="Variant.read_vcf"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.read_vcf">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">read_vcf</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read VCF record from `path`.</span>
+
+<span class="sd">        This function walks through each variant record in the given VCF using :class:`cyvcf2.VCF</span>
+<span class="sd">        &lt;cyvcf2.cyvcf2.VCF&gt;`, and yields the record as a :class:`Variant` object.</span>
+
+<span class="sd">        See also :meth:`read_and_parse_vcf` to read and parse the VCF.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the VCF.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An generator walking through all variants per record.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">VCF</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span> <span class="k">as</span> <span class="n">vcf</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cy_variant</span> <span class="ow">in</span> <span class="n">vcf</span><span class="p">:</span>
+                <span class="n">variant</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_cyvcf2</span><span class="p">(</span><span class="n">cy_variant</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">variant</span></div>
+
+<div class="viewcode-block" id="Variant.read_and_parse_vcf"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.Variant.read_and_parse_vcf">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">read_and_parse_vcf</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">V</span><span class="p">],</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read and parse VCF record with its VEP-annotated CSQ from `path`.</span>
+
+<span class="sd">        This function walks through each variant record in the given VCF using :class:`cyvcf2.VCF</span>
+<span class="sd">        &lt;cyvcf2.cyvcf2.VCF&gt;`, and yields the record as a :class:`Variant` object. The parsed CSQ</span>
+<span class="sd">        will be stored in the generated :attr:`Variant.parsed_csq`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the VCF.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An generator walking through all variants per record.</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            Read an annotated VCF::</span>
+
+<span class="sd">                &gt;&gt;&gt; vcf_reader = Variant.read_and_parse_vcf(&#39;my.vcf&#39;)</span>
+<span class="sd">                &gt;&gt;&gt; variant = next(vcf_reader)</span>
+<span class="sd">                &gt;&gt;&gt; variant</span>
+<span class="sd">                Variant(14:45658326C&gt;T info: CSQ[5 parsed])</span>
+<span class="sd">                &gt;&gt;&gt; variants[4].parsed_csq[0]</span>
+<span class="sd">                CSQ(SYMBOL=&#39;FANCM&#39;, HGVSc=&#39;ENST00000267430.5:c.5101N&gt;T&#39;, Consequence=&#39;stop_gained&#39;, …)</span>
+
+<span class="sd">            Iterate all the VCF variants records::</span>
+
+<span class="sd">                &gt;&gt;&gt; for variant in vcf_reader:</span>
+<span class="sd">                ...     print(variant.chrom, variant.parsed_csq[0][&#39;Allele&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">VCF</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span> <span class="k">as</span> <span class="n">vcf</span><span class="p">:</span>
+            <span class="c1"># Get the CSQ field definition and VEP version from the VCF header</span>
+            <span class="n">vcf_raw_headers</span> <span class="o">=</span> <span class="n">vcf</span><span class="o">.</span><span class="n">raw_header</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="n">vep_version</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_vep_version</span><span class="p">(</span><span class="n">vcf_raw_headers</span><span class="p">)</span>
+            <span class="n">csq_fields</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_vep_csq_fields</span><span class="p">(</span><span class="n">vcf_raw_headers</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;VEP version </span><span class="si">{</span><span class="n">vep_version</span><span class="si">}</span><span class="s2"> with CSQ format [</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">)</span><span class="si">}</span><span class="s2"> fields]: </span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">cy_variant</span> <span class="ow">in</span> <span class="n">vcf</span><span class="p">:</span>
+                <span class="n">variant</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_cyvcf2</span><span class="p">(</span><span class="n">cy_variant</span><span class="p">)</span>
+                <span class="n">variant</span><span class="o">.</span><span class="n">_parse_csq</span><span class="p">(</span><span class="n">csq_fields</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">variant</span></div></div>
+
+
+<div class="viewcode-block" id="limit_seq_display"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.limit_seq_display">[docs]</a><span class="k">def</span> <span class="nf">limit_seq_display</span><span class="p">(</span><span class="n">seq</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Limit the display of the sequence.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; limit_seq_display(&#39;ATATCCG&#39;)</span>
+<span class="sd">    &#39;ATATC…&#39;</span>
+<span class="sd">    &gt;&gt;&gt; limit_seq_display(&#39;ATA&#39;)</span>
+<span class="sd">    &#39;ATA&#39;</span>
+<span class="sd">    &gt;&gt;&gt; limit_seq_display(&#39;ATA&#39;, limit=1)</span>
+<span class="sd">    &#39;A…&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;…&quot;</span>
+    <span class="k">return</span> <span class="n">seq</span></div>
+
+
+<div class="viewcode-block" id="GeneInheritanceMode"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.GeneInheritanceMode">[docs]</a><span class="k">class</span> <span class="nc">GeneInheritanceMode</span><span class="p">(</span><span class="n">Flag</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;All possible modes of the gene inheritance dominance.</span>
+
+<span class="sd">    Used by :attr:`CharGerConfig.inheritance_gene_table</span>
+<span class="sd">    &lt;charger.config.CharGerConfig.inheritance_gene_table&gt;`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">AUTO_DOMINANT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1">#: The gene is autosomal dominant.</span>
+    <span class="n">AUTO_RECESSIVE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1">#: The gene is autosomal recessive.</span>
+    <span class="n">X_LINKED_DOMINANT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1">#: The gene is X-linked dominant.</span>
+    <span class="n">X_LINKED_RECESSIVE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1">#: The gene is X-linked recessive.</span>
+    <span class="n">Y_LINKED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>  <span class="c1">#: The gene is Y-linked.</span>
+
+<div class="viewcode-block" id="GeneInheritanceMode.parse"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.GeneInheritanceMode.parse">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;GeneInheritanceMode&quot;</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;GeneInheritanceMode&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Parse the inheritance modes from the given string. Multiple modes are comma separated.</span>
+
+<span class="sd">        &gt;&gt;&gt; m = GeneInheritanceMode.parse(&quot;autosomal dominant, autosomal recessive&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; m</span>
+<span class="sd">        &lt;GeneInheritanceMode.AUTO_RECESSIVE|AUTO_DOMINANT: 3&gt;</span>
+
+<span class="sd">        &gt;&gt;&gt; bool(m &amp; GeneInheritanceMode.AUTO_RECESSIVE)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bool(m &amp; GeneInheritanceMode.Y_LINKED)</span>
+<span class="sd">        False</span>
+
+<span class="sd">        &gt;&gt;&gt; GeneInheritanceMode.parse(&quot;unknown&quot;) is None</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">MODE_TO_FLAG</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;autosomal dominant&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">AUTO_DOMINANT</span><span class="p">,</span>
+            <span class="s2">&quot;autosomal recessive&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">AUTO_RECESSIVE</span><span class="p">,</span>
+            <span class="s2">&quot;x-linked dominant&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">X_LINKED_DOMINANT</span><span class="p">,</span>
+            <span class="s2">&quot;x-linked recessive&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">X_LINKED_RECESSIVE</span><span class="p">,</span>
+            <span class="s2">&quot;y-linked&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">Y_LINKED</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">mode_flags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Convert the input value to be lower case only</span>
+        <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;unknown&quot;</span><span class="p">:</span>
+                <span class="c1"># Unknown has no flag</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mode_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MODE_TO_FLAG</span><span class="p">[</span><span class="n">mode</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid variant inheritance mode </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">if</span> <span class="n">mode_flags</span><span class="p">:</span>
+            <span class="c1"># Combined all the flags</span>
+            <span class="n">combined_mode</span> <span class="o">=</span> <span class="n">mode_flags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">mode_flags</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">combined_mode</span> <span class="o">|=</span> <span class="n">flag</span>
+            <span class="k">return</span> <span class="n">combined_mode</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="ClinicalSignificance"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.ClinicalSignificance">[docs]</a><span class="k">class</span> <span class="nc">ClinicalSignificance</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;All possible clinical significance types of a variant.&quot;&quot;&quot;</span>
+
+    <span class="n">PATHOGENIC</span> <span class="o">=</span> <span class="s2">&quot;Pathogenic&quot;</span>
+    <span class="n">LIKELY_PATHOGENIC</span> <span class="o">=</span> <span class="s2">&quot;Likely Pathogenic&quot;</span>
+    <span class="n">LIKELY_BENIGN</span> <span class="o">=</span> <span class="s2">&quot;Likely Benign&quot;</span>
+    <span class="n">BENIGN</span> <span class="o">=</span> <span class="s2">&quot;Benign&quot;</span>
+    <span class="n">UNCERTAIN</span> <span class="o">=</span> <span class="s2">&quot;Uncertain Significance&quot;</span>
+
+<div class="viewcode-block" id="ClinicalSignificance.parse_clinvar_record"><a class="viewcode-back" href="../../internals/variant.html#charger.variant.ClinicalSignificance.parse_clinvar_record">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse_clinvar_record</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s2">&quot;ClinicalSignificance&quot;</span><span class="p">],</span> <span class="n">record</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ClinicalSignificance&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Determine the pathogenicity of a ClinVar record.&quot;&quot;&quot;</span>
+        <span class="c1"># The default pathogenicity</span>
+        <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">UNCERTAIN</span>
+
+        <span class="n">is_pathogenic</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;pathogenic&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;likely_pathogenic&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">is_benign</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;benign&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;likely_benign&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;conflicted&quot;</span><span class="p">]):</span>
+            <span class="c1"># Conflicted record has uncertain clinical significance</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">UNCERTAIN</span>
+
+        <span class="c1"># There may be multiple assertions</span>
+        <span class="n">all_clin_sig_assertions</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;clinical_significance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_benign</span> <span class="ow">and</span> <span class="n">is_pathogenic</span><span class="p">:</span>
+            <span class="c1"># Fix parsing of conflicting ClinVar assertion</span>
+            <span class="c1"># by checking the ClinVar assertion</span>
+            <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="n">all_clin_sig_assertions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;likely benign&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LIKELY_BENIGN</span>
+                <span class="k">elif</span> <span class="s2">&quot;likely pathogenic&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LIKELY_PATHOGENIC</span>
+                <span class="k">elif</span> <span class="s2">&quot;benign&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">BENIGN</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="s2">&quot;pathogenic&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PATHOGENIC</span>
+                    <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">is_benign</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="n">all_clin_sig_assertions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;likely benign&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LIKELY_BENIGN</span>
+                <span class="k">elif</span> <span class="s2">&quot;benign&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">BENIGN</span>
+                    <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">is_pathogenic</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="n">all_clin_sig_assertions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;likely pathogenic&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LIKELY_PATHOGENIC</span>
+                <span class="k">elif</span> <span class="s2">&quot;pathogenic&quot;</span> <span class="ow">in</span> <span class="n">assertion</span><span class="p">:</span>
+                    <span class="n">clin_sig</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">PATHOGENIC</span>
+                    <span class="k">break</span>
+        <span class="k">return</span> <span class="n">clin_sig</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

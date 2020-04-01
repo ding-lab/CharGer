@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>charger.classifier &#8212; CharGer  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for charger.classifier</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">pysam</span> <span class="kn">import</span> <span class="n">TabixFile</span>
+
+<span class="kn">from</span> <span class="nn">.acmg_modules</span> <span class="kn">import</span> <span class="n">run_pm4</span><span class="p">,</span> <span class="n">run_pvs1</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">ACMG_MODULES</span><span class="p">,</span> <span class="n">CHARGER_MODULES</span><span class="p">,</span> <span class="n">CharGerConfig</span>
+<span class="kn">from</span> <span class="nn">.custom_modules</span> <span class="kn">import</span> <span class="n">run_pmc1</span><span class="p">,</span> <span class="n">run_ppc1</span><span class="p">,</span> <span class="n">run_ppc2</span><span class="p">,</span> <span class="n">run_psc1</span>
+<span class="kn">from</span> <span class="nn">.io</span> <span class="kn">import</span> <span class="n">read_lines</span><span class="p">,</span> <span class="n">read_tsv</span>
+<span class="kn">from</span> <span class="nn">.result</span> <span class="kn">import</span> <span class="n">CharGerResult</span>
+<span class="kn">from</span> <span class="nn">.variant</span> <span class="kn">import</span> <span class="n">ClinicalSignificance</span><span class="p">,</span> <span class="n">GeneInheritanceMode</span><span class="p">,</span> <span class="n">Variant</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Final</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Backport additional typings prior to python 3.8</span>
+    <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Final</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="s2">&quot;charger&quot;</span><span class="p">)</span>  <span class="c1"># Disable emit logs by default</span>
+
+
+<div class="viewcode-block" id="ModuleAvailability"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.ModuleAvailability">[docs]</a><span class="k">class</span> <span class="nc">ModuleAvailability</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Availability of a  ACMG or CharGer modules.</span>
+
+<span class="sd">    Used by :attr:`CharGer._acmg_module_availability` and :attr:`CharGer._charger_module_availability`.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        Skip PVS1 module by:</span>
+
+<span class="sd">        &gt;&gt;&gt; charger = CharGer(CharGerConfig())</span>
+<span class="sd">        &gt;&gt;&gt; charger._acmg_module_availability = ModuleAvailability.USER_DISABLED</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ACTIVE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;The module is active.&quot;&quot;&quot;</span>
+    <span class="n">USER_DISABLED</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;The module is disabled by user. The module will be skipped.&quot;&quot;&quot;</span>
+    <span class="n">INVALID_SETUP</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The module has invalid setup, such as no additional annotation provided.</span>
+<span class="sd">    The module will be skipped.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<span class="n">InheritanceGenesType</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GeneInheritanceMode</span><span class="p">]]</span>
+<span class="sd">&quot;&quot;&quot;Type hint alias for :attr:`CharGer.inheritance_genes`.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="CharGer"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer">[docs]</a><span class="k">class</span> <span class="nc">CharGer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variant classifier.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: CharGer&#39;s configurations.</span>
+<span class="sd">            See :class:`~charger.config.CharGerConfig` for details to set it up.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; config = CharGerConfig(...)</span>
+<span class="sd">        &gt;&gt;&gt; charger = CharGer()</span>
+<span class="sd">        &gt;&gt;&gt; charger.setup()</span>
+<span class="sd">        &gt;&gt;&gt; charger.match_clinvar()</span>
+<span class="sd">        &gt;&gt;&gt; charger.run_acmg_modules()</span>
+<span class="sd">        &gt;&gt;&gt; charger.run_charger_modules()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">CharGerConfig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">Final</span><span class="p">[</span><span class="n">CharGerConfig</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="sd">&quot;&quot;&quot;Configuration as a :class:`~charger.config.CharGerConfig` object.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_variants</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Variant</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="sd">&quot;&quot;&quot;Parsed input variants.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pathogenic_variants</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Variant</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="sd">&quot;&quot;&quot;Known pathogenic variants.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">:</span> <span class="n">InheritanceGenesType</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="sd">&quot;&quot;&quot;Variant inheritance dominance mode of the genes for PVS1 module.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot;Genes marked for PP2 module.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot;Genes marked for BP1 module.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CharGerResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Classification results of the input variants.</span>
+<span class="sd">        The length and order should always be the same as :attr:`input_variants`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_acmg_module_availability</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleAvailability</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">m</span><span class="p">:</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">ACTIVE</span>
+            <span class="k">for</span> <span class="n">module_type</span><span class="p">,</span> <span class="n">modules</span> <span class="ow">in</span> <span class="n">ACMG_MODULES</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modules</span>
+        <span class="p">}</span>
+        <span class="sd">&quot;&quot;&quot;The availability of all ACMG modules. By default all modules are active.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_charger_module_availability</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleAvailability</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">m</span><span class="p">:</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">ACTIVE</span>
+            <span class="k">for</span> <span class="n">module_type</span><span class="p">,</span> <span class="n">modules</span> <span class="ow">in</span> <span class="n">CHARGER_MODULES</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">modules</span>
+        <span class="p">}</span>
+        <span class="sd">&quot;&quot;&quot;The availability of all CharGer modules. By default all modules are active.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CharGer.setup"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Setup all the intput data and annotation.</span>
+
+<span class="sd">        Sequentially it calls:</span>
+
+<span class="sd">            1. :meth:`_validate_config`</span>
+<span class="sd">            2. :meth:`_read_input_variants`</span>
+<span class="sd">            3. :meth:`_read_pathogenic_variants`</span>
+<span class="sd">            4. :meth:`_read_inheritance_gene_table`</span>
+<span class="sd">            5. :meth:`_read_pp2_gene_list`</span>
+<span class="sd">            6. :meth:`_read_bp1_gene_list`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_input_variants</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_pathogenic_variants</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_inheritance_gene_table</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_pp2_gene_list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_bp1_gene_list</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CharGer._validate_config"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._validate_config">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Validate the configuration.&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validate the given config&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Given config: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._read_input_variants"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._read_input_variants">[docs]</a>    <span class="k">def</span> <span class="nf">_read_input_variants</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read input VCF and set up the result template</span>
+
+<span class="sd">        Load :attr:`input_variants` from :attr:`self.config.input &lt;.CharGerConfig.input&gt;`.</span>
+<span class="sd">        Also populate :attr:`results` matching the input variant.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No input file is given in the config&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read input VCF from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># TODO: Skip variants with filter, or with high allele frequency</span>
+        <span class="c1"># num_skipped_variants: Dict[str, int] = {&quot;has_filter&quot;: 0}</span>
+        <span class="k">for</span> <span class="n">variant</span> <span class="ow">in</span> <span class="n">Variant</span><span class="o">.</span><span class="n">read_and_parse_vcf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">input</span><span class="p">):</span>
+            <span class="c1"># # Skip the variant with filter (not PASS)</span>
+            <span class="c1"># if variant.filter:</span>
+            <span class="c1">#     logger.warning(</span>
+            <span class="c1">#         f&quot;{variant} has filter {&#39;,&#39;.join(variant.filter)}. Skipped&quot;</span>
+            <span class="c1">#     )</span>
+            <span class="c1">#     num_skipped_variants[&quot;has_filter&quot;] += 1</span>
+            <span class="c1">#     continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_variants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variant</span><span class="p">)</span>
+
+            <span class="c1"># We also create the result template</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CharGerResult</span><span class="p">(</span><span class="n">variant</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Read total </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_variants</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> variants from the input VCF&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._read_pathogenic_variants"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._read_pathogenic_variants">[docs]</a>    <span class="k">def</span> <span class="nf">_read_pathogenic_variants</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read known pathogenic variants.</span>
+
+<span class="sd">        Load :attr:`pathogenic_variants`</span>
+<span class="sd">        from :attr:`self.config.pathogenic_variant &lt;.CharGerConfig.pathogenic_variant&gt;`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pathogenic_variant</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read pathogenic VCF from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pathogenic_variant</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pathogenic_variants</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">Variant</span><span class="o">.</span><span class="n">read_and_parse_vcf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pathogenic_variant</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Read total </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pathogenic_variants</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> pathogenic variants from the VCF&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._read_inheritance_gene_table"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._read_inheritance_gene_table">[docs]</a>    <span class="k">def</span> <span class="nf">_read_inheritance_gene_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read inheritance gene table for PVS1 module.</span>
+
+<span class="sd">        Load :attr:`inheritance_genes`</span>
+<span class="sd">        from :attr:`self.config.inheritance_gene_table &lt;.CharGerConfig.inheritance_gene_table&gt;`.</span>
+<span class="sd">        Skip PVS1 module if it&#39;s not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tsv_pth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">inheritance_gene_table</span>
+        <span class="c1"># Disable PVS1 module if no list is provided</span>
+        <span class="k">if</span> <span class="n">tsv_pth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Inheritance gene table is not provided, CharGer cannot make ACMG PVS1/PM4 calls &quot;</span>
+                <span class="s2">&quot;or CharGer PSC1/PPC1 calls. Disable all these modules&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;PVS1&quot;</span><span class="p">,</span> <span class="s2">&quot;PM4&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_acmg_module_availability</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">INVALID_SETUP</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;PSC1&quot;</span><span class="p">,</span> <span class="s2">&quot;PPC1&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_charger_module_availability</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">INVALID_SETUP</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Disable CharGer PMC1/PPC2 modules when inheritance gene table is provided&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;PMC1&quot;</span><span class="p">,</span> <span class="s2">&quot;PPC2&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_charger_module_availability</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">INVALID_SETUP</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">disease_specific</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot read disease specific inheritance gene table&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read inheritance gene table from </span><span class="si">{</span><span class="n">tsv_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">read_tsv</span><span class="p">(</span><span class="n">tsv_pth</span><span class="p">,</span> <span class="n">as_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expect inheritance gene table to have at least three columns; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;only got </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid table format in </span><span class="si">{</span><span class="n">tsv_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">diseases</span><span class="p">,</span> <span class="n">modes_of_inheritance</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="n">modes</span> <span class="o">=</span> <span class="n">GeneInheritanceMode</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">modes_of_inheritance</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span> <span class="o">=</span> <span class="n">modes</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Loaded inheritance mode of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> genes&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._read_pp2_gene_list"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._read_pp2_gene_list">[docs]</a>    <span class="k">def</span> <span class="nf">_read_pp2_gene_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read gene list for PP2 module.</span>
+
+<span class="sd">        Load :attr:`pp2_genes`</span>
+<span class="sd">        from :attr:`self.config.PP2_gene_list &lt;.CharGerConfig.PP2_gene_list&gt;`.</span>
+<span class="sd">        Skip PP2 module if not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gene_list_pth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">PP2_gene_list</span>
+        <span class="c1"># Disable PP2 module if no list is provided</span>
+        <span class="k">if</span> <span class="n">gene_list_pth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;CharGer cannot make PP2 calls without the given gene list. &quot;</span>
+                <span class="s2">&quot;Disable PP2 module&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_acmg_module_availability</span><span class="p">[</span><span class="s2">&quot;PP2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">INVALID_SETUP</span>
+            <span class="k">return</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read PP2 gene list from </span><span class="si">{</span><span class="n">gene_list_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Marked </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> genes for PP2&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._read_bp1_gene_list"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._read_bp1_gene_list">[docs]</a>    <span class="k">def</span> <span class="nf">_read_bp1_gene_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read gene list for BP1 module.</span>
+
+<span class="sd">        Load :attr:`bp1_genes`</span>
+<span class="sd">        from :attr:`self.config.BP1_gene_list &lt;.CharGerConfig.BP1_gene_list&gt;`.</span>
+<span class="sd">        Skip BP1 module if not provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gene_list_pth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">BP1_gene_list</span>
+        <span class="c1"># Disable BP1 module if no list is provided</span>
+        <span class="k">if</span> <span class="n">gene_list_pth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;CharGer cannot make BP1 calls without the given gene list. &quot;</span>
+                <span class="s2">&quot;Disable BP1 module&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_acmg_module_availability</span><span class="p">[</span><span class="s2">&quot;BP1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">INVALID_SETUP</span>
+            <span class="k">return</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read BP1 gene list from </span><span class="si">{</span><span class="n">gene_list_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Marked </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> genes for BP1&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._match_clinvar_one_variant"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._match_clinvar_one_variant">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_match_clinvar_one_variant</span><span class="p">(</span>
+        <span class="n">variant</span><span class="p">:</span> <span class="n">Variant</span><span class="p">,</span> <span class="n">tabix</span><span class="p">:</span> <span class="n">TabixFile</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Match the variant to the given ClinVar tabix table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            variant: Variant to be matched</span>
+<span class="sd">            tabix: Tabix indexed CliVar table</span>
+<span class="sd">            cols: All ClinVar columns in the table</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None if no ClinVar match. When matched, returns a `dict` of the clinvar record,</span>
+<span class="sd">            where the key ``final_clinical_significance`` stores the final clinical significance type</span>
+<span class="sd">            in :class:`ClinicalSignificance`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># TabixFile.fetch will raise ValueError if the given region is out of bound</span>
+            <span class="n">row_iter</span> <span class="o">=</span> <span class="n">tabix</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span>
+                <span class="n">region</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variant</span><span class="o">.</span><span class="n">chrom</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">variant</span><span class="o">.</span><span class="n">start_pos</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">variant</span><span class="o">.</span><span class="n">end_pos</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Do nothing if it&#39;s querying for a chromosome not in the ClinVar table</span>
+            <span class="k">if</span> <span class="s2">&quot;could not create iterator for region&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">opt</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tabix fetch ClinVar failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">row_iter</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="n">variant</span><span class="o">.</span><span class="n">start_pos</span>
+                <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="n">variant</span><span class="o">.</span><span class="n">end_pos</span>
+                <span class="ow">and</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;alt&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">variant</span><span class="o">.</span><span class="n">alt_allele</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;ref&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">variant</span><span class="o">.</span><span class="n">ref_allele</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variant</span><span class="si">!r}</span><span class="s2"> got a clinvar match but their reference alleles are different: &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variant</span><span class="o">.</span><span class="n">ref_allele</span><span class="si">!r}</span><span class="s2"> != </span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">]</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="c1"># Parse the clinical significance of the record</span>
+                <span class="n">record</span><span class="p">[</span>
+                    <span class="s2">&quot;final_clinical_significance&quot;</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">ClinicalSignificance</span><span class="o">.</span><span class="n">parse_clinvar_record</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">record</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="CharGer.match_clinvar"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer.match_clinvar">[docs]</a>    <span class="k">def</span> <span class="nf">match_clinvar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Match the input variant with the ClinVar table.</span>
+
+<span class="sd">        Update :attr:`CharGerResult.clinvar` the variant matches a ClinVar record</span>
+<span class="sd">        by calling :meth:`_match_clinvar_one_variant`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clinvar_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skip matching ClinVar&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Match input variants with ClinVar table at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clinvar_table</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">clinvar_match_num</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="n">TabixFile</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">clinvar_table</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tabix</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">tabix</span><span class="o">.</span><span class="n">header</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_match_clinvar_one_variant</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">variant</span><span class="p">,</span> <span class="n">tabix</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">record</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">clinvar</span> <span class="o">=</span> <span class="n">record</span>
+                    <span class="n">clinvar_match_num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Matched </span><span class="si">{</span><span class="n">clinvar_match_num</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_variants</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> input variants to a ClinVar record&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer._run_or_skip_module"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer._run_or_skip_module">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_run_or_skip_module</span><span class="p">(</span>
+        <span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">module_avail</span><span class="p">:</span> <span class="s2">&quot;ModuleAvailability&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">module_avail</span> <span class="ow">is</span> <span class="n">ModuleAvailability</span><span class="o">.</span><span class="n">ACTIVE</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running </span><span class="si">{name}</span><span class="s2"> module&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipped </span><span class="si">{name}</span><span class="s2"> module&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="CharGer.run_acmg_modules"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer.run_acmg_modules">[docs]</a>    <span class="k">def</span> <span class="nf">run_acmg_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run all ACMG modules.</span>
+
+<span class="sd">        See :mod:`~charger.acmg_modules` for all the currently implemented</span>
+<span class="sd">        modules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run all ACMG modules&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">run_or_skip</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_or_skip_module</span><span class="p">(</span>
+                <span class="n">module_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acmg_module_availability</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># PVS1</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PVS1&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_pvs1</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span>
+
+        <span class="c1"># PM4</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PM4&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_pm4</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CharGer.run_charger_modules"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer.run_charger_modules">[docs]</a>    <span class="k">def</span> <span class="nf">run_charger_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run all CharGer customized modules.</span>
+
+<span class="sd">        See :mod:`~charger.custom_modules` for all the currently implemented</span>
+<span class="sd">        modules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run all CharGer modules&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">run_or_skip</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_or_skip_module</span><span class="p">(</span>
+                <span class="n">module_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_charger_module_availability</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># PSC1</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PSC1&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_psc1</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span>
+
+        <span class="c1"># PMC1</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PMC1&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_pmc1</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span>
+
+        <span class="c1"># PPC1</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PPC1&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_ppc1</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span>
+
+        <span class="c1"># PPC</span>
+        <span class="k">if</span> <span class="n">run_or_skip</span><span class="p">(</span><span class="s2">&quot;PPC2&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+                <span class="n">run_ppc2</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inheritance_genes</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+<h1 class="logo"><a href="../../index.html">CharGer</a></h1>
+
+
+
+<p class="blurb">Characterization of Germline variants</p>
+<h3><a href="../../contents.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare_inputs.html">Preparing the Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acmg_guideline.html">ACMG guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../internals/index.html">CharGer Internals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://pypi.org/project/CharGer">PyPI releases</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/ding-lab/CharGer">Source Code</a></li>
+    
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../contents.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+        <form class="search" action="../../search.html" method="get">
+            <input type="text" name="q" aria-labelledby="searchlabel" placeholder="Search" />
+            <input type="submit" value="Go" />
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Ding Lab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
