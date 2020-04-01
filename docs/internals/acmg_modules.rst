@@ -1,6 +1,6 @@
 ``acmg_modules`` module
 =======================
-.. currentmodule:: charger.acmg_modules
+.. automodule:: charger.acmg_modules
 
 
 Pathogenic

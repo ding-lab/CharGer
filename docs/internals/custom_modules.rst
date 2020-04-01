@@ -1,6 +1,6 @@
 ``custom_modules`` module
 =========================
-.. currentmodule:: charger.custom_modules
+.. automodule:: charger.custom_modules
 
 
 Pathogenic

@@ -345,7 +345,11 @@ class CharGer:
             return False
 
     def run_acmg_modules(self) -> None:
-        """Run all ACMG modules."""
+        """Run all ACMG modules.
+
+        See :mod:`~charger.acmg_modules` for all the currently implemented
+        modules.
+        """
         logger.info("Run all ACMG modules")
 
         def run_or_skip(module_name: str):
@@ -364,7 +368,11 @@ class CharGer:
                 run_pm4(result, self.inheritance_genes)
 
     def run_charger_modules(self) -> None:
-        """Run all CharGer customized modules."""
+        """Run all CharGer customized modules.
+
+        See :mod:`~charger.custom_modules` for all the currently implemented
+        modules.
+        """
         logger.info("Run all CharGer modules")
 
         def run_or_skip(module_name: str):

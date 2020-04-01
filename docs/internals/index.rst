@@ -5,8 +5,8 @@ Here documents CharGer's internal design by modules:
 .. toctree::
 
    config
-   result
    classifier
+   result
    acmg_modules
    custom_modules
    variant
