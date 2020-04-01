@@ -119,8 +119,8 @@ class CharGerConfig:
     inheritance_gene_table: Optional[Path] = None
     """Path to a TSV table of inheritance genes.
 
-    The table columns must have these three columns in order: ``gene``, ``diseases``, ``modes_of_inheritance``.
-    The first row is header and will be ignored.
+    The table columns must have these three columns in order: ``gene``, ``diseases``,
+    ``modes_of_inheritance``. The first row is header and will be ignored.
 
         - ``gene``: Gene symbol.
         - ``diseases``: Name of the diseases seperated by comma.
@@ -150,5 +150,3 @@ class CharGerConfig:
 
     The given file has one gene symbol per line.
     """
-
-    # CharGer classification modules

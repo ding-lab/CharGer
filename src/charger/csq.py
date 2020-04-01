@@ -72,8 +72,9 @@ class CSQ(UserDict):
     """
     Consequence of a variant. Access each CSQ field like a `dict`.
 
-    The class is used to set the annotation records in a :class:`~charger.variant.Variant` object.
-    List of CSQ per feature will be stored at :attr:`Variant.parsed_csq <charger.variant.Variant.parsed_csq>`.
+    The class is used to set the annotation records in a :class:`~charger.variant.Variant`
+    object. List of CSQ per feature will be stored at :attr:`Variant.parsed_csq
+    <charger.variant.Variant.parsed_csq>`.
 
     Examples:
 
@@ -132,9 +133,10 @@ class CSQ(UserDict):
     def rank_consequence_type(self) -> int:
         """Rank the severeness of its consequence type (CSQ column ``Consequence``).
 
-        Severe consequence type has smaller rank (smallest being 0). Ranking is based on the order in
-        :attr:`ALL_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types separated by ``&``, return the
-        smallest rank of all the types. When the consequence type is not known, return the biggest possible rank + 1.
+        Severe consequence type has smaller rank (smallest being 0). Ranking is based on the
+        order in :attr:`ALL_CONSEQUENCE_TYPES`. When the CSQ has multiple consequence types
+        separated by ``&``, return the smallest rank of all the types. When the consequence type
+        is not known, return the biggest possible rank + 1.
         """
         ranks: List[int] = []
         for ct in self.consequence_types:

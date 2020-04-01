@@ -28,7 +28,8 @@ class PathType:
 
         >>> parser = argparse.ArgumentParser()
 
-        Add an argument that must be an existing file, but can also be specified as a dash (``-``) in the command,
+        Add an argument that must be an existing file, but can also be specified as a dash
+        (``-``) in the command,
 
         >>> parser.add_argument('existing_file', type=PathType(exists=True, type='file'))
 

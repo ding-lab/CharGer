@@ -62,9 +62,8 @@ class Variant:
 
     parsed_csq: Optional[List["CSQ"]] = None
     """
-    All parsed CSQ annotations of the variant as a list of :class:`.CSQ`
-    objects. Use :meth:`read_and_parse_vcf` to automatically parse CSQ while
-    reading an annotated VCF.
+    All parsed CSQ annotations of the variant as a list of :class:`.CSQ` objects. Use
+    :meth:`read_and_parse_vcf` to automatically parse CSQ while reading an annotated VCF.
     """
 
     _most_severe_csq: Optional["CSQ"] = attr.ib(default=None, init=False)
@@ -115,7 +114,8 @@ class Variant:
     def get_most_severe_csq(self) -> CSQ:
         """Get the most severe CSQ based on the consequence type.
 
-        If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will be selected.
+        If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will
+        be selected.
         """
         # Return the cached result if available
         if self._most_severe_csq is not None:
@@ -239,9 +239,8 @@ class Variant:
         """
         Read VCF record from `path`.
 
-        This function walks through each variant record in the given VCF
-        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`, and yields the record
-        as a :class:`Variant` object.
+        This function walks through each variant record in the given VCF using :class:`cyvcf2.VCF
+        <cyvcf2.cyvcf2.VCF>`, and yields the record as a :class:`Variant` object.
 
         See also :meth:`read_and_parse_vcf` to read and parse the VCF.
 
@@ -262,10 +261,9 @@ class Variant:
         """
         Read and parse VCF record with its VEP-annotated CSQ from `path`.
 
-        This function walks through each variant record in the given VCF
-        using :class:`cyvcf2.VCF <cyvcf2.cyvcf2.VCF>`, and yields the record
-        as a :class:`Variant` object. The parsed CSQ will be stored in the
-        generated :attr:`Variant.parsed_csq`.
+        This function walks through each variant record in the given VCF using :class:`cyvcf2.VCF
+        <cyvcf2.cyvcf2.VCF>`, and yields the record as a :class:`Variant` object. The parsed CSQ
+        will be stored in the generated :attr:`Variant.parsed_csq`.
 
         Args:
             path: Path to the VCF.

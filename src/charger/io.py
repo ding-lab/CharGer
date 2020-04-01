@@ -41,9 +41,10 @@ def read_tsv(path, dialect="unix_tab", as_dict=False, columns=None, **kwargs):
 
     When `as_dict` is `False`, return each row as a list using :func:`csv.reader`.
 
-    When `as_dict` is `True`, return each row as a `dict` mapping from the column name to the corresponding value
-    using :class:`csv.DictReader`. `columns` will be used as the column names. If `columns` is omitted, the first
-    row will be treated as the column names.
+    When `as_dict` is `True`, return each row as a `dict` mapping from the
+    column name to the corresponding value using :class:`csv.DictReader`.
+    `columns` will be used as the column names. If `columns` is omitted, the
+    first row will be treated as the column names.
 
     Additional arguments ``kwargs`` are passed to the underlying function.
 
