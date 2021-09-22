@@ -55,7 +55,10 @@ def create_console_parser() -> argparse.ArgumentParser:
         help="Path to the input VCF to be annotated",
     )
     parser.add_argument(
-        "--output", metavar="TSV", type=PathType(), help="Path to CharGer output",
+        "--output",
+        metavar="TSV",
+        type=PathType(),
+        help="Path to CharGer output",
     )
 
     parser.add_argument(
