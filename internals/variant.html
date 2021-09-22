@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>variant module &#8212; CharGer  documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="csq module" href="csq.html" />
@@ -32,14 +33,14 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="variant-module">
+  <section id="variant-module">
 <h1><code class="docutils literal notranslate"><span class="pre">variant</span></code> module<a class="headerlink" href="#variant-module" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="variant">
+<section id="variant">
 <h2><code class="docutils literal notranslate"><span class="pre">Variant</span></code><a class="headerlink" href="#variant" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="charger.variant.Variant">
-<em class="property">class </em><code class="sig-name descname">Variant</code><span class="sig-paren">(</span><em class="sig-param">chrom</em>, <em class="sig-param">start_pos</em>, <em class="sig-param">end_pos</em>, <em class="sig-param">ref_allele</em>, <em class="sig-param">alt_allele</em>, <em class="sig-param">id=None</em>, <em class="sig-param">filter=None</em>, <em class="sig-param">info=NOTHING</em>, <em class="sig-param">parsed_csq=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="charger.variant.Variant">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chrom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_allele</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alt_allele</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parsed_csq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Biallelic variant.</p>
 <p>For normal usage, consider using <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to construct
 the objects from a VEP annotated VCF.</p>
@@ -66,129 +67,123 @@ the objects from a VEP annotated VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>chrom</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>start_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>end_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>ref_allele</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>alt_allele</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>id</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p></li>
-<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
-<li><p><strong>Any</strong><strong>] </strong><strong>info</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p></li>
-<li><p><strong>parsed_csq</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><em>CSQ</em></a><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>chrom</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – </p></li>
+<li><p><strong>start_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – </p></li>
+<li><p><strong>end_pos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – </p></li>
+<li><p><strong>ref_allele</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – </p></li>
+<li><p><strong>alt_allele</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – </p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – </p></li>
+<li><p><strong>filter</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em><em>]</em>) – </p></li>
+<li><p><strong>info</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – </p></li>
+<li><p><strong>parsed_csq</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><em>charger.csq.CSQ</em></a><em>]</em><em>]</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
 </dd>
 </dl>
-<dl class="attribute">
-<dt id="charger.variant.Variant.chrom">
-<code class="sig-name descname">chrom</code><a class="headerlink" href="#charger.variant.Variant.chrom" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.chrom">
+<span class="sig-name descname"><span class="pre">chrom</span></span><a class="headerlink" href="#charger.variant.Variant.chrom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Chromosome.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.start_pos">
-<code class="sig-name descname">start_pos</code><a class="headerlink" href="#charger.variant.Variant.start_pos" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.start_pos">
+<span class="sig-name descname"><span class="pre">start_pos</span></span><a class="headerlink" href="#charger.variant.Variant.start_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start position (1-based closed). Same as POS in the VCF record.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.end_pos">
-<code class="sig-name descname">end_pos</code><a class="headerlink" href="#charger.variant.Variant.end_pos" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.end_pos">
+<span class="sig-name descname"><span class="pre">end_pos</span></span><a class="headerlink" href="#charger.variant.Variant.end_pos" title="Permalink to this definition">¶</a></dt>
 <dd><p>End position (1-based closed).</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.ref_allele">
-<code class="sig-name descname">ref_allele</code><a class="headerlink" href="#charger.variant.Variant.ref_allele" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.ref_allele">
+<span class="sig-name descname"><span class="pre">ref_allele</span></span><a class="headerlink" href="#charger.variant.Variant.ref_allele" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reference allele sequence.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.alt_allele">
-<code class="sig-name descname">alt_allele</code><a class="headerlink" href="#charger.variant.Variant.alt_allele" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.alt_allele">
+<span class="sig-name descname"><span class="pre">alt_allele</span></span><a class="headerlink" href="#charger.variant.Variant.alt_allele" title="Permalink to this definition">¶</a></dt>
 <dd><p>Alternative allele sequence (currently only allow one possible allele).</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.id">
-<code class="sig-name descname">id</code><a class="headerlink" href="#charger.variant.Variant.id" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#charger.variant.Variant.id" title="Permalink to this definition">¶</a></dt>
 <dd><p>ID in the VCF record. <cite>None</cite> when the original value is <code class="docutils literal notranslate"><span class="pre">.</span></code>.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.filter">
-<code class="sig-name descname">filter</code><a class="headerlink" href="#charger.variant.Variant.filter" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><a class="headerlink" href="#charger.variant.Variant.filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>FILTER in the VCF record. <cite>None</cite> when the original value is <code class="docutils literal notranslate"><span class="pre">PASS</span></code>.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.info">
-<code class="sig-name descname">info</code><a class="headerlink" href="#charger.variant.Variant.info" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.info">
+<span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#charger.variant.Variant.info" title="Permalink to this definition">¶</a></dt>
 <dd><p>INFO in the VCF record.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant.parsed_csq">
-<code class="sig-name descname">parsed_csq</code><a class="headerlink" href="#charger.variant.Variant.parsed_csq" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.Variant.parsed_csq">
+<span class="sig-name descname"><span class="pre">parsed_csq</span></span><a class="headerlink" href="#charger.variant.Variant.parsed_csq" title="Permalink to this definition">¶</a></dt>
 <dd><p>All parsed CSQ annotations of the variant as a list of <a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">CSQ</span></code></a> objects. Use
 <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to automatically parse CSQ while reading an annotated VCF.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.Variant._most_severe_csq">
-<code class="sig-name descname">_most_severe_csq</code><a class="headerlink" href="#charger.variant.Variant._most_severe_csq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cached most severe CSQ based on the consequence type.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.variant.Variant.is_snp">
-<code class="sig-name descname">is_snp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_snp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.is_snp" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.is_snp">
+<span class="sig-name descname"><span class="pre">is_snp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_snp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.is_snp" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>True</cite> if the variant is a SNP.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.is_sv">
-<code class="sig-name descname">is_sv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_sv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.is_sv" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.is_sv">
+<span class="sig-name descname"><span class="pre">is_sv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_sv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.is_sv" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>True</cite> if the variant ia an SV.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.is_indel">
-<code class="sig-name descname">is_indel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_indel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.is_indel" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.is_indel">
+<span class="sig-name descname"><span class="pre">is_indel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_indel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.is_indel" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>True</cite> if the variant ia an INDEL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.is_deletion">
-<code class="sig-name descname">is_deletion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.is_deletion" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.is_deletion">
+<span class="sig-name descname"><span class="pre">is_deletion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.is_deletion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.is_deletion" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>True</cite> if the variant is a deletion.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.get_most_severe_csq">
-<code class="sig-name descname">get_most_severe_csq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_most_severe_csq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.get_most_severe_csq" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.get_most_severe_csq">
+<span class="sig-name descname"><span class="pre">get_most_severe_csq</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_most_severe_csq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.get_most_severe_csq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the most severe CSQ based on the consequence type.</p>
 <p>If multiple CSQs have the same consequence type, the canonical CSQ determined by VEP will
 be selected.</p>
@@ -199,96 +194,83 @@ be selected.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant._parse_csq">
-<code class="sig-name descname">_parse_csq</code><span class="sig-paren">(</span><em class="sig-param">csq_fields</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant._parse_csq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant._parse_csq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the CSQ info string based on the CSQ field spec.</p>
-<p>It returns a list of consequences per annotation(transcript)
-as a list of <a class="reference internal" href="csq.html#charger.csq.CSQ" title="charger.csq.CSQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">CSQ</span></code></a> objects.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>csq_fields</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="charger.variant.Variant.from_cyvcf2">
-<em class="property">classmethod </em><code class="sig-name descname">from_cyvcf2</code><span class="sig-paren">(</span><em class="sig-param">variant</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.from_cyvcf2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.from_cyvcf2" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.from_cyvcf2">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_cyvcf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.from_cyvcf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.from_cyvcf2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create one Variant object based on the given
-<a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.Variant" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.Variant</span></code></a> VCF record.</p>
+<a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.Variant" title="(in cyvcf2 v0.30.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.Variant</span></code></a> VCF record.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>variant</strong> (<a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.Variant" title="(in cyvcf2 v0.11.5)"><em>cyvcf2.cyvcf2.Variant</em></a>) – </p>
+<dd class="field-odd"><p><strong>variant</strong> (<a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.Variant" title="(in cyvcf2 v0.30.0)"><em>cyvcf2.cyvcf2.Variant</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>V</p>
+<dd class="field-even"><p>charger.variant.V</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.get_vep_version">
-<em class="property">classmethod </em><code class="sig-name descname">get_vep_version</code><span class="sig-paren">(</span><em class="sig-param">vcf_raw_headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_vep_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.get_vep_version" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.get_vep_version">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get_vep_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcf_raw_headers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_vep_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.get_vep_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the VEP version in the given VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.get_vep_csq_fields">
-<em class="property">classmethod </em><code class="sig-name descname">get_vep_csq_fields</code><span class="sig-paren">(</span><em class="sig-param">vcf_raw_headers</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_vep_csq_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.get_vep_csq_fields" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.get_vep_csq_fields">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get_vep_csq_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vcf_raw_headers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.get_vep_csq_fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.get_vep_csq_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the CSQ fields VEP output in the given VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>vcf_raw_headers</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a>]</p>
+<dd class="field-even"><p>List[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a>]</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.read_vcf">
-<em class="property">classmethod </em><code class="sig-name descname">read_vcf</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.read_vcf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.read_vcf" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.read_vcf">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">read_vcf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.read_vcf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.read_vcf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read VCF record from <cite>path</cite>.</p>
-<p>This function walks through each variant record in the given VCF using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.</p>
+<p>This function walks through each variant record in the given VCF using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.30.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object.</p>
 <p>See also <a class="reference internal" href="#charger.variant.Variant.read_and_parse_vcf" title="charger.variant.Variant.read_and_parse_vcf"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read_and_parse_vcf()</span></code></a> to read and parse the VCF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An generator walking through all variants per record.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Generator[V, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
+<dd class="field-odd"><p>Generator[charger.variant.V, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a>]</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.Variant.read_and_parse_vcf">
-<em class="property">classmethod </em><code class="sig-name descname">read_and_parse_vcf</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.read_and_parse_vcf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.Variant.read_and_parse_vcf" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.Variant.read_and_parse_vcf">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">read_and_parse_vcf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#Variant.read_and_parse_vcf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.Variant.read_and_parse_vcf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and parse VCF record with its VEP-annotated CSQ from <cite>path</cite>.</p>
-<p>This function walks through each variant record in the given VCF using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.11.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object. The parsed CSQ
+<p>This function walks through each variant record in the given VCF using <a class="reference external" href="https://brentp.github.io/cyvcf2/docstrings.html#cyvcf2.cyvcf2.VCF" title="(in cyvcf2 v0.30.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">cyvcf2.VCF</span></code></a>, and yields the record as a <a class="reference internal" href="#charger.variant.Variant" title="charger.variant.Variant"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variant</span></code></a> object. The parsed CSQ
 will be stored in the generated <a class="reference internal" href="#charger.variant.Variant.parsed_csq" title="charger.variant.Variant.parsed_csq"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Variant.parsed_csq</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.8)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.9)"><em>pathlib.Path</em></a>) – Path to the VCF.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An generator walking through all variants per record.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Generator[V, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a>]</p>
+<dd class="field-odd"><p>Generator[charger.variant.V, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a>]</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -310,48 +292,48 @@ will be stored in the generated <a class="reference internal" href="#charger.var
 
 </dd></dl>
 
-</div>
-<div class="section" id="geneinheritancemode">
+</section>
+<section id="geneinheritancemode">
 <h2><code class="docutils literal notranslate"><span class="pre">GeneInheritanceMode</span></code><a class="headerlink" href="#geneinheritancemode" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="charger.variant.GeneInheritanceMode">
-<em class="property">class </em><code class="sig-name descname">GeneInheritanceMode</code><a class="reference internal" href="../_modules/charger/variant.html#GeneInheritanceMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.GeneInheritanceMode" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Flag" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Flag</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">GeneInheritanceMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#GeneInheritanceMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.GeneInheritanceMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Flag" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Flag</span></code></a></p>
 <p>All possible modes of the gene inheritance dominance.</p>
 <p>Used by <a class="reference internal" href="config.html#charger.config.CharGerConfig.inheritance_gene_table" title="charger.config.CharGerConfig.inheritance_gene_table"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerConfig.inheritance_gene_table</span></code></a>.</p>
-<dl class="attribute">
-<dt id="charger.variant.GeneInheritanceMode.AUTO_DOMINANT">
-<code class="sig-name descname">AUTO_DOMINANT</code><em class="property"> = 1</em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.AUTO_DOMINANT" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.AUTO_DOMINANT">
+<span class="sig-name descname"><span class="pre">AUTO_DOMINANT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.AUTO_DOMINANT" title="Permalink to this definition">¶</a></dt>
 <dd><p>The gene is autosomal dominant.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.GeneInheritanceMode.AUTO_RECESSIVE">
-<code class="sig-name descname">AUTO_RECESSIVE</code><em class="property"> = 2</em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.AUTO_RECESSIVE" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.AUTO_RECESSIVE">
+<span class="sig-name descname"><span class="pre">AUTO_RECESSIVE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.AUTO_RECESSIVE" title="Permalink to this definition">¶</a></dt>
 <dd><p>The gene is autosomal recessive.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.GeneInheritanceMode.X_LINKED_DOMINANT">
-<code class="sig-name descname">X_LINKED_DOMINANT</code><em class="property"> = 4</em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.X_LINKED_DOMINANT" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.X_LINKED_DOMINANT">
+<span class="sig-name descname"><span class="pre">X_LINKED_DOMINANT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.X_LINKED_DOMINANT" title="Permalink to this definition">¶</a></dt>
 <dd><p>The gene is X-linked dominant.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.GeneInheritanceMode.X_LINKED_RECESSIVE">
-<code class="sig-name descname">X_LINKED_RECESSIVE</code><em class="property"> = 8</em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.X_LINKED_RECESSIVE" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.X_LINKED_RECESSIVE">
+<span class="sig-name descname"><span class="pre">X_LINKED_RECESSIVE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.X_LINKED_RECESSIVE" title="Permalink to this definition">¶</a></dt>
 <dd><p>The gene is X-linked recessive.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.GeneInheritanceMode.Y_LINKED">
-<code class="sig-name descname">Y_LINKED</code><em class="property"> = 16</em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.Y_LINKED" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.Y_LINKED">
+<span class="sig-name descname"><span class="pre">Y_LINKED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">16</span></em><a class="headerlink" href="#charger.variant.GeneInheritanceMode.Y_LINKED" title="Permalink to this definition">¶</a></dt>
 <dd><p>The gene is Y-linked.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.GeneInheritanceMode.parse">
-<em class="property">classmethod </em><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#GeneInheritanceMode.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.GeneInheritanceMode.parse" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.GeneInheritanceMode.parse">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#GeneInheritanceMode.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.GeneInheritanceMode.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse the inheritance modes from the given string. Multiple modes are comma separated.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">GeneInheritanceMode</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;autosomal dominant, autosomal recessive&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">m</span>
@@ -370,7 +352,7 @@ will be stored in the generated <a class="reference internal" href="#charger.var
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>Optional[<a class="reference internal" href="#charger.variant.GeneInheritanceMode" title="charger.variant.GeneInheritanceMode">charger.variant.GeneInheritanceMode</a>]</p>
@@ -380,46 +362,46 @@ will be stored in the generated <a class="reference internal" href="#charger.var
 
 </dd></dl>
 
-</div>
-<div class="section" id="clinicalsignificance">
+</section>
+<section id="clinicalsignificance">
 <h2><code class="docutils literal notranslate"><span class="pre">ClinicalSignificance</span></code><a class="headerlink" href="#clinicalsignificance" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="charger.variant.ClinicalSignificance">
-<em class="property">class </em><code class="sig-name descname">ClinicalSignificance</code><a class="reference internal" href="../_modules/charger/variant.html#ClinicalSignificance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.ClinicalSignificance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ClinicalSignificance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#ClinicalSignificance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.ClinicalSignificance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
 <p>All possible clinical significance types of a variant.</p>
-<dl class="attribute">
-<dt id="charger.variant.ClinicalSignificance.PATHOGENIC">
-<code class="sig-name descname">PATHOGENIC</code><em class="property"> = 'Pathogenic'</em><a class="headerlink" href="#charger.variant.ClinicalSignificance.PATHOGENIC" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.PATHOGENIC">
+<span class="sig-name descname"><span class="pre">PATHOGENIC</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Pathogenic'</span></em><a class="headerlink" href="#charger.variant.ClinicalSignificance.PATHOGENIC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.ClinicalSignificance.LIKELY_PATHOGENIC">
-<code class="sig-name descname">LIKELY_PATHOGENIC</code><em class="property"> = 'Likely Pathogenic'</em><a class="headerlink" href="#charger.variant.ClinicalSignificance.LIKELY_PATHOGENIC" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.LIKELY_PATHOGENIC">
+<span class="sig-name descname"><span class="pre">LIKELY_PATHOGENIC</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Likely</span> <span class="pre">Pathogenic'</span></em><a class="headerlink" href="#charger.variant.ClinicalSignificance.LIKELY_PATHOGENIC" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.ClinicalSignificance.LIKELY_BENIGN">
-<code class="sig-name descname">LIKELY_BENIGN</code><em class="property"> = 'Likely Benign'</em><a class="headerlink" href="#charger.variant.ClinicalSignificance.LIKELY_BENIGN" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.LIKELY_BENIGN">
+<span class="sig-name descname"><span class="pre">LIKELY_BENIGN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Likely</span> <span class="pre">Benign'</span></em><a class="headerlink" href="#charger.variant.ClinicalSignificance.LIKELY_BENIGN" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.ClinicalSignificance.BENIGN">
-<code class="sig-name descname">BENIGN</code><em class="property"> = 'Benign'</em><a class="headerlink" href="#charger.variant.ClinicalSignificance.BENIGN" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.BENIGN">
+<span class="sig-name descname"><span class="pre">BENIGN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Benign'</span></em><a class="headerlink" href="#charger.variant.ClinicalSignificance.BENIGN" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="attribute">
-<dt id="charger.variant.ClinicalSignificance.UNCERTAIN">
-<code class="sig-name descname">UNCERTAIN</code><em class="property"> = 'Uncertain Significance'</em><a class="headerlink" href="#charger.variant.ClinicalSignificance.UNCERTAIN" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.UNCERTAIN">
+<span class="sig-name descname"><span class="pre">UNCERTAIN</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'Uncertain</span> <span class="pre">Significance'</span></em><a class="headerlink" href="#charger.variant.ClinicalSignificance.UNCERTAIN" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="charger.variant.ClinicalSignificance.parse_clinvar_record">
-<em class="property">classmethod </em><code class="sig-name descname">parse_clinvar_record</code><span class="sig-paren">(</span><em class="sig-param">record</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#ClinicalSignificance.parse_clinvar_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.ClinicalSignificance.parse_clinvar_record" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="charger.variant.ClinicalSignificance.parse_clinvar_record">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">parse_clinvar_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#ClinicalSignificance.parse_clinvar_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.ClinicalSignificance.parse_clinvar_record" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the pathogenicity of a ClinVar record.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>str</strong><strong>] </strong><strong>record</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em>) – </p>
+<dd class="field-odd"><p><strong>record</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="#charger.variant.ClinicalSignificance" title="charger.variant.ClinicalSignificance">charger.variant.ClinicalSignificance</a></p>
@@ -429,12 +411,12 @@ will be stored in the generated <a class="reference internal" href="#charger.var
 
 </dd></dl>
 
-</div>
-<div class="section" id="helpers">
+</section>
+<section id="helpers">
 <h2>Helpers<a class="headerlink" href="#helpers" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="charger.variant.limit_seq_display">
-<code class="sig-name descname">limit_seq_display</code><span class="sig-paren">(</span><em class="sig-param">seq</em>, <em class="sig-param">limit=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#limit_seq_display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#charger.variant.limit_seq_display" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="charger.variant.limit_seq_display">
+<span class="sig-name descname"><span class="pre">limit_seq_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/variant.html#limit_seq_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.variant.limit_seq_display" title="Permalink to this definition">¶</a></dt>
 <dd><p>Limit the display of the sequence.</p>
 <p>Examples:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">limit_seq_display</span><span class="p">(</span><span class="s1">&#39;ATATCCG&#39;</span><span class="p">)</span>
@@ -448,18 +430,18 @@ will be stored in the generated <a class="reference internal" href="#charger.var
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>seq</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
-<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>seq</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – </p></li>
+<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -536,7 +518,7 @@ will be stored in the generated <a class="reference internal" href="#charger.var
       &copy;2020, Ding Lab.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
