@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from ..result import ModuleDecision
-from ..variant import GeneInheritanceMode
+from ..variant import GeneInheritanceMode, Variant
 
 if TYPE_CHECKING:
     # Only to import the type checking related modules during type check
@@ -14,12 +14,14 @@ def run_pvs1(
     result: "CharGerResult", inheritance_genes: "InheritanceGenesType"
 ) -> None:
     """Run ACMG :term:`PVS1` module per variant."""
+    # Null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single
+    # or multi-exon deletion) in a gene where LOF is a known mechanism of disease.
+    #
     # Caveats:
     # - Beware of genes where LOF is not a known disease mechanism (e.g., GFAP, MYH7)
     # - Use caution interpreting LOF variants at the extreme 3′ end of a gene
-    # - Use caution with splice variants that are predicted to lead
-    #     to exon skipping but leave the remainder of the protein
-    #     intact
+    # - Use caution with splice variants that are predicted to lead to exon skipping but leave the
+    #   remainder of the protein intact
     # - Use caution in the presence of multiple transcripts
     most_severe_csq = result.variant.get_most_severe_csq()
     gene_symbol = most_severe_csq["SYMBOL"]
@@ -33,9 +35,15 @@ def run_pvs1(
     result.acmg_decisions["PVS1"] = ModuleDecision.FAILED
 
 
-def run_ps1(result: "CharGerResult") -> None:
+def run_ps1(result: "CharGerResult", pathogenic_variants: List[Variant]) -> None:
     """Run ACMG :term:`PS1` module per variant."""
-    pass
+    # Same amino acid change as a previously established pathogenic variant regardless of
+    # nucleotide change.
+    #
+    # Caveats:
+    # - Beware of changes that impact splicing rather than at the amino acid/protein level
+    if result.clinvar is not None:
+        pass
 
 
 # endregion

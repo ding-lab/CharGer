@@ -62,7 +62,6 @@ class CharGer:
         >>> config = CharGerConfig(...)
         >>> charger = CharGer()
         >>> charger.setup()
-        >>> charger.match_clinvar()
         >>> charger.run_acmg_modules()
         >>> charger.run_charger_modules()
     """
@@ -117,6 +116,7 @@ class CharGer:
             4. :meth:`_read_inheritance_gene_table`
             5. :meth:`_read_pp2_gene_list`
             6. :meth:`_read_bp1_gene_list`
+            7. :meth:`_match_clinvar`
         """
         self._validate_config()
         self._read_input_variants()
@@ -124,6 +124,7 @@ class CharGer:
         self._read_inheritance_gene_table()
         self._read_pp2_gene_list()
         self._read_bp1_gene_list()
+        self._match_clinvar()
 
     def _validate_config(self) -> None:
         """Validate the configuration."""
@@ -309,7 +310,7 @@ class CharGer:
                 return record
         return None
 
-    def match_clinvar(self) -> None:
+    def _match_clinvar(self) -> None:
         """Match the input variant with the ClinVar table.
 
         Update :attr:`CharGerResult.clinvar` the variant matches a ClinVar record

@@ -30,6 +30,5 @@ config = CharGerConfig(
 # Initiate and run the CharGer classifier
 charger = CharGer(config)
 charger.setup()
-charger.match_clinvar()
 charger.run_acmg_modules()
 charger.run_charger_modules()
