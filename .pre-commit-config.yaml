@@ -2,21 +2,21 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/psf/black
-  rev: 19.10b0
+  rev: 21.9b0
   hooks:
     - id: black
 - repo: https://github.com/timothycrosley/isort
-  rev: 4.3.21-2
+  rev: 5.9.3
   hooks:
     - id: isort
       additional_dependencies: [toml]
       types: [python]
 - repo: https://gitlab.com/pycqa/flake8
-  rev: 3.7.9
+  rev: 3.9.2
   hooks:
     - id: flake8
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.5.0
+  rev: v4.0.1
   hooks:
     - id: trailing-whitespace
       exclude: ^tests/examples/.*
