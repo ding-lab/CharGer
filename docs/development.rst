@@ -27,20 +27,14 @@ Below are the details of each step.
 Set up environment
 ------------------
 Make sure the conda is available and has set up bioconda_ channels.
-Create a new conda environment (for example, ``charger_py37``)::
+Create a new conda environment (for example, ``charger_py38``)::
 
-    conda create -n charger_py37 python=3.7 pip poetry cyvcf2 pysam
-    conda activate charger_py37
+    conda create -n charger_py38 python=3.7 pip poetry cyvcf2 pysam
+    conda activate charger_py38
     git clone https://github.com/ding-lab/CharGer charger
     cd charger
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
-
-On Python 3.8, exclude cyvcf2 and pysam as bioconda hasn't started to built Python 3.8 packages::
-
-    conda create -n charger_py38 python=3.8 poetry pip numpy
-    conda activate charger_py38
-    # ... continue the same as above
 
 .. _bioconda: https://bioconda.github.io/
 
