@@ -62,7 +62,6 @@ ghp-import = "^2.0.1"
 line_length = 90
 atomic = true
 include_trailing_comma = true
-not_skip = "__init__.py"
 balanced_wrapping = true
 multi_line_output = 3
 known_third_party = ["attr", "cyvcf2", "loguru", "pysam", "_pytest", "pytest", "typing_extensions"]
