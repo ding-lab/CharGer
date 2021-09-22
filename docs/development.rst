@@ -96,6 +96,14 @@ CharGer's documentation is powered by sphinx_ under ``docs``. Build or update th
 
 And the documentation will be available under ``docs/_build/html``.
 
+To publish the newly built documentation::
+
+    ghp-import -r origin -b gh-pages --push \
+        -m 'Update documentation' \
+        --no-jekyll \
+        _build/html/
+
+
 .. _sphinx: https://www.sphinx-doc.org/
 
 
