@@ -19,7 +19,6 @@ author = "Ding Lab"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.githubpages",
@@ -84,6 +83,9 @@ html_show_sourcelink = False
 
 # -- Options for Sphinx autodoc ----------------------------------------------
 autodoc_typehints = "description"
+autodoc_type_aliases = {
+    "InheritanceGenesType": "charger.classifier.InheritanceGenesType",
+}
 autodoc_member_order = "bysource"
 autodoc_default_options = {
     "members": True,
