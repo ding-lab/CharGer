@@ -127,7 +127,7 @@ class CharGer:
 
     def _validate_config(self) -> None:
         """Validate the configuration."""
-        logger.info(f"Validate the given config")
+        logger.info("Validate the given config")
         logger.debug(f"Given config: {self.config!r}")
 
     def _read_input_variants(self) -> None:
@@ -137,7 +137,7 @@ class CharGer:
         Also populate :attr:`results` matching the input variant.
         """
         if self.config.input is None:
-            raise ValueError(f"No input file is given in the config")
+            raise ValueError("No input file is given in the config")
 
         logger.info(f"Read input VCF from {self.config.input}")
         # TODO: Skip variants with filter, or with high allele frequency
@@ -239,7 +239,7 @@ class CharGer:
             return
 
         logger.info(f"Read PP2 gene list from {gene_list_pth}")
-        self.pp2_genes = set(l.strip() for l in read_lines(gene_list_pth))
+        self.pp2_genes = set(line.strip() for line in read_lines(gene_list_pth))
         logger.info(f"Marked {len(self.pp2_genes):,d} genes for PP2")
 
     def _read_bp1_gene_list(self) -> None:
@@ -260,7 +260,7 @@ class CharGer:
             return
 
         logger.info(f"Read BP1 gene list from {gene_list_pth}")
-        self.bp1_genes = set(l.strip() for l in read_lines(gene_list_pth))
+        self.bp1_genes = set(line.strip() for line in read_lines(gene_list_pth))
         logger.info(f"Marked {len(self.bp1_genes):,d} genes for BP1")
 
     @staticmethod

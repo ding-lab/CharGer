@@ -205,11 +205,11 @@ class Variant:
         # Reverse the header order because the newer header appears later
         try:
             vep_header = next(
-                l for l in reversed(vcf_raw_headers) if l.startswith("##VEP=")
+                line for line in reversed(vcf_raw_headers) if line.startswith("##VEP=")
             )
             vep_version = re.match(r"^##VEP=['\"]?v(\d+)['\"]?", vep_header).group(1)  # type: ignore
         except (StopIteration, AttributeError):
-            logger.warning(f"Cannot find VEP version in the VCF header")
+            logger.warning("Cannot find VEP version in the VCF header")
             vep_version = "UNKNOWN"
         return vep_version
 
@@ -220,10 +220,12 @@ class Variant:
         # Reverse the header order because the newer header appears later
         try:
             csq_info_header = next(
-                l for l in reversed(vcf_raw_headers) if l.startswith("##INFO=<ID=CSQ,")
+                line
+                for line in reversed(vcf_raw_headers)
+                if line.startswith("##INFO=<ID=CSQ,")
             )
         except StopIteration:
-            raise ValueError(f"Cannot find CSQ format in the VCF header")
+            raise ValueError("Cannot find CSQ format in the VCF header")
         m = re.search(r"Format: ([\w\|]+)['\"]", csq_info_header)
         if m:
             csq_format = m.group(1)
