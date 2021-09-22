@@ -26,16 +26,22 @@ Below are the details of each step.
 
 Set up environment
 ------------------
+CharGer packages are managed by poetry_. Install poetry following its official documentation.
+On macOS with Homebrew, install poetry by::
+
+    brew install poetry
+
 Make sure the conda is available and has set up bioconda_ channels.
 Create a new conda environment (for example, ``charger_py38``)::
 
-    conda create -n charger_py38 python=3.7 pip poetry cyvcf2 pysam
+    conda create -n charger_py38 python=3.8 pip cyvcf2=0.30 pysam=0.16
     conda activate charger_py38
     git clone https://github.com/ding-lab/CharGer charger
     cd charger
     poetry install      # install charger and all its dependencies
     pre-commit install  # enforce style check at every commit
 
+.. _poetry: https://python-poetry.org/
 .. _bioconda: https://bioconda.github.io/
 
 
