@@ -31,10 +31,10 @@
           <div class="body" role="main">
             
   <h1>Source code for charger.acmg_modules.pathogenic</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">from</span> <span class="nn">..result</span> <span class="kn">import</span> <span class="n">ModuleDecision</span>
-<span class="kn">from</span> <span class="nn">..variant</span> <span class="kn">import</span> <span class="n">GeneInheritanceMode</span>
+<span class="kn">from</span> <span class="nn">..variant</span> <span class="kn">import</span> <span class="n">GeneInheritanceMode</span><span class="p">,</span> <span class="n">Variant</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="c1"># Only to import the type checking related modules during type check</span>
@@ -47,12 +47,14 @@
     <span class="n">result</span><span class="p">:</span> <span class="s2">&quot;CharGerResult&quot;</span><span class="p">,</span> <span class="n">inheritance_genes</span><span class="p">:</span> <span class="s2">&quot;InheritanceGenesType&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Run ACMG :term:`PVS1` module per variant.&quot;&quot;&quot;</span>
+    <span class="c1"># Null variant (nonsense, frameshift, canonical ±1 or 2 splice sites, initiation codon, single</span>
+    <span class="c1"># or multi-exon deletion) in a gene where LOF is a known mechanism of disease.</span>
+    <span class="c1">#</span>
     <span class="c1"># Caveats:</span>
     <span class="c1"># - Beware of genes where LOF is not a known disease mechanism (e.g., GFAP, MYH7)</span>
     <span class="c1"># - Use caution interpreting LOF variants at the extreme 3′ end of a gene</span>
-    <span class="c1"># - Use caution with splice variants that are predicted to lead</span>
-    <span class="c1">#     to exon skipping but leave the remainder of the protein</span>
-    <span class="c1">#     intact</span>
+    <span class="c1"># - Use caution with splice variants that are predicted to lead to exon skipping but leave the</span>
+    <span class="c1">#   remainder of the protein intact</span>
     <span class="c1"># - Use caution in the presence of multiple transcripts</span>
     <span class="n">most_severe_csq</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">get_most_severe_csq</span><span class="p">()</span>
     <span class="n">gene_symbol</span> <span class="o">=</span> <span class="n">most_severe_csq</span><span class="p">[</span><span class="s2">&quot;SYMBOL&quot;</span><span class="p">]</span>
@@ -66,9 +68,15 @@
     <span class="n">result</span><span class="o">.</span><span class="n">acmg_decisions</span><span class="p">[</span><span class="s2">&quot;PVS1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ModuleDecision</span><span class="o">.</span><span class="n">FAILED</span></div>
 
 
-<div class="viewcode-block" id="run_ps1"><a class="viewcode-back" href="../../../internals/acmg_modules.html#charger.acmg_modules.pathogenic.run_ps1">[docs]</a><span class="k">def</span> <span class="nf">run_ps1</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="s2">&quot;CharGerResult&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="run_ps1"><a class="viewcode-back" href="../../../internals/acmg_modules.html#charger.acmg_modules.pathogenic.run_ps1">[docs]</a><span class="k">def</span> <span class="nf">run_ps1</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="s2">&quot;CharGerResult&quot;</span><span class="p">,</span> <span class="n">pathogenic_variants</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Variant</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Run ACMG :term:`PS1` module per variant.&quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
+    <span class="c1"># Same amino acid change as a previously established pathogenic variant regardless of</span>
+    <span class="c1"># nucleotide change.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Caveats:</span>
+    <span class="c1"># - Beware of changes that impact splicing rather than at the amino acid/protein level</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">clinvar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
 
 
 <span class="c1"># endregion</span>

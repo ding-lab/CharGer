@@ -95,7 +95,6 @@
 <span class="sd">        &gt;&gt;&gt; config = CharGerConfig(...)</span>
 <span class="sd">        &gt;&gt;&gt; charger = CharGer()</span>
 <span class="sd">        &gt;&gt;&gt; charger.setup()</span>
-<span class="sd">        &gt;&gt;&gt; charger.match_clinvar()</span>
 <span class="sd">        &gt;&gt;&gt; charger.run_acmg_modules()</span>
 <span class="sd">        &gt;&gt;&gt; charger.run_charger_modules()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -150,17 +149,19 @@
 <span class="sd">            4. :meth:`_read_inheritance_gene_table`</span>
 <span class="sd">            5. :meth:`_read_pp2_gene_list`</span>
 <span class="sd">            6. :meth:`_read_bp1_gene_list`</span>
+<span class="sd">            7. :meth:`_match_clinvar`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_config</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_input_variants</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_pathogenic_variants</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_inheritance_gene_table</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_pp2_gene_list</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_read_bp1_gene_list</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_bp1_gene_list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_match_clinvar</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_validate_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Validate the configuration.&quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validate the given config&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Validate the given config&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Given config: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_read_input_variants</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -170,7 +171,7 @@
 <span class="sd">        Also populate :attr:`results` matching the input variant.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">input</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No input file is given in the config&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No input file is given in the config&quot;</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read input VCF from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># TODO: Skip variants with filter, or with high allele frequency</span>
@@ -272,7 +273,7 @@
             <span class="k">return</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read PP2 gene list from </span><span class="si">{</span><span class="n">gene_list_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Marked </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pp2_genes</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> genes for PP2&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_read_bp1_gene_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -293,7 +294,7 @@
             <span class="k">return</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read BP1 gene list from </span><span class="si">{</span><span class="n">gene_list_pth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">read_lines</span><span class="p">(</span><span class="n">gene_list_pth</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Marked </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bp1_genes</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> genes for BP1&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
@@ -342,7 +343,7 @@
                 <span class="k">return</span> <span class="n">record</span>
         <span class="k">return</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="CharGer.match_clinvar"><a class="viewcode-back" href="../../internals/classifier.html#charger.classifier.CharGer.match_clinvar">[docs]</a>    <span class="k">def</span> <span class="nf">match_clinvar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_match_clinvar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Match the input variant with the ClinVar table.</span>
 
 <span class="sd">        Update :attr:`CharGerResult.clinvar` the variant matches a ClinVar record</span>
@@ -364,7 +365,7 @@
                     <span class="n">clinvar_match_num</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Matched </span><span class="si">{</span><span class="n">clinvar_match_num</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_variants</span><span class="p">)</span><span class="si">:</span><span class="s2">,d</span><span class="si">}</span><span class="s2"> input variants to a ClinVar record&quot;</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_run_or_skip_module</span><span class="p">(</span>

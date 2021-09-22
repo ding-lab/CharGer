@@ -52,7 +52,6 @@ See <a class="reference internal" href="config.html#charger.config.CharGerConfig
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">CharGerConfig</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">charger</span> <span class="o">=</span> <span class="n">CharGer</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">charger</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">charger</span><span class="o">.</span><span class="n">match_clinvar</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">charger</span><span class="o">.</span><span class="n">run_acmg_modules</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">charger</span><span class="o">.</span><span class="n">run_charger_modules</span><span class="p">()</span>
 </pre></div>
@@ -113,21 +112,9 @@ The length and order should always be the same as <a class="reference internal" 
 <li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_read_inheritance_gene_table()</span></code></p></li>
 <li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_read_pp2_gene_list()</span></code></p></li>
 <li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_read_bp1_gene_list()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">_match_clinvar()</span></code></p></li>
 </ol>
 </div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="charger.classifier.CharGer.match_clinvar">
-<span class="sig-name descname"><span class="pre">match_clinvar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/charger/classifier.html#CharGer.match_clinvar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#charger.classifier.CharGer.match_clinvar" title="Permalink to this definition">¶</a></dt>
-<dd><p>Match the input variant with the ClinVar table.</p>
-<p>Update <code class="xref py py-attr docutils literal notranslate"><span class="pre">CharGerResult.clinvar</span></code> the variant matches a ClinVar record
-by calling <code class="xref py py-meth docutils literal notranslate"><span class="pre">_match_clinvar_one_variant()</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a></p>
