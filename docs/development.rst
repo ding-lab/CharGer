@@ -107,6 +107,18 @@ To publish the newly built documentation::
 .. _sphinx: https://www.sphinx-doc.org/
 
 
+Update Dependencies
+-------------------
+To list all the upgradable dependencies::
+
+    poetry show --outdated
+
+Change the ``pypoetry.toml`` if the newer version is applicable.
+Then Update the fixed package versions by ``poetry.lock`` by::
+
+    poetry update
+
+
 Develop using Visual Studio Code
 --------------------------------
 Here are some additional setup that utilize `Visual Studio Code`_'s IDE:
