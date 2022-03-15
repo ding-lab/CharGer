@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 # CharGer - Characterization of Germline variants
 # author: 

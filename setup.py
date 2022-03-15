@@ -41,12 +41,12 @@ setup( \
 		'charger' ,
 	] , #each of the directories with modules (aka packages)
 	install_requires = [ \
-		'BioMine @ https://github.com/ding-lab/BioMine/archive/master.zip' ,
-		'AdvancedHTMLParser' , 
-		'requests' ,
-		'pysam' , 
-		'PyVCF' ,
-		'SciPy' ,
+		#'BioMine @ https://github.com/ding-lab/BioMine/archive/master.zip' ,
+		#'AdvancedHTMLParser' , 
+		#'requests' ,
+		#'pysam' , 
+		#'PyVCF' ,
+		#'SciPy' ,
 		#'transvar' ,
 	] , #auto installs with pip install
 	#dependency_links = ['https://github.com/zwdzwd/transvar/archive/v2.1.23.20160321.tar.gz']
